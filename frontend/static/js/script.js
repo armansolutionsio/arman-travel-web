@@ -3,7 +3,7 @@ let packages = [];
 let currentFilter = 'all';
 
 // API Base URL
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = window.location.protocol + '//' + window.location.host;
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', function() {

@@ -90,17 +90,31 @@ class PackageUpdate(BaseModel):
 @app.on_event("startup")
 async def startup():
     print("🚀 Iniciando ARMAN TRAVEL API...")
-    if test_connection():
-        print("✅ Conexión a PostgreSQL exitosa")
-        
-        # Inicializar base de datos en producción
-        try:
-            from init_db import init_database
-            init_database()
-        except Exception as e:
-            print(f"⚠️ Error al inicializar base de datos: {e}")
-    else:
-        print("❌ Error de conexión a PostgreSQL")
+    print(f"🔧 Python working directory: {os.getcwd()}")
+    
+    # Intentar conexión a la base de datos con reintentos
+    max_retries = 5
+    for attempt in range(max_retries):
+        if test_connection():
+            print("✅ Conexión a PostgreSQL exitosa")
+            
+            # Inicializar base de datos en producción
+            try:
+                from init_db import init_database
+                init_database()
+                break
+            except Exception as e:
+                print(f"⚠️ Error al inicializar base de datos (intento {attempt + 1}): {e}")
+                if attempt < max_retries - 1:
+                    print("🔄 Reintentando en 2 segundos...")
+                    import time
+                    time.sleep(2)
+        else:
+            print(f"❌ Error de conexión a PostgreSQL (intento {attempt + 1}/{max_retries})")
+            if attempt < max_retries - 1:
+                print("🔄 Reintentando conexión en 3 segundos...")
+                import time
+                time.sleep(3)
 
 @app.on_event("shutdown")
 async def shutdown():
