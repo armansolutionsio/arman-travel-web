@@ -1,5 +1,5 @@
 // JavaScript para la página de detalle de paquetes
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = window.location.protocol + '//' + window.location.host;
 let currentPackage = null;
 let allPackages = [];
 

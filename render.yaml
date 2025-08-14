@@ -1,14 +1,16 @@
 services:
   - type: web
-    name: arman-travel
+    name: arman-travel-web
     env: python
-    buildCommand: echo "Build completed"
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     plan: free
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: arman-travel-db
+          property: connectionString
       - key: SECRET_KEY
         generateValue: true
       - key: SMTP_HOST
@@ -20,9 +22,8 @@ services:
       - key: SMTP_PASSWORD
         sync: false
 
-  - type: pserv
-    name: arman-travel-postgres
-    env: postgresql
-    plan: free
+databases:
+  - name: arman-travel-db
     databaseName: arman_travel
-    databaseUser: arman_user
+    user: arman_user
+    plan: free
