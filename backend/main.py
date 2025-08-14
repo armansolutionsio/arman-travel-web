@@ -56,6 +56,11 @@ class PackageCreate(BaseModel):
     image: str
     category: str
     features: List[str]
+    duration: Optional[str] = None
+    destination: Optional[str] = None
+    ideal_for: Optional[str] = None
+    gallery_images: Optional[List[str]] = []
+    itinerary: Optional[List[dict]] = []
 
 class PackageUpdate(BaseModel):
     title: Optional[str] = None
@@ -64,6 +69,11 @@ class PackageUpdate(BaseModel):
     image: Optional[str] = None
     category: Optional[str] = None
     features: Optional[List[str]] = None
+    duration: Optional[str] = None
+    destination: Optional[str] = None
+    ideal_for: Optional[str] = None
+    gallery_images: Optional[List[str]] = None
+    itinerary: Optional[List[dict]] = None
 
 # Eventos de inicio y cierre
 @app.on_event("startup")
@@ -147,6 +157,10 @@ async def read_index():
 async def read_admin():
     return get_html_file("admin.html", "<h1>Panel de Administración</h1><p>Panel no disponible</p>")
 
+@app.get("/package-detail/{package_id}", response_class=HTMLResponse)
+async def read_package_detail(package_id: int):
+    return get_html_file("package-detail.html", "<h1>Detalle del Paquete</h1><p>Página no disponible</p>")
+
 @app.post("/contact")
 async def contact_message(message: ContactMessageCreate, db: Session = Depends(get_db)):
     try:
@@ -193,6 +207,20 @@ async def get_packages(db: Session = Depends(get_db)):
     except Exception as e:
         print(f"Error al obtener paquetes: {e}")
         raise HTTPException(status_code=500, detail="Error al obtener paquetes")
+
+@app.get("/packages/{package_id}")
+async def get_package(package_id: int, db: Session = Depends(get_db)):
+    try:
+        package = db.query(Package).filter(Package.id == package_id).first()
+        if not package:
+            raise HTTPException(status_code=404, detail="Paquete no encontrado")
+        return package.to_dict()
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error al obtener paquete: {e}")
+        raise HTTPException(status_code=500, detail="Error al obtener paquete")
 
 @app.post("/admin/packages")
 async def create_package(package: PackageCreate, username: str = Depends(verify_token), db: Session = Depends(get_db)):

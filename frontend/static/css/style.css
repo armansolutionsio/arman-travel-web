@@ -48,21 +48,21 @@ body {
     position: fixed;
     top: 0;
     width: 100%;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
+    background: var(--primary-color);
     z-index: 1000;
-    padding: 1rem 0;
+    padding: 1.5rem 0;
     transition: var(--transition);
+    box-shadow: 0 2px 10px rgba(123, 67, 151, 0.2);
 }
 
 .navbar.scrolled {
-    background: var(--white);
-    box-shadow: var(--shadow-light);
+    background: var(--primary-color);
+    box-shadow: 0 2px 20px rgba(123, 67, 151, 0.3);
 }
 
 .nav-container {
-    max-width: 1200px;
-    margin: 0 auto;
+    width: 100%;
+    margin: 0;
     padding: 0 20px;
     display: flex;
     justify-content: space-between;
@@ -72,19 +72,57 @@ body {
 .nav-logo {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 0.75rem;
+    text-decoration: none !important;
+    transition: var(--transition);
+}
+
+.nav-logo:hover {
+    transform: translateY(-2px);
+}
+
+.nav-logo:hover,
+.nav-logo:visited,
+.nav-logo:active,
+.nav-logo:focus {
+    text-decoration: none !important;
+}
+
+.nav-logo * {
+    text-decoration: none !important;
 }
 
 .logo {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
+    height: 60px;
+    width: 60px;
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+.brand-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    line-height: 1;
 }
 
 .brand-text {
+    font-size: 1.8rem;
     font-weight: 700;
-    font-size: 1.4rem;
-    color: var(--primary-color);
+    color: var(--white);
+    line-height: 1.2;
+    text-decoration: none !important;
+    margin: 0;
+}
+
+.brand-subtitle {
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.8);
+    letter-spacing: 0.3px;
+    text-decoration: none !important;
+    margin: 0;
+    margin-top: -1px;
 }
 
 .nav-menu {
@@ -95,10 +133,12 @@ body {
 
 .nav-link {
     text-decoration: none;
-    color: var(--dark-gray);
+    color: var(--white);
     font-weight: 500;
+    font-size: 1rem;
     transition: var(--transition);
     position: relative;
+    opacity: 0.9;
 }
 
 .nav-link::after {
@@ -108,7 +148,7 @@ body {
     left: 0;
     width: 0;
     height: 2px;
-    background: var(--primary-color);
+    background: var(--white);
     transition: var(--transition);
 }
 
@@ -117,7 +157,8 @@ body {
 }
 
 .nav-link:hover {
-    color: var(--primary-color);
+    color: var(--white);
+    opacity: 1;
 }
 
 .hamburger {
@@ -129,7 +170,7 @@ body {
 .bar {
     width: 25px;
     height: 3px;
-    background: var(--primary-color);
+    background: var(--white);
     margin: 3px 0;
     transition: var(--transition);
 }
@@ -708,7 +749,7 @@ section {
     .nav-menu {
         position: fixed;
         left: -100%;
-        top: 70px;
+        top: 90px;
         flex-direction: column;
         background: var(--white);
         width: 100%;
@@ -718,8 +759,29 @@ section {
         padding: 2rem 0;
     }
     
+    .nav-container {
+        padding: 0 15px;
+    }
+    
     .nav-menu.active {
         left: 0;
+    }
+    
+    .brand-text {
+        font-size: 1.5rem;
+    }
+    
+    .brand-subtitle {
+        font-size: 0.75rem;
+    }
+    
+    .logo {
+        height: 50px;
+        width: 50px;
+    }
+    
+    .navbar {
+        padding: 1.2rem 0;
     }
     
     .hero-content {

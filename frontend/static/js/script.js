@@ -227,9 +227,8 @@ function displayPackages(packagesToShow) {
                 <ul class="package-features">
                     ${pkg.features.map(feature => `<li>${feature}</li>`).join('')}
                 </ul>
-                <a href="https://wa.me/5491122334455?text=Hola! Me interesa el paquete ${encodeURIComponent(pkg.title)}" 
-                   class="btn btn-primary" target="_blank">
-                    <i class="fab fa-whatsapp"></i> Consultar
+                <a href="/package-detail/${pkg.id}" class="btn btn-primary">
+                    <i class="fas fa-eye"></i> Ver Detalles
                 </a>
             </div>
         </div>

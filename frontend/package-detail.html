@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">Detalle del Paquete - ARMAN TRAVEL</title>
+    <link rel="icon" type="image/png" href="/static/images/logo_arman.PNG">
+    <link rel="shortcut icon" type="image/png" href="/static/images/logo_arman.PNG">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/package-detail.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">
+                <img src="/static/images/logo_arman.PNG" alt="ARMAN TRAVEL" class="logo">
+                <div class="brand-container">
+                    <span class="brand-text">ARMAN TRAVEL</span>
+                    <span class="brand-subtitle">by Arman Solutions</span>
+                </div>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="/" class="nav-link">Inicio</a></li>
+                <li><a href="/#packages" class="nav-link">Paquetes</a></li>
+                <li><a href="/#about" class="nav-link">Sobre Nosotros</a></li>
+                <li><a href="/#contact" class="nav-link">Contacto</a></li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <div class="container">
+            <nav class="breadcrumb-nav">
+                <a href="/">Inicio</a>
+                <i class="fas fa-chevron-right"></i>
+                <a href="/#packages">Paquetes</a>
+                <i class="fas fa-chevron-right"></i>
+                <span id="breadcrumbTitle">Detalle del Paquete</span>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Package Hero -->
+    <section class="package-hero">
+        <div class="hero-image-container">
+            <img id="heroImage" src="" alt="Imagen del paquete" class="hero-image">
+            <div class="hero-overlay">
+                <div class="container">
+                    <div class="hero-content">
+                        <div class="package-category" id="heroCategory">
+                            <i class="fas fa-tag"></i>
+                            <span></span>
+                        </div>
+                        <h1 id="heroTitle">Cargando...</h1>
+                        <p id="heroDescription">Cargando descripción...</p>
+                        <div class="hero-price" id="heroPrice">$0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Package Details -->
+    <section class="package-details">
+        <div class="container">
+            <div class="details-grid">
+                <!-- Main Content -->
+                <div class="main-content">
+                    <!-- Quick Info -->
+                    <div class="quick-info">
+                        <h2>Información del Paquete</h2>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <i class="fas fa-calendar-alt"></i>
+                                <div>
+                                    <strong>Duración</strong>
+                                    <span id="duration">-</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-users"></i>
+                                <div>
+                                    <strong>Ideal para</strong>
+                                    <span id="idealFor">Todos los públicos</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <div>
+                                    <strong>Destino</strong>
+                                    <span id="destination">-</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-star"></i>
+                                <div>
+                                    <strong>Categoría</strong>
+                                    <span id="categoryInfo">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="description-section">
+                        <h2>Descripción Completa</h2>
+                        <div class="description-content" id="fullDescription">
+                            <p>Cargando descripción completa...</p>
+                        </div>
+                    </div>
+
+                    <!-- Features/Includes -->
+                    <div class="features-section">
+                        <h2>¿Qué Incluye?</h2>
+                        <div class="features-grid" id="packageFeatures">
+                            <!-- Se llenará con JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Itinerary -->
+                    <div class="itinerary-section">
+                        <h2>Itinerario Sugerido</h2>
+                        <div class="itinerary-timeline" id="packageItinerary">
+                            <div class="timeline-item">
+                                <div class="timeline-icon">
+                                    <i class="fas fa-plane"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h4>Día 1 - Llegada</h4>
+                                    <p>Recepción en el destino y traslado al hotel. Tiempo libre para conocer los alrededores.</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-icon">
+                                    <i class="fas fa-camera"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h4>Día 2 - Actividades</h4>
+                                    <p>Tour completo por los principales atractivos del destino con guía especializado.</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-icon">
+                                    <i class="fas fa-utensils"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h4>Día 3 - Experiencias</h4>
+                                    <p>Actividades especiales y degustación de gastronomía local.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gallery -->
+                    <div class="gallery-section">
+                        <h2>Galería de Imágenes</h2>
+                        <div class="image-gallery" id="packageGallery">
+                            <!-- Se llenará con JavaScript o imágenes por defecto -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="sidebar">
+                    <!-- Price Card -->
+                    <div class="price-card">
+                        <div class="price-header">
+                            <div class="current-price" id="sidebarPrice">$0</div>
+                            <div class="price-label">Por persona</div>
+                        </div>
+                        
+                        <!-- Reservation Form -->
+                        <form class="reservation-form" id="reservationForm">
+                            <h3>¡Reservá tu lugar!</h3>
+                            
+                            <div class="form-group">
+                                <label for="travelers">Cantidad de viajeros</label>
+                                <select id="travelers" name="travelers" required>
+                                    <option value="">Seleccionar...</option>
+                                    <option value="1">1 persona</option>
+                                    <option value="2">2 personas</option>
+                                    <option value="3">3 personas</option>
+                                    <option value="4">4 personas</option>
+                                    <option value="5">5+ personas</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="departure">Fecha preferida</label>
+                                <input type="date" id="departure" name="departure" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="fullName">Nombre completo</label>
+                                <input type="text" id="fullName" name="fullName" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="phone">Teléfono</label>
+                                <input type="tel" id="phone" name="phone" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="comments">Comentarios adicionales</label>
+                                <textarea id="comments" name="comments" rows="3" placeholder="Consultas especiales, preferencias, etc."></textarea>
+                            </div>
+
+                            <div class="total-price" id="totalPrice">
+                                <strong>Total: $0</strong>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-reserve">
+                                <i class="fas fa-paper-plane"></i>
+                                Enviar Consulta
+                            </button>
+
+                            <div class="contact-alternatives">
+                                <p>¿Preferís contactarnos directamente?</p>
+                                <a href="https://wa.me/5491122334455" class="btn btn-whatsapp" target="_blank">
+                                    <i class="fab fa-whatsapp"></i>
+                                    WhatsApp
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Related Packages -->
+                    <div class="related-packages">
+                        <h3>Paquetes Relacionados</h3>
+                        <div class="related-list" id="relatedPackages">
+                            <!-- Se llenará con JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <img src="static/images/logo_arman.PNG" alt="ARMAN TRAVEL" class="footer-logo">
+                    <h3>ARMAN TRAVEL</h3>
+                    <p>Tu agencia de viajes de confianza</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Enlaces</h4>
+                    <ul>
+                        <li><a href="/">Inicio</a></li>
+                        <li><a href="/#packages">Paquetes</a></li>
+                        <li><a href="/#about">Sobre Nosotros</a></li>
+                        <li><a href="/#contact">Contacto</a></li>
+                    </ul>
+                </div>
+                <div class="footer-social">
+                    <h4>Síguenos</h4>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="https://wa.me/5491122334455" class="social-link"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 ARMAN TRAVEL - ARMAN SOLUTIONS. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/static/js/package-detail.js"></script>
+</body>
+</html>

@@ -16,6 +16,11 @@ class Package(Base):
     image = Column(String(500), nullable=False)
     category = Column(String(50), nullable=False)
     features = Column(JSON, nullable=False, default=list)
+    duration = Column(String(100), nullable=True)
+    destination = Column(String(255), nullable=True)
+    ideal_for = Column(String(255), nullable=True)
+    gallery_images = Column(JSON, nullable=False, default=list)
+    itinerary = Column(JSON, nullable=False, default=list)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
@@ -29,6 +34,11 @@ class Package(Base):
             "image": self.image,
             "category": self.category,
             "features": self.features if isinstance(self.features, list) else json.loads(self.features) if self.features else [],
+            "duration": self.duration,
+            "destination": self.destination,
+            "ideal_for": self.ideal_for,
+            "gallery_images": self.gallery_images if isinstance(self.gallery_images, list) else json.loads(self.gallery_images) if self.gallery_images else [],
+            "itinerary": self.itinerary if isinstance(self.itinerary, list) else json.loads(self.itinerary) if self.itinerary else [],
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }
