@@ -126,14 +126,14 @@ function initContactForm() {
             });
             
             if (response.ok) {
-                alert('¡Mensaje enviado correctamente! Te contactaremos pronto.');
+                showNotification('¡Mensaje enviado correctamente! Te contactaremos pronto.', 'success');
                 contactForm.reset();
             } else {
                 throw new Error('Error al enviar el mensaje');
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Hubo un error al enviar el mensaje. Por favor intenta nuevamente.');
+            showNotification('Hubo un error al enviar el mensaje. Por favor intenta nuevamente.', 'error');
         }
     });
 }
@@ -283,18 +283,20 @@ function showNotification(message, type = 'success') {
         font-weight: 500;
         z-index: 9999;
         animation: slideInRight 0.3s ease;
-        background: ${type === 'success' ? 'var(--success)' : 'var(--accent-color)'};
+        background: ${type === 'success' ? '#28a745' : '#dc3545'};
     `;
     
     document.body.appendChild(notification);
     
-    // Remover después de 3 segundos
+    // Remover después de 5 segundos
     setTimeout(() => {
         notification.style.animation = 'slideOutRight 0.3s ease';
         setTimeout(() => {
-            document.body.removeChild(notification);
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
         }, 300);
-    }, 3000);
+    }, 5000);
 }
 
 // Animaciones CSS adicionales
