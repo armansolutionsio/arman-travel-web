@@ -6,8 +6,12 @@ from sqlalchemy import create_engine, MetaData
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-# URL de conexión a PostgreSQL
+# URL de conexión a PostgreSQL - Compatible con Render
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://arman_user:arman_password_2024@localhost:5432/arman_travel")
+
+# Render usa postgres:// pero SQLAlchemy 1.4+ requiere postgresql://
+if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 # Motor de SQLAlchemy
 engine = create_engine(DATABASE_URL, echo=False)

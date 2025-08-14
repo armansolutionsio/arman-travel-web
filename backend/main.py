@@ -92,6 +92,13 @@ async def startup():
     print("🚀 Iniciando ARMAN TRAVEL API...")
     if test_connection():
         print("✅ Conexión a PostgreSQL exitosa")
+        
+        # Inicializar base de datos en producción
+        try:
+            from init_db import init_database
+            init_database()
+        except Exception as e:
+            print(f"⚠️ Error al inicializar base de datos: {e}")
     else:
         print("❌ Error de conexión a PostgreSQL")
 
