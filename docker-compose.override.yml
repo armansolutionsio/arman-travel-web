@@ -1,0 +1,33 @@
+# Docker Compose override para desarrollo
+# Este archivo se carga automáticamente junto con docker-compose.yml
+# Úsalo para configuraciones específicas de desarrollo
+
+version: '3.8'
+
+services:
+  api:
+    # Modo de desarrollo con hot reload
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    
+    # Variables de entorno adicionales para desarrollo
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=True
+    
+    # Volúmenes para desarrollo (hot reload)
+    volumes:
+      - ./backend:/app:cached
+      - ./frontend:/app/frontend:cached
+    
+    # Instalar curl para healthcheck
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: development
+    
+  # Deshabilitar nginx en desarrollo (opcional)
+  nginx:
+    # Comentar la siguiente línea para habilitar nginx en desarrollo
+    # profiles: ["production"]
+    ports:
+      - "80:80"
