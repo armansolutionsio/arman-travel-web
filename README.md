@@ -1,252 +1,82 @@
-# ARMAN TRAVEL - Página Web de Agencia de Viajes
+# ARMAN TRAVEL - Agencia de Viajes
 
-Página web completa para la agencia de viajes ARMAN TRAVEL de ARMAN SOLUTIONS, desarrollada con Python (FastAPI) en el backend y HTML/CSS/JavaScript en el frontend.
+Sitio web completo para ARMAN TRAVEL (ARMAN SOLUTIONS) con backend en FastAPI y frontend en HTML/CSS/JavaScript.
 
-## 🚀 Características Principales
+## 🚀 Deployment en Render.com
 
-- **Frontend Moderno**: Diseño responsivo inspirado en myjourney.com.ar con los colores violeta de la marca ARMAN
-- **Backend Robusto**: API REST desarrollada con FastAPI
-- **Panel de Administración**: Sistema completo para gestionar paquetes y ver mensajes de contacto
-- **Base de Datos**: Integración con Supabase para almacenamiento persistente
-- **Autenticación**: Sistema de login seguro para administradores
-- **Responsive**: Adaptable a todos los dispositivos
+### Paso 1: Preparar el repositorio
 
-## 🛠️ Tecnologías Utilizadas
+1. Sube tu código a GitHub (asegúrate de que el `.env` esté en `.gitignore`)
+2. El archivo `render.yaml` ya está configurado
 
-### Frontend
-- HTML5, CSS3, JavaScript (ES6+)
-- Font Awesome para iconos
-- Google Fonts (Poppins)
-- Diseño responsive con CSS Grid y Flexbox
+### Paso 2: Crear servicios en Render
 
-### Backend
-- Python 3.11+
-- FastAPI
-- PostgreSQL nativo con SQLAlchemy
-- JWT para autenticación
-- Bcrypt para hash de passwords
-- Uvicorn como servidor ASGI
+1. Ve a [render.com](https://render.com) y crea una cuenta
+2. Conecta tu repositorio de GitHub
+3. Render detectará automáticamente el `render.yaml`
 
-## 📁 Estructura del Proyecto
+### Paso 3: Configurar variables de entorno
+
+En Render, configura estas variables de entorno:
+
+#### Base de datos (se configura automáticamente)
+- `DATABASE_URL` - Se genera automáticamente con PostgreSQL
+
+#### Email SMTP (opcional pero recomendado)
+- `SMTP_USER=info.armansolutions@gmail.com`
+- `SMTP_PASSWORD=tu_app_password_de_gmail`
+
+#### Seguridad
+- `SECRET_KEY` - Se genera automáticamente
+
+### Paso 4: Deploy
+
+1. Render creará automáticamente:
+   - Un servicio web (la aplicación)
+   - Una base de datos PostgreSQL
+2. La aplicación estará disponible en: `https://tu-app.onrender.com`
+
+## 🔧 Configuración de Gmail para emails
+
+Para que funcione el envío de emails:
+
+1. Ve a tu cuenta de Gmail
+2. Habilita la autenticación en 2 pasos
+3. Genera una "Contraseña de aplicación"
+4. Usa esa contraseña en `SMTP_PASSWORD`
+
+## 📁 Estructura del proyecto
 
 ```
 arman-travel-web/
-├── backend/
-│   ├── main.py              # API principal con FastAPI
-│   ├── database.py          # Configuración PostgreSQL
-│   ├── models.py            # Modelos SQLAlchemy
-│   ├── requirements.txt     # Dependencias de Python
-│   ├── Dockerfile          # Imagen Docker del backend
-│   └── .env                # Variables de entorno
-├── frontend/
-│   ├── index.html          # Página principal
-│   ├── admin.html          # Panel de administración
-│   └── static/
-│       ├── css/
-│       │   ├── style.css   # Estilos principales
-│       │   └── admin.css   # Estilos del panel admin
-│       ├── js/
-│       │   ├── script.js   # JavaScript principal
-│       │   └── admin.js    # JavaScript del panel admin
-│       └── images/
-│           └── logo_arman.PNG
-├── docker-compose.yml       # Configuración principal Docker
-├── docker-compose.override.yml  # Configuración para desarrollo
-├── docker-compose.prod.yml  # Configuración para producción  
-├── nginx.conf              # Configuración de Nginx
-├── .env.example            # Ejemplo de variables de entorno
-├── .dockerignore          # Archivos ignorados por Docker
-├── init-db.sql           # Script de inicialización PostgreSQL
-├── test-api.py            # Script de pruebas de la API
-├── README.md
-└── logo_arman.PNG
+├── backend/           # API FastAPI
+│   ├── main.py       # Aplicación principal
+│   ├── models.py     # Modelos de base de datos
+│   ├── database.py   # Configuración de BD
+│   └── init_db.py    # Inicialización de datos
+├── frontend/         # Frontend estático
+│   ├── index.html    # Página principal
+│   ├── admin.html    # Panel de administración
+│   ├── package-detail.html # Detalle de paquetes
+│   └── static/       # CSS, JS, imágenes
+├── Dockerfile        # Para deployment
+├── render.yaml       # Configuración de Render
+└── .env.example      # Ejemplo de variables de entorno
 ```
 
-## 🔧 Instalación y Configuración
+## 🌟 Características
 
-### 🐳 **Opción 1: Con Docker (Recomendado)**
+- ✅ Página principal con paquetes turísticos
+- ✅ Sistema de detalle de paquetes con URLs limpias
+- ✅ Panel de administración para gestionar paquetes
+- ✅ Formularios de contacto con envío de emails
+- ✅ Integración con WhatsApp
+- ✅ Diseño responsive
+- ✅ Base de datos PostgreSQL
+- ✅ Autenticación JWT para admin
 
-#### 1. Clonar el Repositorio
-```bash
-git clone <url-del-repositorio>
-cd arman-travel-web
-```
+## 📞 Contacto
 
-#### 2. Configurar Variables de Entorno
-```bash
-# Copiar el archivo de ejemplo
-cp .env.example .env
-
-# Las variables de entorno están preconfiguradas para Docker
-# Solo cambia SECRET_KEY en producción
-```
-
-#### 3. La base de datos se configura automáticamente
-PostgreSQL se levanta automáticamente con Docker Compose y se inicializa con datos de ejemplo.
-
-#### 4. Levantar el Proyecto
-```bash
-# Levantar todos los servicios
-docker-compose up
-
-# O en modo detached (segundo plano)
-docker-compose up -d
-
-# Para ver los logs
-docker-compose logs -f
-```
-
-#### 5. Acceder a la Aplicación
-- **Frontend**: `http://localhost:8000` (vía FastAPI)
-- **Nginx** (opcional): `http://localhost` (puerto 80)
-- **Admin Panel**: `http://localhost:8000/admin.html`
-- **PostgreSQL**: `localhost:5432` (usuario: `arman_user`, db: `arman_travel`)
-
-#### 6. Probar la API
-```bash
-# Probar que PostgreSQL funciona correctamente
-python test-api.py
-```
-
-### 💻 **Opción 2: Instalación Manual**
-
-#### 1. Clonar el Repositorio
-```bash
-git clone <url-del-repositorio>
-cd arman-travel-web
-```
-
-#### 2. Configurar el Backend
-```bash
-cd backend
-pip install -r requirements.txt
-
-# Configurar variables de entorno
-cp .env.example .env
-# Editar .env con tus credenciales
-```
-
-#### 3. Configurar PostgreSQL
-1. Instala PostgreSQL localmente
-2. Crea la base de datos: `createdb arman_travel`
-3. Ejecuta el script de inicialización: `psql arman_travel < init-db.sql`
-4. Actualiza DATABASE_URL en el archivo `.env`
-
-#### 4. Ejecutar el Proyecto
-```bash
-# Desde la carpeta backend
-python main.py
-```
-
-El backend estará disponible en `http://localhost:8000`
-
-## 👨‍💼 Panel de Administración
-
-### Acceso
-- URL: `http://localhost:8000/admin.html`
-- Credenciales por defecto:
-  - Usuario: `admin` / Contraseña: `arman123`
-  - Usuario: `arman` / Contraseña: `travel2024`
-
-### Funcionalidades del Admin
-- **Dashboard**: Estadísticas y actividad reciente
-- **Gestión de Paquetes**: Crear, editar y eliminar paquetes de viajes
-- **Mensajes de Contacto**: Ver mensajes enviados por los clientes
-- **Filtros**: Organizar paquetes por categoría (nacional, internacional, aventura, relax)
-
-## 🎨 Personalización de Colores
-
-El sitio web utiliza los colores oficiales de ARMAN basados en el logo:
-- **Violeta Principal**: `#7b4397`
-- **Violeta Oscuro**: `#5a2d70`
-- **Violeta Claro**: `#9b59b6`
-
-Los colores están definidos como variables CSS en `frontend/static/css/style.css` y pueden modificarse fácilmente.
-
-## 🚀 Comandos Docker Útiles
-
-### Desarrollo
-```bash
-# Levantar en modo desarrollo (con hot reload)
-docker-compose up
-
-# Reconstruir las imágenes
-docker-compose build
-
-# Ver logs de un servicio específico
-docker-compose logs api
-docker-compose logs nginx
-
-# Ejecutar comandos dentro del contenedor
-docker-compose exec api bash
-```
-
-### Producción
-```bash
-# Levantar en modo producción
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
-
-# Parar todos los servicios
-docker-compose down
-
-# Parar y eliminar volúmenes
-docker-compose down -v
-```
-
-### Gestión
-```bash
-# Ver estado de los contenedores
-docker-compose ps
-
-# Reiniciar un servicio
-docker-compose restart api
-
-# Eliminar contenedores y redes
-docker-compose down --remove-orphans
-```
-
-## 🚀 Deployment
-
-### Opciones de Deployment
-
-1. **Docker Swarm**: Para clusters de producción
-2. **Kubernetes**: Para orquestación avanzada
-3. **Railway/Render**: Plataformas con soporte Docker nativo
-4. **DigitalOcean App Platform**: Deploy directo con docker-compose
-5. **AWS ECS/Fargate**: Contenedores serverless
-6. **Google Cloud Run**: Contenedores escalables
-
-### Variables de Entorno para Producción
-```env
-SUPABASE_URL=tu_url_de_produccion
-SUPABASE_KEY=tu_clave_de_produccion
-SECRET_KEY=clave_secreta_muy_fuerte_y_larga_para_produccion
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-ENVIRONMENT=production
-```
-
-### Deploy con Docker en Servidor
-```bash
-# En el servidor de producción
-git clone <repo-url>
-cd arman-travel-web
-
-# Configurar variables de entorno
-cp .env.example .env
-nano .env  # Editar con valores de producción
-
-# Levantar en producción
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
-```
-
-## 🔒 Seguridad
-
-- Autenticación JWT para rutas de administrador
-- CORS configurado para el frontend
-- Row Level Security (RLS) en Supabase
-- Validación de datos con Pydantic
-
----
-
-**¡Gracias por elegir ARMAN TRAVEL para crear experiencias de viaje únicas!** ✈️🌍
+- **Email:** info.armansolutions@gmail.com
+- **WhatsApp:** +54 11 3255-1565
+- **Empresa:** ARMAN SOLUTIONS
