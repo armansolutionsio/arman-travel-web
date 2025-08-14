@@ -62,17 +62,54 @@ body {
     color: var(--white);
 }
 
+.admin-logo-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none !important;
+    transition: var(--transition);
+    margin-bottom: 1rem;
+}
+
+.admin-logo-link:hover {
+    transform: translateY(-2px);
+}
+
+.admin-logo-link:hover,
+.admin-logo-link:visited,
+.admin-logo-link:active,
+.admin-logo-link:focus {
+    text-decoration: none !important;
+}
+
+.admin-logo-link * {
+    text-decoration: none !important;
+}
+
 .admin-logo {
     width: 50px;
     height: 50px;
     border-radius: 10px;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 }
 
 .sidebar-header h2 {
     font-size: 1.3rem;
     font-weight: 600;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.2rem;
+    color: var(--white);
+    text-align: center;
+    text-decoration: none !important;
+}
+
+.admin-subtitle {
+    font-size: 0.6rem;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.7);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    text-align: center;
+    text-decoration: none !important;
 }
 
 .sidebar-header p {
