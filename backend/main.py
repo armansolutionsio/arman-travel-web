@@ -14,6 +14,10 @@ from sqlalchemy import create_engine
 from database import get_db, test_connection, engine
 from models import Package, ContactMessage, Base
 import json
+import smtplib
+import ssl
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 # Configuración
 app = FastAPI(title="ARMAN TRAVEL API", version="2.0.0")
@@ -34,6 +38,13 @@ Base.metadata.create_all(bind=engine)
 SECRET_KEY = os.getenv("SECRET_KEY", "arman-secret-key-super-secure-2024")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
+
+# Configuración de email
+SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USER = os.getenv("SMTP_USER", "info.armansolutions@gmail.com")  
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")  # Se configura en variables de entorno
+RECIPIENT_EMAIL = "info.armansolutions@gmail.com"
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
@@ -129,6 +140,42 @@ def verify_admin_credentials(username: str, password: str):
     }
     return admin_users.get(username) == password
 
+# Función para enviar emails
+async def send_email(subject: str, body: str, sender_name: str = "ARMAN TRAVEL", sender_email: str = ""):
+    """
+    Envía un email usando Gmail SMTP
+    """
+    try:
+        # Crear mensaje
+        message = MIMEMultipart()
+        message["From"] = f"{sender_name} <{SMTP_USER}>"
+        message["To"] = RECIPIENT_EMAIL
+        message["Subject"] = subject
+        
+        # Agregar cuerpo del mensaje
+        message.attach(MIMEText(body, "plain", "utf-8"))
+        
+        # Solo intentar enviar si hay contraseña configurada
+        if SMTP_PASSWORD:
+            # Crear conexión SMTP segura
+            context = ssl.create_default_context()
+            with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+                server.starttls(context=context)
+                server.login(SMTP_USER, SMTP_PASSWORD)
+                server.send_message(message)
+            
+            print(f"✅ Email enviado correctamente a {RECIPIENT_EMAIL}")
+        else:
+            print(f"⚠️ Email NO enviado - configuración SMTP no disponible")
+            print(f"📧 Contenido del email:")
+            print(f"Asunto: {subject}")
+            print(f"Destinatario: {RECIPIENT_EMAIL}")
+            print(f"Mensaje:\n{body}")
+            
+    except Exception as e:
+        print(f"❌ Error al enviar email: {e}")
+        # No lanzamos excepción para no romper el flujo principal
+
 # Servir archivos estáticos
 frontend_dir = "frontend" if os.path.exists("frontend") else "../frontend"
 app.mount("/static", StaticFiles(directory=f"{frontend_dir}/static"), name="static")
@@ -174,6 +221,26 @@ async def contact_message(message: ContactMessageCreate, db: Session = Depends(g
         db.add(db_message)
         db.commit()
         db.refresh(db_message)
+        
+        # Enviar email de notificación
+        subject = f"Nueva consulta de {message.name} - ARMAN TRAVEL"
+        email_body = f"""
+Nueva consulta recibida en ARMAN TRAVEL
+
+Datos del cliente:
+• Nombre: {message.name}
+• Email: {message.email}
+• Teléfono: {message.phone or 'No proporcionado'}
+
+Mensaje:
+{message.message}
+
+---
+Enviado desde el sitio web de ARMAN TRAVEL
+Fecha: {datetime.utcnow().strftime('%d/%m/%Y %H:%M:%S')} UTC
+        """
+        
+        await send_email(subject, email_body.strip(), message.name, message.email)
         
         return {"message": "Mensaje enviado correctamente"}
             

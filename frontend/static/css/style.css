@@ -180,7 +180,7 @@ body {
     min-height: 100vh;
     display: flex;
     align-items: center;
-    padding: 100px 0 50px;
+    padding: 130px 0 50px;
     background: linear-gradient(135deg, var(--light-gray) 0%, rgba(123, 67, 151, 0.05) 100%);
 }
 
