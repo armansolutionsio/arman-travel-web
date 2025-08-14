@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - ARMAN TRAVEL</title>
+    <link rel="stylesheet" href="static/css/admin.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <img src="static/images/logo_arman.PNG" alt="ARMAN TRAVEL" class="admin-logo">
+                <h2>ARMAN TRAVEL</h2>
+                <p>Panel Admin</p>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li class="menu-item active">
+                    <a href="#" data-section="dashboard" class="menu-link">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="#" data-section="packages" class="menu-link">
+                        <i class="fas fa-suitcase-rolling"></i>
+                        <span>Paquetes</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="#" data-section="messages" class="menu-link">
+                        <i class="fas fa-envelope"></i>
+                        <span>Mensajes</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="#" id="logoutBtn" class="menu-link logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Cerrar Sesión</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Dashboard</h1>
+                </div>
+                <div class="header-right">
+                    <div class="admin-user">
+                        <i class="fas fa-user-circle"></i>
+                        <span id="adminUsername">Administrador</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="content-section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-suitcase-rolling"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalPackages">0</h3>
+                            <p>Paquetes Totales</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalMessages">0</h3>
+                            <p>Mensajes Recibidos</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="internationalPackages">0</h3>
+                            <p>Paquetes Internacionales</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-map-marked-alt"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="nationalPackages">0</h3>
+                            <p>Paquetes Nacionales</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="recent-activity">
+                    <h3>Actividad Reciente</h3>
+                    <div class="activity-list" id="recentActivity">
+                        <!-- Se llenará con JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Packages Section -->
+            <section id="packages" class="content-section">
+                <div class="section-header">
+                    <h2>Gestión de Paquetes</h2>
+                    <button class="btn btn-primary" id="addPackageBtn">
+                        <i class="fas fa-plus"></i>
+                        Agregar Paquete
+                    </button>
+                </div>
+
+                <div class="packages-table">
+                    <table id="packagesTable">
+                        <thead>
+                            <tr>
+                                <th>Imagen</th>
+                                <th>Título</th>
+                                <th>Categoría</th>
+                                <th>Precio</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Se llenará con JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Messages Section -->
+            <section id="messages" class="content-section">
+                <div class="section-header">
+                    <h2>Mensajes de Contacto</h2>
+                    <button class="btn btn-secondary" id="refreshMessagesBtn">
+                        <i class="fas fa-sync-alt"></i>
+                        Actualizar
+                    </button>
+                </div>
+
+                <div class="messages-list" id="messagesList">
+                    <!-- Se llenará con JavaScript -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Package Modal -->
+    <div id="packageModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Agregar Paquete</h3>
+                <span class="close" id="closeModal">&times;</span>
+            </div>
+            
+            <form id="packageForm" class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="title">Título *</label>
+                        <input type="text" id="title" name="title" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="category">Categoría *</label>
+                        <select id="category" name="category" required>
+                            <option value="">Seleccionar categoría</option>
+                            <option value="nacional">Nacional</option>
+                            <option value="internacional">Internacional</option>
+                            <option value="aventura">Aventura</option>
+                            <option value="relax">Relax</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="price">Precio *</label>
+                        <input type="text" id="price" name="price" placeholder="ej: $50.000 o USD 500" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="image">URL de Imagen *</label>
+                        <input type="url" id="image" name="image" placeholder="https://..." required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Descripción *</label>
+                    <textarea id="description" name="description" rows="3" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="features">Características (una por línea) *</label>
+                    <textarea id="features" name="features" rows="4" placeholder="3 días / 2 noches&#10;Desayuno incluido&#10;City tour" required></textarea>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <span id="submitBtnText">Guardar Paquete</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Cargando...</p>
+        </div>
+    </div>
+
+    <script src="static/js/admin.js"></script>
+</body>
+</html>
