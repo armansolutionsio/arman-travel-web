@@ -44,7 +44,11 @@ SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USER = os.getenv("SMTP_USER", "info.armansolutions@gmail.com")  
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")  # Se configura en variables de entorno
-RECIPIENT_EMAIL = "info.armansolutions@gmail.com"
+RECIPIENT_EMAIL = os.getenv("CONTACT_EMAIL", "info.armansolutions@gmail.com")
+
+# Configuración de contacto
+CONTACT_EMAIL = os.getenv("CONTACT_EMAIL", "info.armansolutions@gmail.com")
+WHATSAPP_NUMBER = os.getenv("WHATSAPP_NUMBER", "5491132551565")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
@@ -389,6 +393,15 @@ async def get_contact_messages(username: str = Depends(verify_token), db: Sessio
 @app.get("/health")
 async def health_check():
     return {"status": "OK", "message": "ARMAN TRAVEL API funcionando correctamente", "database": "PostgreSQL"}
+
+@app.get("/config/contact")
+async def get_contact_config():
+    """Endpoint para obtener la configuración de contacto"""
+    return {
+        "email": CONTACT_EMAIL,
+        "whatsapp": WHATSAPP_NUMBER,
+        "whatsapp_url": f"https://wa.me/{WHATSAPP_NUMBER}"
+    }
 
 @app.get("/debug")
 async def debug_files():
