@@ -3,11 +3,14 @@ const API_BASE_URL = window.location.protocol + '//' + window.location.host;
 let currentPackage = null;
 let allPackages = [];
 let config = { whatsapp_number: '1132551565', recipient_email: 'info.armansolutions@gmail.com' };
+let contactConfig = {};
+
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', function() {
     loadConfig();
     initNavigation();
+    loadContactConfig();
     loadPackageDetail();
     loadAllPackages();
     initReservationForm();
@@ -294,6 +297,39 @@ function displayItinerary(itinerary) {
             </div>
         </div>
     `).join('');
+}
+
+// Cargar configuración de contacto
+async function loadContactConfig() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/config/contact`);
+        if (response.ok) {
+            contactConfig = await response.json();
+            updateContactInfo();
+        } else {
+            console.error('Error al cargar configuración de contacto');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+// Actualizar información de contacto en el DOM
+function updateContactInfo() {
+    // Actualizar enlaces de WhatsApp
+    const whatsappLinks = document.querySelectorAll('a[href*="wa.me"]');
+    whatsappLinks.forEach(link => {
+        link.href = contactConfig.whatsapp_url || `https://wa.me/${contactConfig.whatsapp}`;
+    });
+
+    // Actualizar enlaces de email
+    const emailLinks = document.querySelectorAll('a[href*="mailto:"]');
+    emailLinks.forEach(link => {
+        link.href = `mailto:${contactConfig.email}`;
+        if (link.textContent.includes('@')) {
+            link.textContent = contactConfig.email;
+        }
+    });
 }
 
 // Cargar todos los paquetes para sugerencias

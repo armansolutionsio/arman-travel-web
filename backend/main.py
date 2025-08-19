@@ -49,10 +49,8 @@ SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USER = os.getenv("SMTP_USER", "info.armansolutions@gmail.com")  
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")  # Se configura en variables de entorno
-RECIPIENT_EMAIL = os.getenv("RECIPIENT_EMAIL", "info.armansolutions@gmail.com")
 
-# Configuración de contacto
-WHATSAPP_NUMBER = os.getenv("WHATSAPP_NUMBER", "1132551565")
+RECIPIENT_EMAIL = os.getenv("RECIPIENT_EMAIL", "info.armansolutions@gmail.com")
 
 # Configuración de Cloudinary
 cloudinary.config(
@@ -66,6 +64,11 @@ cloudinary.config(
 UPLOAD_DIR = "frontend/static/uploads"
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".jfif", ".bmp"}
+
+# Configuración de contacto
+CONTACT_EMAIL = os.getenv("CONTACT_EMAIL", "info.armansolutions@gmail.com")
+WHATSAPP_NUMBER = os.getenv("WHATSAPP_NUMBER", "5491132551565")
+
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
@@ -489,6 +492,15 @@ async def get_config():
             os.getenv("CLOUDINARY_API_KEY") and 
             os.getenv("CLOUDINARY_API_SECRET")
         )
+
+@app.get("/config/contact")
+async def get_contact_config():
+    """Endpoint para obtener la configuración de contacto"""
+    return {
+        "email": CONTACT_EMAIL,
+        "whatsapp": WHATSAPP_NUMBER,
+        "whatsapp_url": f"https://wa.me/{WHATSAPP_NUMBER}"
+
     }
 
 @app.get("/debug")
