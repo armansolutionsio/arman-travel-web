@@ -2,16 +2,50 @@
 const API_BASE_URL = window.location.protocol + '//' + window.location.host;
 let currentPackage = null;
 let allPackages = [];
+let config = { whatsapp_number: '1132551565', recipient_email: 'info.armansolutions@gmail.com' };
 let contactConfig = {};
+
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', function() {
+    loadConfig();
     initNavigation();
     loadContactConfig();
     loadPackageDetail();
     loadAllPackages();
     initReservationForm();
 });
+
+// Cargar configuración desde el backend
+async function loadConfig() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/config`);
+        if (response.ok) {
+            config = await response.json();
+            updateContactInfo();
+        }
+    } catch (error) {
+        console.log('Usando configuración por defecto');
+    }
+}
+
+// Actualizar información de contacto en la página
+function updateContactInfo() {
+    // Actualizar enlaces de WhatsApp
+    document.querySelectorAll('a[href*="wa.me"]').forEach(link => {
+        link.href = `https://wa.me/${config.whatsapp_number}`;
+    });
+    
+    // Actualizar números mostrados
+    document.querySelectorAll('.whatsapp-number').forEach(element => {
+        element.textContent = config.whatsapp_number;
+    });
+    
+    // Actualizar emails mostrados
+    document.querySelectorAll('.contact-email').forEach(element => {
+        element.textContent = config.recipient_email;
+    });
+}
 
 // Navegación móvil (reutilizado del script principal)
 function initNavigation() {
@@ -176,24 +210,71 @@ function displayFeatures(features) {
 }
 
 // Mostrar galería
-function displayGallery(galleryImages, mainImage, title) {
+async function displayGallery(galleryImages, mainImage, title) {
     const galleryContainer = document.getElementById('packageGallery');
     
-    // Si no hay galería, usar imagen principal
-    let images = galleryImages && galleryImages.length > 0 ? galleryImages : [mainImage];
+    // Intentar cargar galería real desde la base de datos
+    let realGalleryImages = [];
+    if (currentPackage && currentPackage.id) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/packages/${currentPackage.id}/gallery`);
+            if (response.ok) {
+                realGalleryImages = await response.json();
+            }
+        } catch (error) {
+            console.log('No se pudo cargar galería desde BD:', error);
+        }
+    }
     
-    // Agregar algunas imágenes de ejemplo si no hay galería
-    if (images.length === 1) {
-        images = [
-            mainImage,
-            'https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-            'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-            'https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80'
-        ];
+    let images = [];
+    
+    if (realGalleryImages.length > 0) {
+        // Usar imágenes reales de la galería
+        images = realGalleryImages.map(img => ({
+            url: img.image_url,
+            caption: img.caption || `${title} - Imagen`,
+            isCover: img.is_cover
+        }));
+        
+        // Ordenar por cover primero, luego por orden
+        images.sort((a, b) => {
+            if (a.isCover && !b.isCover) return -1;
+            if (!a.isCover && b.isCover) return 1;
+            return 0;
+        });
+    } else if (galleryImages && galleryImages.length > 0) {
+        // Usar imágenes del campo JSON legacy
+        images = galleryImages.map((image, index) => ({
+            url: image,
+            caption: `${title} - Imagen ${index + 1}`,
+            isCover: false
+        }));
+    } else {
+        // Solo imagen principal disponible
+        images = [{
+            url: mainImage,
+            caption: `${title} - Imagen principal`,
+            isCover: true
+        }];
+    }
+
+    // Asegurar que siempre tenemos al menos la imagen principal
+    if (images.length === 0 || !images.find(img => img.url === mainImage)) {
+        images.unshift({
+            url: mainImage,
+            caption: `${title} - Imagen principal`,
+            isCover: true
+        });
     }
 
     galleryContainer.innerHTML = images.map((image, index) => `
-        <img src="${image}" alt="${title} - Imagen ${index + 1}" class="gallery-image" onclick="openImageModal('${image}')">
+        <div class="gallery-image-wrapper">
+            <img src="${image.url}" 
+                 alt="${image.caption}" 
+                 class="gallery-image ${image.isCover ? 'cover-image' : ''}" 
+                 onclick="openImageModal('${image.url}', '${image.caption}')"
+                 onerror="this.style.display='none'">
+        </div>
     `).join('');
 }
 
@@ -464,7 +545,7 @@ function showNotification(message, type = 'success') {
     }, 5000);
 }
 
-function openImageModal(imageSrc) {
+function openImageModal(imageSrc, caption = '') {
     // Crear modal simple para imagen
     const modal = document.createElement('div');
     modal.className = 'image-modal';
@@ -478,6 +559,7 @@ function openImageModal(imageSrc) {
         display: flex;
         align-items: center;
         justify-content: center;
+        flex-direction: column;
         z-index: 9999;
         cursor: pointer;
     `;
@@ -486,12 +568,30 @@ function openImageModal(imageSrc) {
     img.src = imageSrc;
     img.style.cssText = `
         max-width: 90%;
-        max-height: 90%;
+        max-height: 80%;
         object-fit: contain;
         border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     `;
     
     modal.appendChild(img);
+    
+    if (caption) {
+        const captionEl = document.createElement('div');
+        captionEl.textContent = caption;
+        captionEl.style.cssText = `
+            color: white;
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 1.1rem;
+            padding: 0.5rem 1rem;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+            max-width: 80%;
+        `;
+        modal.appendChild(captionEl);
+    }
+    
     document.body.appendChild(modal);
     
     // Cerrar modal al hacer click

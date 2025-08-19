@@ -549,6 +549,7 @@ function openPackageModal(packageId = null) {
     const modalTitle = document.getElementById('modalTitle');
     const form = document.getElementById('packageForm');
     const submitBtn = document.getElementById('submitBtnText');
+    const gallerySection = document.getElementById('gallerySection');
 
     currentPackageId = packageId;
 
@@ -566,14 +567,32 @@ function openPackageModal(packageId = null) {
             document.getElementById('image').value = package.image;
             document.getElementById('category').value = package.category;
             document.getElementById('features').value = package.features.join('\n');
+            
+            // Llenar campos adicionales
+            document.getElementById('duration').value = package.duration || '';
+            document.getElementById('destination').value = package.destination || '';
+            document.getElementById('idealFor').value = package.ideal_for || '';
+            
+            // Mostrar sección de galería y cargarla
+            gallerySection.style.display = 'block';
+            loadPackageGallery(packageId);
         }
     } else {
         // Crear nuevo paquete
         modalTitle.textContent = 'Agregar Paquete';
         submitBtn.textContent = 'Guardar Paquete';
         form.reset();
+        
+        // Ocultar sección de galería para paquetes nuevos
+        gallerySection.style.display = 'none';
     }
 
+    // Inicializar manejadores de galería
+    initializeGalleryHandlers();
+    
+    // Inicializar manejadores de imagen de portada
+    initializeCoverImageHandlers();
+    
     modal.style.display = 'block';
 }
 
@@ -618,6 +637,13 @@ async function deletePackage(id) {
 async function handlePackageSubmit(e) {
     e.preventDefault();
     
+    // Validar que haya una imagen (URL o subida)
+    const imageValue = document.getElementById('image').value.trim();
+    if (!imageValue) {
+        showNotification('Debes proporcionar una URL de imagen o subir un archivo', 'error');
+        return;
+    }
+    
     const formData = new FormData(e.target);
     const packageData = {
         title: formData.get('title'),
@@ -625,7 +651,10 @@ async function handlePackageSubmit(e) {
         price: formData.get('price'),
         image: formData.get('image'),
         category: formData.get('category'),
-        features: formData.get('features').split('\n').filter(f => f.trim())
+        features: formData.get('features').split('\n').filter(f => f.trim()),
+        duration: formData.get('duration') || null,
+        destination: formData.get('destination') || null,
+        ideal_for: formData.get('idealFor') || null
     };
 
     try {
@@ -762,3 +791,596 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// === FUNCIONES PARA GESTIÓN DE GALERÍA ===
+
+// Inicializar manejadores de galería
+function initializeGalleryHandlers() {
+    // Botones principales
+    const addImageUrlBtn = document.getElementById('addImageUrlBtn');
+    const addImageFileBtn = document.getElementById('addImageFileBtn');
+    const uploadZone = document.getElementById('uploadZone');
+    const fileInput = document.getElementById('fileInput');
+    const addUrlImageBtn = document.getElementById('addUrlImageBtn');
+    const cancelUrlBtn = document.getElementById('cancelUrlBtn');
+
+    // Limpiar event listeners previos
+    if (addImageUrlBtn) {
+        addImageUrlBtn.replaceWith(addImageUrlBtn.cloneNode(true));
+        document.getElementById('addImageUrlBtn').addEventListener('click', showUrlInput);
+    }
+    
+    if (addImageFileBtn) {
+        addImageFileBtn.replaceWith(addImageFileBtn.cloneNode(true));
+        document.getElementById('addImageFileBtn').addEventListener('click', showFileUpload);
+    }
+
+    // Upload zone
+    if (uploadZone) {
+        uploadZone.replaceWith(uploadZone.cloneNode(true));
+        const newUploadZone = document.getElementById('uploadZone');
+        newUploadZone.addEventListener('click', () => document.getElementById('fileInput').click());
+        
+        // Drag & Drop
+        newUploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            newUploadZone.classList.add('dragover');
+        });
+        
+        newUploadZone.addEventListener('dragleave', () => {
+            newUploadZone.classList.remove('dragover');
+        });
+        
+        newUploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            newUploadZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            handleFileUpload(files);
+        });
+    }
+
+    // File input
+    if (fileInput) {
+        fileInput.replaceWith(fileInput.cloneNode(true));
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            handleFileUpload(e.target.files);
+        });
+    }
+
+    // Botones de URL
+    if (addUrlImageBtn) {
+        addUrlImageBtn.replaceWith(addUrlImageBtn.cloneNode(true));
+        document.getElementById('addUrlImageBtn').addEventListener('click', addImageByUrl);
+    }
+    
+    if (cancelUrlBtn) {
+        cancelUrlBtn.replaceWith(cancelUrlBtn.cloneNode(true));
+        document.getElementById('cancelUrlBtn').addEventListener('click', hideUrlInput);
+    }
+}
+
+// Cargar galería de un paquete
+async function loadPackageGallery(packageId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/packages/${packageId}/gallery`);
+        if (response.ok) {
+            const galleryImages = await response.json();
+            
+            // Si no hay imágenes en galería, crear una entrada para la imagen principal
+            if (galleryImages.length === 0) {
+                await createMainImageInGallery(packageId);
+                // Recargar después de crear
+                const retryResponse = await fetch(`${API_BASE_URL}/packages/${packageId}/gallery`);
+                if (retryResponse.ok) {
+                    const retryGalleryImages = await retryResponse.json();
+                    displayGallery(retryGalleryImages);
+                } else {
+                    displayGallery([]);
+                }
+            } else {
+                displayGallery(galleryImages);
+            }
+        } else {
+            displayGallery([]);
+        }
+    } catch (error) {
+        console.error('Error cargando galería:', error);
+        displayGallery([]);
+    }
+}
+
+// Mostrar galería
+function displayGallery(images) {
+    const galleryManagement = document.getElementById('galleryManagement');
+    
+    if (images.length === 0) {
+        galleryManagement.innerHTML = `
+            <div class="gallery-empty">
+                <i class="fas fa-images"></i>
+                <p>No hay imágenes en la galería</p>
+            </div>
+        `;
+        return;
+    }
+
+    const galleryGrid = images.map(image => `
+        <div class="gallery-item" data-image-id="${image.id}">
+            <img src="${image.image_url}" alt="${image.caption || 'Imagen'}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%2280%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23f0f0f0%22/><text x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 fill=%22%23999%22 font-size=%2212%22>Error</text></svg>'">
+            <div class="gallery-item-info">
+                <div class="gallery-item-caption" onclick="event.stopPropagation(); editGalleryImageCaption(${image.id}, '${(image.caption || '').replace(/'/g, "\\'")}')}" title="Click para editar descripción">${image.caption || 'Sin descripción'}</div>
+                <div class="gallery-item-actions">
+                    <button type="button" class="btn-edit" onclick="event.stopPropagation(); editGalleryImageCaption(${image.id}, '${(image.caption || '').replace(/'/g, "\\'")}');" title="Editar descripción">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    ${!image.is_cover ? `
+                        <button type="button" class="btn-cover" onclick="event.stopPropagation(); setCoverImage(${image.id});" title="Marcar como principal">
+                            <i class="fas fa-star"></i>
+                        </button>
+                    ` : ''}
+                    <button type="button" class="btn-delete" onclick="event.stopPropagation(); deleteGalleryImage(${image.id});" title="Eliminar">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+
+    galleryManagement.innerHTML = `<div class="gallery-grid">${galleryGrid}</div>`;
+}
+
+// Mostrar input de URL
+function showUrlInput() {
+    document.getElementById('urlInput').style.display = 'block';
+    document.getElementById('uploadArea').style.display = 'none';
+    document.getElementById('imageUrl').focus();
+}
+
+// Ocultar input de URL
+function hideUrlInput() {
+    document.getElementById('urlInput').style.display = 'none';
+    document.getElementById('imageUrl').value = '';
+    document.getElementById('imageCaption').value = '';
+}
+
+// Mostrar área de subida de archivos
+function showFileUpload() {
+    document.getElementById('uploadArea').style.display = 'block';
+    document.getElementById('urlInput').style.display = 'none';
+}
+
+// Agregar imagen por URL
+async function addImageByUrl() {
+    const imageUrl = document.getElementById('imageUrl').value.trim();
+    const caption = document.getElementById('imageCaption').value.trim();
+    
+    if (!imageUrl) {
+        showGalleryNotification('Por favor ingresa una URL', 'error');
+        return;
+    }
+
+    try {
+        const token = localStorage.getItem('admin_token');
+        const response = await fetch(`${API_BASE_URL}/admin/packages/${currentPackageId}/gallery/url`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                image_url: imageUrl,
+                caption: caption || null
+            })
+        });
+
+        if (response.ok) {
+            showGalleryNotification('Imagen agregada correctamente', 'success');
+            hideUrlInput();
+            loadPackageGallery(currentPackageId);
+        } else {
+            throw new Error('Error al agregar imagen');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showGalleryNotification('Error al agregar imagen por URL', 'error');
+    }
+}
+
+// Manejar subida de archivos
+async function handleFileUpload(files) {
+    if (!files || files.length === 0) return;
+
+    const token = localStorage.getItem('admin_token');
+    const uploadProgress = document.getElementById('uploadProgress');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+
+    uploadProgress.style.display = 'block';
+
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        
+        // Validar archivo
+        if (!file.type.startsWith('image/')) {
+            showGalleryNotification(`${file.name} no es un archivo de imagen válido`, 'error');
+            continue;
+        }
+
+        if (file.size > 5 * 1024 * 1024) { // 5MB
+            showGalleryNotification(`${file.name} es muy grande (máximo 5MB)`, 'error');
+            continue;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('caption', file.name.replace(/\.[^/.]+$/, ""));
+
+            // Actualizar progreso
+            const progress = ((i + 1) / files.length) * 100;
+            progressFill.style.width = progress + '%';
+            progressText.textContent = `${Math.round(progress)}% (${i + 1}/${files.length})`;
+
+            const response = await fetch(`${API_BASE_URL}/admin/packages/${currentPackageId}/gallery/upload`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error al subir ${file.name}`);
+            }
+
+        } catch (error) {
+            console.error('Error subiendo archivo:', error);
+            showGalleryNotification(`Error al subir ${file.name}`, 'error');
+        }
+    }
+
+    // Ocultar progreso y recargar galería
+    setTimeout(() => {
+        uploadProgress.style.display = 'none';
+        progressFill.style.width = '0%';
+        progressText.textContent = '0%';
+        loadPackageGallery(currentPackageId);
+        showGalleryNotification('Imágenes subidas a Cloudinary correctamente', 'success');
+    }, 500);
+}
+
+// Editar descripción de imagen de galería
+function editGalleryImageCaption(imageId, currentCaption = '') {
+    const caption = prompt('Descripción de la imagen:', currentCaption);
+    if (caption === null) return; // Usuario canceló
+
+    updateGalleryImage(imageId, { caption: caption.trim() || null });
+}
+
+// Marcar como imagen principal
+async function setCoverImage(imageId) {
+    if (!confirm('¿Marcar esta imagen como principal?')) return;
+
+    await updateGalleryImage(imageId, { is_cover: 1 });
+}
+
+// Actualizar imagen de galería
+async function updateGalleryImage(imageId, data) {
+    try {
+        const token = localStorage.getItem('admin_token');
+        const response = await fetch(`${API_BASE_URL}/admin/packages/${currentPackageId}/gallery/${imageId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            showGalleryNotification('Imagen actualizada correctamente', 'success');
+            loadPackageGallery(currentPackageId);
+        } else {
+            throw new Error('Error al actualizar imagen');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showGalleryNotification('Error al actualizar imagen', 'error');
+    }
+}
+
+// Eliminar imagen de galería
+async function deleteGalleryImage(imageId) {
+    if (!confirm('¿Eliminar esta imagen de la galería?')) return;
+
+    try {
+        const token = localStorage.getItem('admin_token');
+        const response = await fetch(`${API_BASE_URL}/admin/packages/${currentPackageId}/gallery/${imageId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            showGalleryNotification('Imagen eliminada correctamente', 'success');
+            loadPackageGallery(currentPackageId);
+        } else {
+            throw new Error('Error al eliminar imagen');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showGalleryNotification('Error al eliminar imagen', 'error');
+    }
+}
+
+// Mostrar notificación específica para galería
+function showGalleryNotification(message, type = 'success') {
+    const notification = document.createElement('div');
+    notification.className = `gallery-notification ${type}`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    // Mostrar
+    setTimeout(() => notification.classList.add('show'), 100);
+    
+    // Ocultar
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// === FUNCIONES PARA IMAGEN DE PORTADA ===
+
+// Inicializar manejadores de imagen de portada
+function initializeCoverImageHandlers() {
+    const uploadCoverBtn = document.getElementById('uploadCoverImageBtn');
+    const coverUploadArea = document.getElementById('coverUploadArea');
+    const coverUploadZone = document.getElementById('coverUploadZone');
+    const coverFileInput = document.getElementById('coverFileInput');
+    const imageInput = document.getElementById('image');
+    const removeCoverPreview = document.getElementById('removeCoverPreview');
+
+    // Limpiar event listeners previos
+    if (uploadCoverBtn) {
+        uploadCoverBtn.replaceWith(uploadCoverBtn.cloneNode(true));
+        document.getElementById('uploadCoverImageBtn').addEventListener('click', toggleCoverUploadArea);
+    }
+
+    // Upload zone
+    if (coverUploadZone) {
+        coverUploadZone.replaceWith(coverUploadZone.cloneNode(true));
+        const newCoverUploadZone = document.getElementById('coverUploadZone');
+        newCoverUploadZone.addEventListener('click', () => document.getElementById('coverFileInput').click());
+        
+        // Drag & Drop para imagen de portada
+        newCoverUploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            newCoverUploadZone.classList.add('dragover');
+        });
+        
+        newCoverUploadZone.addEventListener('dragleave', () => {
+            newCoverUploadZone.classList.remove('dragover');
+        });
+        
+        newCoverUploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            newCoverUploadZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleCoverImageUpload(files[0]);
+            }
+        });
+    }
+
+    // File input para imagen de portada
+    if (coverFileInput) {
+        coverFileInput.replaceWith(coverFileInput.cloneNode(true));
+        document.getElementById('coverFileInput').addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleCoverImageUpload(e.target.files[0]);
+            }
+        });
+    }
+
+    // Actualizar preview cuando cambie la URL manualmente
+    if (imageInput) {
+        imageInput.addEventListener('input', updateCoverImagePreview);
+        imageInput.addEventListener('blur', updateCoverImagePreview);
+    }
+
+    // Botón para quitar preview
+    if (removeCoverPreview) {
+        removeCoverPreview.replaceWith(removeCoverPreview.cloneNode(true));
+        document.getElementById('removeCoverPreview').addEventListener('click', removeCoverImagePreview);
+    }
+
+    // Inicializar preview si ya hay una URL
+    updateCoverImagePreview();
+}
+
+// Mostrar/ocultar área de subida de portada
+function toggleCoverUploadArea() {
+    const coverUploadArea = document.getElementById('coverUploadArea');
+    const isVisible = coverUploadArea.style.display !== 'none';
+    
+    coverUploadArea.style.display = isVisible ? 'none' : 'block';
+    
+    if (!isVisible) {
+        // Reset file input
+        document.getElementById('coverFileInput').value = '';
+    }
+}
+
+// Manejar subida de imagen de portada
+async function handleCoverImageUpload(file) {
+    if (!file) return;
+
+    // Validar archivo
+    if (!file.type.startsWith('image/')) {
+        showGalleryNotification('El archivo debe ser una imagen', 'error');
+        return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) { // 5MB
+        showGalleryNotification('El archivo es muy grande (máximo 5MB)', 'error');
+        return;
+    }
+
+    const token = localStorage.getItem('admin_token');
+    const coverUploadProgress = document.getElementById('coverUploadProgress');
+    const coverProgressFill = document.getElementById('coverProgressFill');
+    const coverProgressText = document.getElementById('coverProgressText');
+
+    try {
+        // Mostrar progreso
+        coverUploadProgress.style.display = 'block';
+        
+        // Temporalmente indicar que se está subiendo en el campo de URL
+        const imageInput = document.getElementById('image');
+        const originalPlaceholder = imageInput.placeholder;
+        imageInput.placeholder = 'Subiendo imagen...';
+        
+        const formData = new FormData();
+        formData.append('file', file);
+
+        // Simular progreso
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            progress += 10;
+            if (progress <= 90) {
+                coverProgressFill.style.width = progress + '%';
+                coverProgressText.textContent = progress + '%';
+            }
+        }, 100);
+
+        const response = await fetch(`${API_BASE_URL}/admin/upload-cover-image`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+
+        clearInterval(progressInterval);
+
+        if (response.ok) {
+            const result = await response.json();
+            
+            // Completar progreso
+            coverProgressFill.style.width = '100%';
+            coverProgressText.textContent = '100%';
+            
+            // Actualizar campo de URL con la imagen subida
+            const imageInput = document.getElementById('image');
+            imageInput.value = result.image_url;
+            
+            // Quitar cualquier estado de error de validación
+            imageInput.setCustomValidity('');
+            imageInput.classList.remove('error');
+            
+            // Actualizar preview
+            updateCoverImagePreview();
+            
+            // Restaurar placeholder
+            imageInput.placeholder = originalPlaceholder;
+            
+            // Ocultar área de upload
+            setTimeout(() => {
+                document.getElementById('coverUploadArea').style.display = 'none';
+                coverUploadProgress.style.display = 'none';
+                coverProgressFill.style.width = '0%';
+                coverProgressText.textContent = '0%';
+            }, 1000);
+            
+            // Mostrar mensaje apropiado según donde se guardó
+            const message = result.image_url.includes('cloudinary.com') 
+                ? 'Imagen subida a Cloudinary correctamente' 
+                : 'Imagen subida localmente correctamente';
+            showGalleryNotification(message, 'success');
+        } else {
+            throw new Error('Error al subir imagen');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showGalleryNotification('Error al subir imagen de portada', 'error');
+        
+        // Restaurar placeholder
+        const imageInput = document.getElementById('image');
+        imageInput.placeholder = 'https://... o sube una imagen';
+        
+        // Ocultar progreso
+        coverUploadProgress.style.display = 'none';
+        coverProgressFill.style.width = '0%';
+        coverProgressText.textContent = '0%';
+    }
+}
+
+// Actualizar preview de imagen de portada
+function updateCoverImagePreview() {
+    const imageInput = document.getElementById('image');
+    const coverImagePreview = document.getElementById('coverImagePreview');
+    const coverPreviewImg = document.getElementById('coverPreviewImg');
+    
+    const imageUrl = imageInput.value.trim();
+    
+    if (imageUrl && (imageUrl.startsWith('http') || imageUrl.startsWith('/static'))) {
+        coverPreviewImg.src = imageUrl;
+        coverImagePreview.style.display = 'block';
+        
+        // Manejar error de carga de imagen
+        coverPreviewImg.onerror = () => {
+            coverImagePreview.style.display = 'none';
+        };
+    } else {
+        coverImagePreview.style.display = 'none';
+    }
+}
+
+// Quitar preview de imagen de portada
+function removeCoverImagePreview() {
+    document.getElementById('image').value = '';
+    document.getElementById('coverImagePreview').style.display = 'none';
+    
+    // También ocultar área de upload si está visible
+    document.getElementById('coverUploadArea').style.display = 'none';
+}
+
+// Crear entrada en galería para imagen principal
+async function createMainImageInGallery(packageId) {
+    try {
+        // Obtener datos del paquete para conseguir la imagen principal
+        const packageResponse = await fetch(`${API_BASE_URL}/packages/${packageId}`);
+        if (!packageResponse.ok) return;
+        
+        const packageData = await packageResponse.json();
+        const mainImageUrl = packageData.image;
+        
+        if (!mainImageUrl) return;
+        
+        const token = localStorage.getItem('admin_token');
+        const response = await fetch(`${API_BASE_URL}/admin/packages/${packageId}/gallery/url`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                image_url: mainImageUrl,
+                caption: `${packageData.title} - Imagen principal`,
+                is_cover: 1
+            })
+        });
+
+        if (!response.ok) {
+            console.error('Error creando imagen principal en galería');
+        }
+    } catch (error) {
+        console.error('Error al crear imagen principal en galería:', error);
+    }
+}
