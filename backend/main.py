@@ -492,6 +492,7 @@ async def get_config():
             os.getenv("CLOUDINARY_API_KEY") and 
             os.getenv("CLOUDINARY_API_SECRET")
         )
+    }
 
 @app.get("/config/contact")
 async def get_contact_config():
