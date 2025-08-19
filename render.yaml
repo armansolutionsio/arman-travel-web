@@ -21,6 +21,16 @@ services:
         sync: false
       - key: SMTP_PASSWORD
         sync: false
+      - key: RECIPIENT_EMAIL
+        value: info.armansolutions@gmail.com
+      - key: WHATSAPP_NUMBER
+        value: "1132551565"
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
 
 databases:
   - name: arman-travel-db
