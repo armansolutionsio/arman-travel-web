@@ -1,12 +1,14 @@
 // Variables globales
 let packages = [];
 let currentFilter = 'all';
+let config = { whatsapp_number: '1132551565', recipient_email: 'info.armansolutions@gmail.com' };
 
 // API Base URL
 const API_BASE_URL = window.location.protocol + '//' + window.location.host;
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', function() {
+    loadConfig();
     initNavigation();
     initScrollEffects();
     initFAQ();
@@ -144,6 +146,37 @@ function initAdminModal() {
     
     adminBtn.addEventListener('click', () => {
         window.location.href = 'admin.html';
+    });
+}
+
+// Cargar configuración desde el backend
+async function loadConfig() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/config`);
+        if (response.ok) {
+            config = await response.json();
+            updateContactInfo();
+        }
+    } catch (error) {
+        console.log('Usando configuración por defecto');
+    }
+}
+
+// Actualizar información de contacto en la página
+function updateContactInfo() {
+    // Actualizar enlaces de WhatsApp
+    document.querySelectorAll('a[href*="wa.me"]').forEach(link => {
+        link.href = `https://wa.me/${config.whatsapp_number}`;
+    });
+    
+    // Actualizar números mostrados
+    document.querySelectorAll('.whatsapp-number').forEach(element => {
+        element.textContent = config.whatsapp_number;
+    });
+    
+    // Actualizar emails mostrados
+    document.querySelectorAll('.contact-email').forEach(element => {
+        element.textContent = config.recipient_email;
     });
 }
 

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, Depends, status, UploadFile, File, Form
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -6,18 +6,23 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from typing import Optional, List
 import os
+import uuid
+import shutil
 from datetime import datetime, timedelta
 import jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 from database import get_db, test_connection, engine
-from models import Package, ContactMessage, Base
+from models import Package, ContactMessage, PackageGalleryImage, Base
 import json
 import smtplib
 import ssl
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import cloudinary
+import cloudinary.uploader
+from cloudinary import CloudinaryImage
 
 # Configuración
 app = FastAPI(title="ARMAN TRAVEL API", version="2.0.0")
@@ -44,7 +49,23 @@ SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USER = os.getenv("SMTP_USER", "info.armansolutions@gmail.com")  
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")  # Se configura en variables de entorno
-RECIPIENT_EMAIL = "info.armansolutions@gmail.com"
+RECIPIENT_EMAIL = os.getenv("RECIPIENT_EMAIL", "info.armansolutions@gmail.com")
+
+# Configuración de contacto
+WHATSAPP_NUMBER = os.getenv("WHATSAPP_NUMBER", "1132551565")
+
+# Configuración de Cloudinary
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+    secure=True
+)
+
+# Configuración para subida de archivos
+UPLOAD_DIR = "frontend/static/uploads"
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".jfif", ".bmp"}
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
@@ -85,6 +106,12 @@ class PackageUpdate(BaseModel):
     ideal_for: Optional[str] = None
     gallery_images: Optional[List[str]] = None
     itinerary: Optional[List[dict]] = None
+
+class GalleryImageCreate(BaseModel):
+    image_url: Optional[str] = None
+    caption: Optional[str] = None
+    order_index: Optional[int] = 0
+    is_cover: Optional[int] = 0
 
 # Eventos de inicio y cierre
 @app.on_event("startup")
@@ -160,6 +187,67 @@ def verify_admin_credentials(username: str, password: str):
         "arman": "travel2024"
     }
     return admin_users.get(username) == password
+
+# Funciones helper para manejo de archivos
+def create_upload_directory():
+    """Crear directorio de uploads si no existe"""
+    if not os.path.exists(UPLOAD_DIR):
+        os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+def is_valid_image_file(filename: str) -> bool:
+    """Verificar si el archivo es una imagen válida"""
+    return any(filename.lower().endswith(ext) for ext in ALLOWED_EXTENSIONS)
+
+def upload_to_cloudinary(file: UploadFile, folder: str = "arman-travel") -> str:
+    """Subir archivo a Cloudinary y retornar la URL"""
+    
+    # Verificar que Cloudinary esté configurado
+    if not all([os.getenv("CLOUDINARY_CLOUD_NAME"), os.getenv("CLOUDINARY_API_KEY"), os.getenv("CLOUDINARY_API_SECRET")]):
+        raise HTTPException(status_code=500, detail="Cloudinary no está configurado correctamente")
+    
+    try:
+        # Leer el archivo
+        file_content = file.file.read()
+        file.file.seek(0)  # Reset para posibles usos posteriores
+        
+        # Generar public_id único
+        file_extension = os.path.splitext(file.filename)[1].lower()
+        public_id = f"{folder}/{uuid.uuid4()}"
+        
+        # Subir a Cloudinary con optimizaciones
+        upload_result = cloudinary.uploader.upload(
+            file_content,
+            public_id=public_id,
+            resource_type="image",
+            transformation=[
+                {"width": 1200, "height": 800, "crop": "limit"}
+            ]
+        )
+        
+        print(f"✅ Imagen subida a Cloudinary: {upload_result.get('secure_url')}")
+        
+        return upload_result.get('secure_url')
+        
+    except Exception as e:
+        print(f"❌ Error subiendo a Cloudinary: {e}")
+        raise HTTPException(status_code=500, detail=f"Error subiendo imagen a Cloudinary: {str(e)}")
+
+def save_uploaded_file_local(file: UploadFile) -> str:
+    """Guardar archivo localmente (fallback)"""
+    create_upload_directory()
+    
+    # Generar nombre único
+    file_extension = os.path.splitext(file.filename)[1]
+    unique_filename = f"{uuid.uuid4()}{file_extension}"
+    file_path = os.path.join(UPLOAD_DIR, unique_filename)
+    
+    # Guardar archivo
+    file.file.seek(0)  # Asegurar que estamos al inicio
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    
+    # Retornar URL relativa
+    return f"/static/uploads/{unique_filename}"
 
 # Función para enviar emails
 async def send_email(subject: str, body: str, sender_name: str = "ARMAN TRAVEL", sender_email: str = ""):
@@ -390,6 +478,19 @@ async def get_contact_messages(username: str = Depends(verify_token), db: Sessio
 async def health_check():
     return {"status": "OK", "message": "ARMAN TRAVEL API funcionando correctamente", "database": "PostgreSQL"}
 
+@app.get("/config")
+async def get_config():
+    """Endpoint para obtener configuración de contacto"""
+    return {
+        "whatsapp_number": WHATSAPP_NUMBER,
+        "recipient_email": RECIPIENT_EMAIL,
+        "cloudinary_configured": bool(
+            os.getenv("CLOUDINARY_CLOUD_NAME") and 
+            os.getenv("CLOUDINARY_API_KEY") and 
+            os.getenv("CLOUDINARY_API_SECRET")
+        )
+    }
+
 @app.get("/debug")
 async def debug_files():
     try:
@@ -422,6 +523,251 @@ async def debug_files():
         }
     except Exception as e:
         return {"error": str(e)}
+
+# === ENDPOINTS PARA GALERÍA DE IMÁGENES ===
+
+@app.get("/packages/{package_id}/gallery")
+async def get_package_gallery(package_id: int, db: Session = Depends(get_db)):
+    """Obtener galería de imágenes de un paquete"""
+    try:
+        # Verificar que el paquete existe
+        package = db.query(Package).filter(Package.id == package_id).first()
+        if not package:
+            raise HTTPException(status_code=404, detail="Paquete no encontrado")
+        
+        # Obtener imágenes de galería
+        gallery_images = db.query(PackageGalleryImage).filter(
+            PackageGalleryImage.package_id == package_id
+        ).order_by(PackageGalleryImage.order_index, PackageGalleryImage.id).all()
+        
+        return [img.to_dict() for img in gallery_images]
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error al obtener galería: {e}")
+        raise HTTPException(status_code=500, detail="Error al obtener galería")
+
+@app.post("/admin/packages/{package_id}/gallery/upload")
+async def upload_gallery_image(
+    package_id: int,
+    file: UploadFile = File(...),
+    caption: str = Form(""),
+    order_index: int = Form(0),
+    is_cover: int = Form(0),
+    username: str = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    """Subir imagen a la galería de un paquete"""
+    try:
+        # Verificar que el paquete existe
+        package = db.query(Package).filter(Package.id == package_id).first()
+        if not package:
+            raise HTTPException(status_code=404, detail="Paquete no encontrado")
+        
+        # Validar archivo
+        if not file.filename:
+            raise HTTPException(status_code=400, detail="No se proporcionó archivo")
+        
+        if not is_valid_image_file(file.filename):
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Tipo de archivo no válido. Permitidos: {', '.join(ALLOWED_EXTENSIONS)}"
+            )
+        
+        # Verificar tamaño
+        file.file.seek(0, 2)  # Ir al final del archivo
+        file_size = file.file.tell()
+        file.file.seek(0)  # Volver al inicio
+        
+        if file_size > MAX_FILE_SIZE:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Archivo muy grande. Máximo permitido: {MAX_FILE_SIZE / (1024*1024):.1f}MB"
+            )
+        
+        # Subir archivo a Cloudinary
+        image_url = upload_to_cloudinary(file, "arman-travel/gallery")
+        
+        # Crear entrada en la base de datos
+        gallery_image = PackageGalleryImage(
+            package_id=package_id,
+            image_url=image_url,
+            image_filename=file.filename,
+            caption=caption,
+            order_index=order_index,
+            is_cover=is_cover
+        )
+        
+        db.add(gallery_image)
+        db.commit()
+        db.refresh(gallery_image)
+        
+        return gallery_image.to_dict()
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error al subir imagen: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Error al subir imagen")
+
+@app.post("/admin/packages/{package_id}/gallery/url")
+async def add_gallery_image_url(
+    package_id: int,
+    image_data: GalleryImageCreate,
+    username: str = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    """Agregar imagen por URL a la galería de un paquete"""
+    try:
+        # Verificar que el paquete existe
+        package = db.query(Package).filter(Package.id == package_id).first()
+        if not package:
+            raise HTTPException(status_code=404, detail="Paquete no encontrado")
+        
+        if not image_data.image_url:
+            raise HTTPException(status_code=400, detail="URL de imagen requerida")
+        
+        # Crear entrada en la base de datos
+        gallery_image = PackageGalleryImage(
+            package_id=package_id,
+            image_url=image_data.image_url,
+            caption=image_data.caption,
+            order_index=image_data.order_index or 0,
+            is_cover=image_data.is_cover or 0
+        )
+        
+        db.add(gallery_image)
+        db.commit()
+        db.refresh(gallery_image)
+        
+        return gallery_image.to_dict()
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error al agregar imagen por URL: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Error al agregar imagen")
+
+@app.put("/admin/packages/{package_id}/gallery/{image_id}")
+async def update_gallery_image(
+    package_id: int,
+    image_id: int,
+    image_data: GalleryImageCreate,
+    username: str = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    """Actualizar imagen de galería"""
+    try:
+        gallery_image = db.query(PackageGalleryImage).filter(
+            PackageGalleryImage.id == image_id,
+            PackageGalleryImage.package_id == package_id
+        ).first()
+        
+        if not gallery_image:
+            raise HTTPException(status_code=404, detail="Imagen no encontrada")
+        
+        # Actualizar campos proporcionados
+        if image_data.caption is not None:
+            gallery_image.caption = image_data.caption
+        if image_data.order_index is not None:
+            gallery_image.order_index = image_data.order_index
+        if image_data.is_cover is not None:
+            gallery_image.is_cover = image_data.is_cover
+        if image_data.image_url is not None:
+            gallery_image.image_url = image_data.image_url
+        
+        db.commit()
+        db.refresh(gallery_image)
+        
+        return gallery_image.to_dict()
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error al actualizar imagen: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Error al actualizar imagen")
+
+@app.delete("/admin/packages/{package_id}/gallery/{image_id}")
+async def delete_gallery_image(
+    package_id: int,
+    image_id: int,
+    username: str = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    """Eliminar imagen de galería"""
+    try:
+        gallery_image = db.query(PackageGalleryImage).filter(
+            PackageGalleryImage.id == image_id,
+            PackageGalleryImage.package_id == package_id
+        ).first()
+        
+        if not gallery_image:
+            raise HTTPException(status_code=404, detail="Imagen no encontrada")
+        
+        # Eliminar archivo si es archivo subido
+        if gallery_image.image_filename and gallery_image.image_url.startswith("/static/uploads/"):
+            file_path = f"frontend{gallery_image.image_url}"
+            if os.path.exists(file_path):
+                os.remove(file_path)
+        
+        db.delete(gallery_image)
+        db.commit()
+        
+        return {"message": "Imagen eliminada correctamente"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error al eliminar imagen: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Error al eliminar imagen")
+
+@app.post("/admin/upload-cover-image")
+async def upload_cover_image(
+    file: UploadFile = File(...),
+    username: str = Depends(verify_token)
+):
+    """Subir imagen de portada y retornar URL"""
+    try:
+        # Validar archivo
+        if not file.filename:
+            raise HTTPException(status_code=400, detail="No se proporcionó archivo")
+        
+        if not is_valid_image_file(file.filename):
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Tipo de archivo no válido. Permitidos: {', '.join(ALLOWED_EXTENSIONS)}"
+            )
+        
+        # Verificar tamaño
+        file.file.seek(0, 2)  # Ir al final del archivo
+        file_size = file.file.tell()
+        file.file.seek(0)  # Volver al inicio
+        
+        if file_size > MAX_FILE_SIZE:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Archivo muy grande. Máximo permitido: {MAX_FILE_SIZE / (1024*1024):.1f}MB"
+            )
+        
+        # Subir archivo a Cloudinary  
+        image_url = upload_to_cloudinary(file, "arman-travel/covers")
+        
+        return {
+            "image_url": image_url,
+            "filename": file.filename,
+            "size": file_size
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error al subir imagen de portada: {e}")
+        raise HTTPException(status_code=500, detail="Error al subir imagen de portada")
 
 if __name__ == "__main__":
     import uvicorn

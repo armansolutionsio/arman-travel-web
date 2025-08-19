@@ -69,11 +69,30 @@ arman-travel-web/
 - ✅ Página principal con paquetes turísticos
 - ✅ Sistema de detalle de paquetes con URLs limpias
 - ✅ Panel de administración para gestionar paquetes
+- ✅ **Galería de imágenes completa** con drag & drop
+- ✅ **Cloudinary integration** para optimización de imágenes
 - ✅ Formularios de contacto con envío de emails
 - ✅ Integración con WhatsApp
 - ✅ Diseño responsive
 - ✅ Base de datos PostgreSQL
 - ✅ Autenticación JWT para admin
+
+## 🌥️ Cloudinary Setup (Recomendado)
+
+Para mejor rendimiento de imágenes, configura Cloudinary:
+
+### Variables adicionales en Render:
+- `CLOUDINARY_CLOUD_NAME=tu_cloud_name`
+- `CLOUDINARY_API_KEY=tu_api_key` 
+- `CLOUDINARY_API_SECRET=tu_api_secret`
+
+### Beneficios:
+- 🚀 CDN global para carga rápida
+- 🎨 Optimización automática (WebP, compresión)
+- 📱 Responsive images automático
+- 💾 25GB gratis + 25K transformaciones/mes
+
+**Instrucciones completas:** Ver `CLOUDINARY-SETUP.md`
 
 ## 📞 Contacto
 
