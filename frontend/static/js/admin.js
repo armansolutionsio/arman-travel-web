@@ -335,17 +335,18 @@ function initModal() {
     const closeModal = document.getElementById('closeModal');
     const cancelBtn = document.getElementById('cancelBtn');
 
-    closeModal.addEventListener('click', () => {
+    function closeModalHandler() {
         modal.style.display = 'none';
-    });
+        // No remover handlers al cerrar - mantenerlos activos
+        // removeItineraryHandlers(); 
+    }
 
-    cancelBtn.addEventListener('click', () => {
-        modal.style.display = 'none';
-    });
+    closeModal.addEventListener('click', closeModalHandler);
+    cancelBtn.addEventListener('click', closeModalHandler);
 
     window.addEventListener('click', (e) => {
         if (e.target === modal) {
-            modal.style.display = 'none';
+            closeModalHandler();
         }
     });
 }
@@ -576,6 +577,9 @@ function openPackageModal(packageId = null) {
             // Mostrar sección de galería y cargarla
             gallerySection.style.display = 'block';
             loadPackageGallery(packageId);
+            
+            // Cargar itinerario
+            loadItineraryData(package.itinerary || []);
         }
     } else {
         // Crear nuevo paquete
@@ -585,6 +589,9 @@ function openPackageModal(packageId = null) {
         
         // Ocultar sección de galería para paquetes nuevos
         gallerySection.style.display = 'none';
+        
+        // Limpiar itinerario
+        clearItineraryData();
     }
 
     // Inicializar manejadores de galería
@@ -594,6 +601,11 @@ function openPackageModal(packageId = null) {
     initializeCoverImageHandlers();
     
     modal.style.display = 'block';
+    
+    // Inicializar manejadores de itinerario DESPUÉS de mostrar el modal
+    setTimeout(() => {
+        initializeItineraryHandlers();
+    }, 10);
 }
 
 // Editar paquete
@@ -654,7 +666,8 @@ async function handlePackageSubmit(e) {
         features: formData.get('features').split('\n').filter(f => f.trim()),
         duration: formData.get('duration') || null,
         destination: formData.get('destination') || null,
-        ideal_for: formData.get('idealFor') || null
+        ideal_for: formData.get('idealFor') || null,
+        itinerary: collectItineraryData()
     };
 
     try {
@@ -681,6 +694,8 @@ async function handlePackageSubmit(e) {
             showNotification(`Paquete ${action} correctamente`, 'success');
             
             document.getElementById('packageModal').style.display = 'none';
+            // No remover handlers - mantenerlos para próximos usos
+            // removeItineraryHandlers();
             await loadPackages();
             updateDashboardStats();
         } else {
@@ -1624,3 +1639,478 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize carousel management
     initCarouselManagement();
 });
+
+// === FUNCIONES DE ITINERARIO ===
+let currentItinerary = [];
+
+// Variables para almacenar references a los event listeners
+let itineraryEventListeners = {
+    addDayHandler: null,
+    clickHandler: null,
+    keypressHandler: null,
+    changeHandler: null,
+    documentClickHandler: null,
+    isInitialized: false
+};
+
+// Inicializar manejadores de itinerario
+function initializeItineraryHandlers() {
+    // Siempre intentar agregar listeners - remover anteriores primero
+    const addDayBtn = document.getElementById('addItineraryDayBtn');
+    
+    if (addDayBtn) {
+        // Remover listener anterior si existe
+        if (itineraryEventListeners.addDayHandler) {
+            addDayBtn.removeEventListener('click', itineraryEventListeners.addDayHandler);
+        }
+        
+        itineraryEventListeners.addDayHandler = addItineraryDay;
+        addDayBtn.addEventListener('click', itineraryEventListeners.addDayHandler);
+    }
+    
+    // Event delegation para elementos dinámicos del itinerario
+    const itineraryContainer = document.getElementById('itineraryManagement');
+    
+    if (itineraryContainer) {
+        // Remover listeners anteriores si existen
+        if (itineraryEventListeners.clickHandler) {
+            itineraryContainer.removeEventListener('click', itineraryEventListeners.clickHandler);
+        }
+        if (itineraryEventListeners.keypressHandler) {
+            itineraryContainer.removeEventListener('keypress', itineraryEventListeners.keypressHandler);
+        }
+        if (itineraryEventListeners.changeHandler) {
+            itineraryContainer.removeEventListener('change', itineraryEventListeners.changeHandler);
+        }
+        
+        itineraryEventListeners.clickHandler = handleItineraryClick;
+        itineraryEventListeners.keypressHandler = handleItineraryKeypress;
+        itineraryEventListeners.changeHandler = handleItineraryChange;
+        
+        itineraryContainer.addEventListener('click', itineraryEventListeners.clickHandler);
+        itineraryContainer.addEventListener('keypress', itineraryEventListeners.keypressHandler);
+        itineraryContainer.addEventListener('change', itineraryEventListeners.changeHandler);
+    }
+    
+    // Cerrar dropdowns cuando se hace click fuera (solo una vez)
+    if (!itineraryEventListeners.documentClickHandler) {
+        itineraryEventListeners.documentClickHandler = function(e) {
+            if (!e.target.closest('.day-icon-selector')) {
+                document.querySelectorAll('.icon-dropdown').forEach(d => d.style.display = 'none');
+            }
+        };
+        document.addEventListener('click', itineraryEventListeners.documentClickHandler);
+    }
+    
+    itineraryEventListeners.isInitialized = true;
+}
+
+// Remover manejadores de itinerario
+function removeItineraryHandlers() {
+    if (!itineraryEventListeners.isInitialized) return;
+    
+    const addDayBtn = document.getElementById('addItineraryDayBtn');
+    if (addDayBtn && itineraryEventListeners.addDayHandler) {
+        addDayBtn.removeEventListener('click', itineraryEventListeners.addDayHandler);
+    }
+    
+    const itineraryContainer = document.getElementById('itineraryManagement');
+    if (itineraryContainer) {
+        if (itineraryEventListeners.clickHandler) {
+            itineraryContainer.removeEventListener('click', itineraryEventListeners.clickHandler);
+        }
+        if (itineraryEventListeners.keypressHandler) {
+            itineraryContainer.removeEventListener('keypress', itineraryEventListeners.keypressHandler);
+        }
+        if (itineraryEventListeners.changeHandler) {
+            itineraryContainer.removeEventListener('change', itineraryEventListeners.changeHandler);
+        }
+    }
+    
+    if (itineraryEventListeners.documentClickHandler) {
+        document.removeEventListener('click', itineraryEventListeners.documentClickHandler);
+    }
+    
+    // Resetear el objeto
+    itineraryEventListeners = {
+        addDayHandler: null,
+        clickHandler: null,
+        keypressHandler: null,
+        changeHandler: null,
+        documentClickHandler: null,
+        isInitialized: false
+    };
+}
+
+// Manejar eventos de click en itinerario
+function handleItineraryClick(e) {
+    const target = e.target.closest('[data-action]');
+    if (!target) return;
+    
+    const action = target.dataset.action;
+    const dayIndex = parseInt(target.dataset.dayIndex);
+    const activityIndex = parseInt(target.dataset.activityIndex);
+    
+    switch (action) {
+        case 'move-day':
+            const direction = parseInt(target.dataset.direction);
+            moveDay(dayIndex, direction);
+            break;
+        case 'remove-day':
+            removeDay(dayIndex);
+            break;
+        case 'add-activity':
+            addActivity(dayIndex);
+            break;
+        case 'edit-activity':
+            editActivity(dayIndex, activityIndex);
+            break;
+        case 'remove-activity':
+            removeActivity(dayIndex, activityIndex);
+            break;
+        case 'select-icon':
+            toggleIconDropdown(dayIndex);
+            break;
+        case 'select-icon-option':
+            const iconClass = target.dataset.icon;
+            const parentDayIndex = parseInt(target.closest('.itinerary-day').dataset.dayIndex);
+            selectIcon(parentDayIndex, iconClass);
+            break;
+    }
+}
+
+// Toggle dropdown de iconos
+function toggleIconDropdown(dayIndex) {
+    const dropdown = document.getElementById(`iconDropdown-${dayIndex}`);
+    const isVisible = dropdown.style.display === 'block';
+    
+    // Cerrar todos los dropdowns
+    document.querySelectorAll('.icon-dropdown').forEach(d => d.style.display = 'none');
+    
+    if (!isVisible) {
+        dropdown.style.display = 'block';
+    }
+}
+
+// Seleccionar icono
+function selectIcon(dayIndex, iconClass) {
+    if (currentItinerary[dayIndex]) {
+        currentItinerary[dayIndex].icon = iconClass;
+        
+        // Actualizar el botón del icono
+        const iconBtn = document.querySelector(`[data-action="select-icon"][data-day-index="${dayIndex}"] i`);
+        if (iconBtn) {
+            iconBtn.className = iconClass;
+        }
+        
+        // Cerrar dropdown
+        const dropdown = document.getElementById(`iconDropdown-${dayIndex}`);
+        if (dropdown) {
+            dropdown.style.display = 'none';
+        }
+    }
+}
+
+// Manejar eventos de keypress
+function handleItineraryKeypress(e) {
+    if (e.key === 'Enter' && e.target.classList.contains('add-activity-input')) {
+        e.preventDefault();
+        const dayIndex = parseInt(e.target.dataset.dayIndex);
+        addActivity(dayIndex);
+    }
+}
+
+// Manejar eventos de change
+function handleItineraryChange(e) {
+    if (e.target.classList.contains('day-title-input')) {
+        const dayIndex = parseInt(e.target.dataset.dayIndex);
+        updateDayTitle(dayIndex, e.target.value);
+    } else if (e.target.classList.contains('day-description-textarea')) {
+        const dayIndex = parseInt(e.target.dataset.dayIndex);
+        updateDayDescription(dayIndex, e.target.value);
+    }
+}
+
+// Agregar día al itinerario
+function addItineraryDay() {
+    const dayNumber = currentItinerary.length + 1;
+    const dayData = {
+        day: dayNumber,
+        title: `Día ${dayNumber}`,
+        description: '',
+        activities: [],
+        icon: 'fas fa-plane' // Icono por defecto
+    };
+    
+    currentItinerary.push(dayData);
+    renderItinerary();
+}
+
+// Renderizar itinerario completo
+function renderItinerary() {
+    const container = document.getElementById('itineraryManagement');
+    
+    if (currentItinerary.length === 0) {
+        container.innerHTML = `
+            <div class="itinerary-placeholder" id="itineraryPlaceholder">
+                <i class="fas fa-route"></i>
+                <p>No hay días en el itinerario. Haz clic en "Agregar Día" para comenzar.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = '';
+    
+    currentItinerary.forEach((day, index) => {
+        const dayElement = createDayElement(day, index);
+        container.appendChild(dayElement);
+    });
+}
+
+// Crear elemento de día
+function createDayElement(day, index) {
+    const dayDiv = document.createElement('div');
+    dayDiv.className = 'itinerary-day';
+    dayDiv.dataset.dayIndex = index;
+    
+    dayDiv.innerHTML = `
+        <div class="itinerary-day-header">
+            <div class="itinerary-day-title">
+                <div class="day-icon-selector" style="position: relative;">
+                    <button type="button" class="day-icon-btn" data-action="select-icon" data-day-index="${index}">
+                        <i class="${day.icon || 'fas fa-plane'}"></i>
+                    </button>
+                    <div class="icon-dropdown" id="iconDropdown-${index}" style="display: none;">
+                        ${renderIconOptions()}
+                    </div>
+                </div>
+                <input type="text" value="${day.title}" class="day-title-input" data-day-index="${index}"
+                       style="border: none; background: transparent; font-weight: 600; color: var(--primary-color); font-size: 1rem;">
+            </div>
+            <div class="itinerary-day-controls">
+                <button type="button" class="btn btn-sm btn-secondary" data-action="move-day" data-day-index="${index}" data-direction="-1" ${index === 0 ? 'disabled' : ''}>
+                    <i class="fas fa-arrow-up"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-secondary" data-action="move-day" data-day-index="${index}" data-direction="1" ${index === currentItinerary.length - 1 ? 'disabled' : ''}>
+                    <i class="fas fa-arrow-down"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-danger" data-action="remove-day" data-day-index="${index}">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+        <div class="itinerary-day-content">
+            <div class="itinerary-form-group">
+                <label>Descripción general del día</label>
+                <textarea class="day-description-textarea" data-day-index="${index}"
+                          placeholder="Descripción general de las actividades del día">${day.description}</textarea>
+            </div>
+            
+            <div class="itinerary-form-group">
+                <label>Actividades específicas</label>
+                <div class="activities-list" id="activities-${index}">
+                    ${renderActivities(day.activities, index)}
+                </div>
+                <div class="add-activity-form">
+                    <input type="text" class="add-activity-input" data-day-index="${index}" 
+                           placeholder="Nueva actividad...">
+                    <button type="button" class="btn-add-activity" data-action="add-activity" data-day-index="${index}">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    return dayDiv;
+}
+
+// Renderizar actividades
+function renderActivities(activities, dayIndex) {
+    return activities.map((activity, actIndex) => `
+        <div class="itinerary-activity">
+            <span class="activity-text">${activity}</span>
+            <div class="activity-controls">
+                <button type="button" class="btn-activity" data-action="edit-activity" data-day-index="${dayIndex}" data-activity-index="${actIndex}" title="Editar">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button type="button" class="btn-activity delete" data-action="remove-activity" data-day-index="${dayIndex}" data-activity-index="${actIndex}" title="Eliminar">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Renderizar opciones de iconos
+function renderIconOptions() {
+    const icons = [
+        'fas fa-plane', 'fas fa-camera', 'fas fa-utensils', 'fas fa-map-marked-alt', 
+        'fas fa-star', 'fas fa-mountain', 'fas fa-swimming-pool', 'fas fa-bus',
+        'fas fa-bed', 'fas fa-walking', 'fas fa-binoculars', 'fas fa-ship',
+        'fas fa-bicycle', 'fas fa-tree', 'fas fa-sun', 'fas fa-moon',
+        'fas fa-glass-cheers', 'fas fa-shopping-bag', 'fas fa-music', 'fas fa-heart'
+    ];
+    
+    return icons.map(icon => `
+        <button type="button" class="icon-option" data-action="select-icon-option" data-icon="${icon}">
+            <i class="${icon}"></i>
+        </button>
+    `).join('');
+}
+
+// Actualizar título del día
+function updateDayTitle(dayIndex, newTitle) {
+    if (currentItinerary[dayIndex]) {
+        currentItinerary[dayIndex].title = newTitle;
+    }
+}
+
+// Actualizar descripción del día
+function updateDayDescription(dayIndex, newDescription) {
+    if (currentItinerary[dayIndex]) {
+        currentItinerary[dayIndex].description = newDescription;
+    }
+}
+
+// Mover día
+function moveDay(dayIndex, direction) {
+    const newIndex = dayIndex + direction;
+    if (newIndex >= 0 && newIndex < currentItinerary.length) {
+        // Intercambiar elementos
+        const temp = currentItinerary[dayIndex];
+        currentItinerary[dayIndex] = currentItinerary[newIndex];
+        currentItinerary[newIndex] = temp;
+        
+        // Renumerar todos los días
+        renumberDays();
+        
+        // Re-renderizar completamente
+        renderItinerary();
+    }
+}
+
+// Función helper para renumerar días
+function renumberDays() {
+    currentItinerary.forEach((day, index) => {
+        day.day = index + 1;
+        // Solo actualizar título si mantiene formato por defecto
+        if (day.title.match(/^Día \d+/)) {
+            day.title = `Día ${index + 1}`;
+        }
+    });
+}
+
+// Eliminar día
+function removeDay(dayIndex) {
+    if (confirm('¿Estás seguro de que quieres eliminar este día?')) {
+        currentItinerary.splice(dayIndex, 1);
+        
+        // Renumerar días
+        renumberDays();
+        
+        // Re-renderizar completamente
+        renderItinerary();
+    }
+}
+
+// Agregar actividad
+function addActivity(dayIndex) {
+    const input = document.querySelector(`[data-day-index="${dayIndex}"].add-activity-input`);
+    const activity = input.value.trim();
+    
+    if (activity) {
+        currentItinerary[dayIndex].activities.push(activity);
+        input.value = '';
+        
+        // Re-renderizar solo las actividades de este día
+        const activitiesContainer = document.getElementById(`activities-${dayIndex}`);
+        activitiesContainer.innerHTML = renderActivities(currentItinerary[dayIndex].activities, dayIndex);
+    }
+}
+
+// Manejar Enter en input de actividad
+function handleActivityKeypress(event, dayIndex) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        addActivity(dayIndex);
+    }
+}
+
+// Editar actividad
+function editActivity(dayIndex, activityIndex) {
+    const currentActivity = currentItinerary[dayIndex].activities[activityIndex];
+    const newActivity = prompt('Editar actividad:', currentActivity);
+    
+    if (newActivity !== null && newActivity.trim()) {
+        currentItinerary[dayIndex].activities[activityIndex] = newActivity.trim();
+        
+        // Re-renderizar actividades
+        const activitiesContainer = document.getElementById(`activities-${dayIndex}`);
+        activitiesContainer.innerHTML = renderActivities(currentItinerary[dayIndex].activities, dayIndex);
+    }
+}
+
+// Eliminar actividad
+function removeActivity(dayIndex, activityIndex) {
+    if (confirm('¿Eliminar esta actividad?')) {
+        currentItinerary[dayIndex].activities.splice(activityIndex, 1);
+        
+        // Re-renderizar actividades
+        const activitiesContainer = document.getElementById(`activities-${dayIndex}`);
+        activitiesContainer.innerHTML = renderActivities(currentItinerary[dayIndex].activities, dayIndex);
+    }
+}
+
+// Cargar datos de itinerario
+function loadItineraryData(itinerary) {
+    const icons = ['fas fa-plane', 'fas fa-camera', 'fas fa-utensils', 'fas fa-map-marked-alt', 'fas fa-star', 'fas fa-mountain', 'fas fa-swimming-pool'];
+    
+    currentItinerary = itinerary.map((item, index) => {
+        // Convertir diferentes formatos a nuestro formato estándar
+        if (typeof item === 'string') {
+            return {
+                day: index + 1,
+                title: `Día ${index + 1}`,
+                description: item,
+                activities: [],
+                icon: icons[index % icons.length]
+            };
+        } else if (item.title && item.description) {
+            return {
+                day: index + 1,
+                title: item.title,
+                description: item.description,
+                activities: item.activities || [],
+                icon: item.icon || icons[index % icons.length]
+            };
+        } else {
+            return {
+                day: index + 1,
+                title: `Día ${index + 1}`,
+                description: item.description || '',
+                activities: item.activities || [],
+                icon: item.icon || icons[index % icons.length]
+            };
+        }
+    });
+    
+    renderItinerary();
+}
+
+// Limpiar datos de itinerario
+function clearItineraryData() {
+    currentItinerary = [];
+    renderItinerary();
+}
+
+// Recolectar datos de itinerario para enviar
+function collectItineraryData() {
+    return currentItinerary.map(day => ({
+        title: day.title,
+        description: day.description,
+        activities: day.activities,
+        icon: day.icon
+    }));
+}
