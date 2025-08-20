@@ -222,59 +222,20 @@ async function loadPackages() {
             displayPackages(packages);
         } else {
             console.error('Error al cargar paquetes');
-            // Mostrar paquetes de ejemplo si falla la API
-            showSamplePackages();
+            showEmptyPackages();
         }
     } catch (error) {
         console.error('Error:', error);
-        // Mostrar paquetes de ejemplo si falla la API
-        showSamplePackages();
+        showEmptyPackages();
     }
 }
 
-// Mostrar paquetes de ejemplo
-function showSamplePackages() {
-    const samplePackages = [
-        {
-            id: 1,
-            title: "Buenos Aires Clásico",
-            description: "Descubre la capital argentina con este paquete completo de 3 días.",
-            price: "$45.000",
-            image: "https://images.unsplash.com/photo-1589909202802-8f4aadce1849?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-            category: "nacional",
-            features: ["3 días / 2 noches", "Desayuno incluido", "City tour", "Tango show"]
-        },
-        {
-            id: 2,
-            title: "Bariloche Aventura",
-            description: "Vive la aventura patagónica con deportes extremos y paisajes únicos.",
-            price: "$75.000",
-            image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-            category: "aventura",
-            features: ["5 días / 4 noches", "Pensión completa", "Rafting", "Cerro Catedral"]
-        },
-        {
-            id: 3,
-            title: "Miami Beach",
-            description: "Disfruta de las mejores playas de Florida en este paquete internacional.",
-            price: "USD 899",
-            image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-            category: "internacional",
-            features: ["7 días / 6 noches", "Hotel 4 estrellas", "Vuelos incluidos", "Traslados"]
-        },
-        {
-            id: 4,
-            title: "Mendoza Relax",
-            description: "Relájate entre viñedos y montañas en la capital del vino argentino.",
-            price: "$55.000",
-            image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-            category: "relax",
-            features: ["4 días / 3 noches", "Spa incluido", "Tour de bodegas", "Cena gourmet"]
-        }
-    ];
-    
-    packages = samplePackages;
-    displayPackages(packages);
+// Mostrar mensaje cuando no hay paquetes
+function showEmptyPackages() {
+    const packagesGrid = document.getElementById('packagesGrid');
+    if (packagesGrid) {
+        packagesGrid.innerHTML = '<div class="empty-packages">No hay paquetes disponibles en este momento.</div>';
+    }
 }
 
 // Mostrar paquetes en el DOM
@@ -424,30 +385,6 @@ async function initHeroCarousel() {
         // En caso de error, mostrar carrusel con imagen random
         createFallbackCarouselSlide();
     }
-}
-
-// Obtener paquetes de ejemplo para el carrusel
-function getSamplePackagesForCarousel() {
-    return [
-        {
-            id: 1,
-            title: "Buenos Aires Clásico",
-            description: "Descubre la capital argentina con este paquete completo de 3 días.",
-            image: "https://images.unsplash.com/photo-1589909202802-8f4aadce1849?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
-        },
-        {
-            id: 2,
-            title: "Bariloche Aventura",
-            description: "Vive la aventura patagónica con deportes extremos y paisajes únicos.",
-            image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
-        },
-        {
-            id: 3,
-            title: "Miami Beach",
-            description: "Disfruta de las mejores playas de Florida en este paquete internacional.",
-            image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
-        }
-    ];
 }
 
 // Crear slides del carrusel
