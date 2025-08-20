@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 import jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, func
 from database import get_db, test_connection, engine
 from models import Package, ContactMessage, PackageGalleryImage, Base
 import json
@@ -94,6 +94,8 @@ class PackageCreate(BaseModel):
     ideal_for: Optional[str] = None
     gallery_images: Optional[List[str]] = []
     itinerary: Optional[List[dict]] = []
+    promoted: Optional[bool] = False
+    carousel_order: Optional[int] = 0
 
 class PackageUpdate(BaseModel):
     title: Optional[str] = None
@@ -107,6 +109,8 @@ class PackageUpdate(BaseModel):
     ideal_for: Optional[str] = None
     gallery_images: Optional[List[str]] = None
     itinerary: Optional[List[dict]] = None
+    promoted: Optional[bool] = None
+    carousel_order: Optional[int] = None
 
 class GalleryImageCreate(BaseModel):
     image_url: Optional[str] = None
@@ -396,6 +400,20 @@ async def admin_login(credentials: AdminLogin):
     
     return {"access_token": access_token, "token_type": "bearer"}
 
+@app.get("/packages/promoted")
+async def get_promoted_packages(db: Session = Depends(get_db)):
+    """Obtener paquetes promocionados para el carrusel, ordenados por carousel_order"""
+    try:
+        packages = db.query(Package).filter(
+            Package.promoted == True
+        ).order_by(Package.carousel_order, Package.id).all()
+        
+        return [package.to_dict() for package in packages]
+        
+    except Exception as e:
+        print(f"Error al obtener paquetes promocionados: {e}")
+        raise HTTPException(status_code=500, detail="Error al obtener paquetes promocionados")
+
 @app.get("/packages")
 async def get_packages(db: Session = Depends(get_db)):
     try:
@@ -430,7 +448,9 @@ async def create_package(package: PackageCreate, username: str = Depends(verify_
             price=package.price,
             image=package.image,
             category=package.category,
-            features=package.features
+            features=package.features,
+            promoted=package.promoted,
+            carousel_order=package.carousel_order
         )
         db.add(db_package)
         db.commit()
@@ -800,6 +820,103 @@ async def upload_cover_image(
     except Exception as e:
         print(f"Error al subir imagen de portada: {e}")
         raise HTTPException(status_code=500, detail="Error al subir imagen de portada")
+
+# === ENDPOINTS PARA PROMOCIONES Y CARRUSEL ===
+
+@app.put("/admin/packages/{package_id}/promote")
+async def toggle_package_promotion(
+    package_id: int, 
+    promoted: bool,
+    username: str = Depends(verify_token), 
+    db: Session = Depends(get_db)
+):
+    """Activar/desactivar promoción de un paquete"""
+    try:
+        db_package = db.query(Package).filter(Package.id == package_id).first()
+        if not db_package:
+            raise HTTPException(status_code=404, detail="Paquete no encontrado")
+        
+        db_package.promoted = promoted
+        
+        # Si se está promocionando, asignar un orden por defecto
+        if promoted and db_package.carousel_order == 0:
+            # Obtener el mayor orden actual y sumar 1
+            max_order = db.query(func.max(Package.carousel_order)).filter(
+                Package.promoted == True
+            ).scalar() or 0
+            db_package.carousel_order = max_order + 1
+        
+        db.commit()
+        db.refresh(db_package)
+        
+        return db_package.to_dict()
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error al cambiar promoción: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Error al cambiar promoción")
+
+@app.put("/admin/packages/{package_id}/carousel-order")
+async def update_carousel_order(
+    package_id: int, 
+    new_order: int,
+    username: str = Depends(verify_token), 
+    db: Session = Depends(get_db)
+):
+    """Actualizar orden del paquete en el carrusel"""
+    try:
+        db_package = db.query(Package).filter(Package.id == package_id).first()
+        if not db_package:
+            raise HTTPException(status_code=404, detail="Paquete no encontrado")
+        
+        if not db_package.promoted:
+            raise HTTPException(status_code=400, detail="Solo se puede ordenar paquetes promocionados")
+        
+        db_package.carousel_order = new_order
+        db.commit()
+        db.refresh(db_package)
+        
+        return db_package.to_dict()
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error al actualizar orden: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Error al actualizar orden")
+
+@app.post("/admin/packages/reorder-carousel")
+async def reorder_carousel_packages(
+    package_orders: List[dict],  # [{"id": 1, "order": 1}, {"id": 2, "order": 2}]
+    username: str = Depends(verify_token), 
+    db: Session = Depends(get_db)
+):
+    """Reordenar múltiples paquetes del carrusel de una vez"""
+    try:
+        for item in package_orders:
+            package_id = item.get("id")
+            new_order = item.get("order")
+            
+            if package_id and new_order is not None:
+                db_package = db.query(Package).filter(Package.id == package_id).first()
+                if db_package and db_package.promoted:
+                    db_package.carousel_order = new_order
+        
+        db.commit()
+        
+        # Retornar paquetes promocionados actualizados
+        promoted_packages = db.query(Package).filter(
+            Package.promoted == True
+        ).order_by(Package.carousel_order, Package.id).all()
+        
+        return [package.to_dict() for package in promoted_packages]
+            
+    except Exception as e:
+        print(f"Error al reordenar carrusel: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Error al reordenar carrusel")
 
 if __name__ == "__main__":
     import uvicorn

@@ -1,7 +1,7 @@
 """
 Modelos SQLAlchemy para ARMAN TRAVEL
 """
-from sqlalchemy import Column, Integer, String, Text, DateTime, JSON, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, DateTime, JSON, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from database import Base
@@ -22,6 +22,8 @@ class Package(Base):
     ideal_for = Column(String(255), nullable=True)
     gallery_images = Column(JSON, nullable=False, default=list)
     itinerary = Column(JSON, nullable=False, default=list)
+    promoted = Column(Boolean, default=False, nullable=False)
+    carousel_order = Column(Integer, default=0, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
@@ -40,6 +42,8 @@ class Package(Base):
             "ideal_for": self.ideal_for,
             "gallery_images": self.gallery_images if isinstance(self.gallery_images, list) else json.loads(self.gallery_images) if self.gallery_images else [],
             "itinerary": self.itinerary if isinstance(self.itinerary, list) else json.loads(self.itinerary) if self.itinerary else [],
+            "promoted": self.promoted,
+            "carousel_order": self.carousel_order,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }
