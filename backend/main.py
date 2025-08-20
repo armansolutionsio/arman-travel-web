@@ -60,8 +60,6 @@ cloudinary.config(
     secure=True
 )
 
-# Configuración para subida de archivos
-UPLOAD_DIR = "frontend/static/uploads"
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".jfif", ".bmp"}
 
@@ -289,8 +287,28 @@ async def send_email(subject: str, body: str, sender_name: str = "ARMAN TRAVEL",
         # No lanzamos excepción para no romper el flujo principal
 
 # Servir archivos estáticos
-frontend_dir = "frontend" if os.path.exists("frontend") else "../frontend"
-app.mount("/static", StaticFiles(directory=f"{frontend_dir}/static"), name="static")
+# En Render, el frontend se copia al directorio backend
+if os.path.exists("frontend"):
+    frontend_dir = "frontend"
+elif os.path.exists("../frontend"):
+    frontend_dir = "../frontend"
+else:
+    frontend_dir = "frontend"  # fallback
+    
+print(f"📁 Frontend directory: {frontend_dir}")
+print(f"📁 Frontend exists: {os.path.exists(frontend_dir)}")
+
+# Solo montar si el directorio static existe
+static_dir = f"{frontend_dir}/static"
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+    print(f"✅ Static files mounted from: {static_dir}")
+else:
+    print(f"⚠️ Static directory not found: {static_dir}")
+
+# Configuración para subida de archivos - después de definir frontend_dir
+UPLOAD_DIR = f"{frontend_dir}/static/uploads"
+print(f"📁 Upload directory: {UPLOAD_DIR}")
 
 # Función helper para servir archivos HTML
 def get_html_file(filename: str, fallback_content: str = None):
