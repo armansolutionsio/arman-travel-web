@@ -165,22 +165,6 @@ async function loadConfig() {
     }
 }
 
-// Actualizar información de contacto en la página
-function updateContactInfo() {
-    // Actualizar enlaces de WhatsApp
-    document.querySelectorAll('a[href*="wa.me"]').forEach(link => {
-        link.href = `https://wa.me/${config.whatsapp_number}`;
-    });
-    
-    // Actualizar números mostrados
-    document.querySelectorAll('.whatsapp-number').forEach(element => {
-        element.textContent = config.whatsapp_number;
-    });
-    
-    // Actualizar emails mostrados
-    document.querySelectorAll('.contact-email').forEach(element => {
-        element.textContent = config.recipient_email;
-
 // Cargar configuración de contacto
 async function loadContactConfig() {
     try {
@@ -198,19 +182,33 @@ async function loadContactConfig() {
 
 // Actualizar información de contacto en el DOM
 function updateContactInfo() {
+    // Usar configuración de contacto específica si está disponible, sino usar config general
+    const whatsappNumber = contactConfig.whatsapp || config.whatsapp_number;
+    const email = contactConfig.email || config.recipient_email;
+    
     // Actualizar enlaces de WhatsApp
     const whatsappLinks = document.querySelectorAll('a[href*="wa.me"]');
     whatsappLinks.forEach(link => {
-        link.href = contactConfig.whatsapp_url || `https://wa.me/${contactConfig.whatsapp}`;
+        link.href = contactConfig.whatsapp_url || `https://wa.me/${whatsappNumber}`;
     });
 
     // Actualizar enlaces de email
     const emailLinks = document.querySelectorAll('a[href*="mailto:"]');
     emailLinks.forEach(link => {
-        link.href = `mailto:${contactConfig.email}`;
+        link.href = `mailto:${email}`;
         if (link.textContent.includes('@')) {
-            link.textContent = contactConfig.email;
+            link.textContent = email;
         }
+    });
+    
+    // Actualizar números mostrados
+    document.querySelectorAll('.whatsapp-number').forEach(element => {
+        element.textContent = whatsappNumber;
+    });
+    
+    // Actualizar emails mostrados
+    document.querySelectorAll('.contact-email').forEach(element => {
+        element.textContent = email;
     });
 }
 
