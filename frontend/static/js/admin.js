@@ -1384,3 +1384,243 @@ async function createMainImageInGallery(packageId) {
         console.error('Error al crear imagen principal en galería:', error);
     }
 }
+
+// === CAROUSEL MANAGEMENT ===
+
+// Initialize carousel management
+function initCarouselManagement() {
+    const refreshBtn = document.getElementById('refreshCarouselBtn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', loadCarouselPackages);
+    }
+}
+
+// Load packages for carousel management
+async function loadCarouselPackages() {
+    try {
+        const token = localStorage.getItem('admin_token');
+        const response = await fetch(`${API_BASE_URL}/packages`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            const allPackages = await response.json();
+            displayCarouselPackages(allPackages);
+        } else {
+            showNotification('Error al cargar paquetes', 'error');
+        }
+    } catch (error) {
+        console.error('Error loading carousel packages:', error);
+        showNotification('Error al cargar paquetes', 'error');
+    }
+}
+
+// Display packages in carousel management interface
+function displayCarouselPackages(packages) {
+    const promotedContainer = document.getElementById('promotedPackages');
+    const nonPromotedContainer = document.getElementById('nonPromotedPackages');
+
+    if (!promotedContainer || !nonPromotedContainer) return;
+
+    // Separate promoted and non-promoted packages
+    const promoted = packages.filter(pkg => pkg.promoted).sort((a, b) => a.carousel_order - b.carousel_order);
+    const nonPromoted = packages.filter(pkg => !pkg.promoted);
+
+    // Display promoted packages
+    if (promoted.length === 0) {
+        promotedContainer.innerHTML = '<div class="carousel-empty">No hay paquetes promocionados</div>';
+    } else {
+        promotedContainer.innerHTML = promoted.map((pkg, index) => createCarouselPackageCard(pkg, true, index + 1)).join('');
+    }
+
+    // Display non-promoted packages
+    if (nonPromoted.length === 0) {
+        nonPromotedContainer.innerHTML = '<div class="carousel-empty">Todos los paquetes están promocionados</div>';
+    } else {
+        nonPromotedContainer.innerHTML = nonPromoted.map(pkg => createCarouselPackageCard(pkg, false)).join('');
+    }
+
+    // Initialize drag and drop
+    initCarouselDragAndDrop();
+}
+
+// Create carousel package card
+function createCarouselPackageCard(pkg, isPromoted, order = null) {
+    const statusClass = isPromoted ? 'promoted' : 'not-promoted';
+    const statusText = isPromoted ? 'Promocionado' : 'Sin Promocionar';
+    const buttonClass = isPromoted ? 'demote' : 'promote';
+    const buttonText = isPromoted ? 'Despromocionar' : 'Promocionar';
+    const buttonIcon = isPromoted ? 'fas fa-star-half-alt' : 'fas fa-star';
+
+    return `
+        <div class="carousel-package-item" data-package-id="${pkg.id}" data-promoted="${isPromoted}">
+            ${isPromoted ? `<div class="carousel-order-badge">Orden: ${order}</div>` : ''}
+            
+            <div class="carousel-package-header">
+                <div class="carousel-package-info">
+                    <h4>${pkg.title}</h4>
+                    <p>${pkg.category} - ${pkg.price}</p>
+                </div>
+                
+                <div class="carousel-package-controls">
+                    <span class="promotion-status ${statusClass}">${statusText}</span>
+                    <button class="btn-toggle-promotion ${buttonClass}" 
+                            onclick="togglePackagePromotion(${pkg.id}, ${!isPromoted})">
+                        <i class="${buttonIcon}"></i>
+                        ${buttonText}
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Toggle package promotion
+async function togglePackagePromotion(packageId, promote) {
+    try {
+        const token = localStorage.getItem('admin_token');
+        const response = await fetch(`${API_BASE_URL}/admin/packages/${packageId}/promote?promoted=${promote}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            showNotification(promote ? 'Paquete promocionado exitosamente' : 'Paquete despromovido exitosamente', 'success');
+            loadCarouselPackages(); // Reload to reflect changes
+        } else {
+            showNotification('Error al cambiar promoción', 'error');
+        }
+    } catch (error) {
+        console.error('Error toggling promotion:', error);
+        showNotification('Error al cambiar promoción', 'error');
+    }
+}
+
+// Initialize drag and drop for carousel ordering
+function initCarouselDragAndDrop() {
+    const packageItems = document.querySelectorAll('.carousel-package-item');
+    const promotedContainer = document.getElementById('promotedPackages');
+
+    packageItems.forEach(item => {
+        item.draggable = true;
+        
+        item.addEventListener('dragstart', (e) => {
+            item.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', item.dataset.packageId);
+        });
+
+        item.addEventListener('dragend', () => {
+            item.classList.remove('dragging');
+        });
+    });
+
+    // Add drop functionality to promoted packages container
+    if (promotedContainer) {
+        promotedContainer.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            promotedContainer.classList.add('drag-over');
+        });
+
+        promotedContainer.addEventListener('dragleave', () => {
+            promotedContainer.classList.remove('drag-over');
+        });
+
+        promotedContainer.addEventListener('drop', (e) => {
+            e.preventDefault();
+            promotedContainer.classList.remove('drag-over');
+            
+            const packageId = e.dataTransfer.getData('text/plain');
+            const draggedItem = document.querySelector(`[data-package-id="${packageId}"]`);
+            
+            if (draggedItem && draggedItem.dataset.promoted === 'true') {
+                // Reorder within promoted packages
+                reorderPromotedPackages(e, packageId);
+            }
+        });
+    }
+}
+
+// Reorder promoted packages
+async function reorderPromotedPackages(dropEvent, draggedPackageId) {
+    const promotedContainer = document.getElementById('promotedPackages');
+    const promotedItems = Array.from(promotedContainer.querySelectorAll('.carousel-package-item'));
+    
+    // Find the position where to insert
+    const afterElement = getDragAfterElement(promotedContainer, dropEvent.clientY);
+    const draggedElement = document.querySelector(`[data-package-id="${draggedPackageId}"]`);
+    
+    if (afterElement == null) {
+        promotedContainer.appendChild(draggedElement);
+    } else {
+        promotedContainer.insertBefore(draggedElement, afterElement);
+    }
+
+    // Update order in backend
+    const newOrder = Array.from(promotedContainer.querySelectorAll('.carousel-package-item'))
+        .map((item, index) => ({
+            id: parseInt(item.dataset.packageId),
+            order: index + 1
+        }));
+
+    try {
+        const token = localStorage.getItem('admin_token');
+        const response = await fetch(`${API_BASE_URL}/admin/packages/reorder-carousel`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(newOrder)
+        });
+
+        if (response.ok) {
+            showNotification('Orden actualizado exitosamente', 'success');
+            loadCarouselPackages(); // Reload to reflect new order
+        } else {
+            showNotification('Error al actualizar orden', 'error');
+            loadCarouselPackages(); // Reload to revert changes
+        }
+    } catch (error) {
+        console.error('Error updating order:', error);
+        showNotification('Error al actualizar orden', 'error');
+        loadCarouselPackages(); // Reload to revert changes
+    }
+}
+
+// Helper function to find drag position
+function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll('.carousel-package-item:not(.dragging)')];
+    
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+// Add carousel management to navigation
+document.addEventListener('DOMContentLoaded', function() {
+    // Add to existing navigation handler
+    const menuLinks = document.querySelectorAll('.menu-link');
+    menuLinks.forEach(link => {
+        if (link.dataset.section === 'carousel') {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                showSection('carousel');
+                loadCarouselPackages();
+            });
+        }
+    });
+    
+    // Initialize carousel management
+    initCarouselManagement();
+});
