@@ -536,6 +536,18 @@ section {
     line-height: 1.6;
 }
 
+/* Empty packages message */
+.empty-packages {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--gray);
+    font-size: 1.1rem;
+    font-style: italic;
+    background: var(--light-gray);
+    border-radius: 8px;
+    margin: 2rem 0;
+}
+
 /* Packages Section */
 .packages {
     background: var(--light-gray);
