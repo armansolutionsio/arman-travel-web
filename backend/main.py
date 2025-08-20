@@ -520,6 +520,11 @@ async def get_contact_messages(username: str = Depends(verify_token), db: Sessio
 async def health_check():
     return {"status": "OK", "message": "ARMAN TRAVEL API funcionando correctamente", "database": "PostgreSQL"}
 
+@app.get("/api/logs/stream")
+async def logs_stream_dummy():
+    """Endpoint dummy para evitar 404 errors de logs/stream"""
+    return {"status": "disabled", "message": "Logs endpoint disabled"}
+
 @app.get("/config")
 async def get_config():
     """Endpoint para obtener configuración de contacto"""

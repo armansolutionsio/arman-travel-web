@@ -1308,6 +1308,297 @@ td {
     background: rgba(123, 67, 151, 0.1);
 }
 
+/* === ESTILOS PARA ITINERARIO === */
+.itinerary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.itinerary-header label {
+    font-weight: 600;
+    color: var(--dark-gray);
+    font-size: 1.1rem;
+}
+
+.itinerary-management {
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    min-height: 200px;
+    padding: 1rem;
+}
+
+.itinerary-placeholder {
+    text-align: center;
+    color: var(--gray);
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.itinerary-placeholder i {
+    font-size: 3rem;
+    opacity: 0.5;
+}
+
+.itinerary-day {
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    transition: var(--transition);
+}
+
+.itinerary-day:hover {
+    box-shadow: var(--shadow-light);
+}
+
+.itinerary-day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: var(--light-gray);
+    border-radius: 8px 8px 0 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.itinerary-day-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.itinerary-day-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.itinerary-day-content {
+    padding: 1rem;
+}
+
+.itinerary-day-form {
+    display: grid;
+    gap: 1rem;
+}
+
+.itinerary-form-row {
+    display: grid;
+    grid-template-columns: 1fr 2fr auto;
+    gap: 1rem;
+    align-items: start;
+}
+
+.itinerary-form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.itinerary-form-group label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: var(--dark-gray);
+    font-size: 0.9rem;
+}
+
+.itinerary-form-group input,
+.itinerary-form-group textarea {
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: var(--transition);
+}
+
+.itinerary-form-group input:focus,
+.itinerary-form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(123, 67, 151, 0.1);
+}
+
+.itinerary-form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.itinerary-activity {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.itinerary-activity:last-child {
+    margin-bottom: 0;
+}
+
+.activity-text {
+    flex: 1;
+    font-size: 0.9rem;
+    color: var(--dark-gray);
+}
+
+.activity-controls {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.btn-activity {
+    background: none;
+    border: none;
+    padding: 0.25rem;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--gray);
+    transition: var(--transition);
+    font-size: 0.8rem;
+}
+
+.btn-activity:hover {
+    background: var(--border-color);
+}
+
+.btn-activity.delete:hover {
+    background: var(--danger-color);
+    color: var(--white);
+}
+
+.add-activity-form {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.add-activity-input {
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.btn-add-activity {
+    background: var(--primary-color);
+    color: var(--white);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: var(--transition);
+}
+
+.btn-add-activity:hover {
+    background: var(--primary-dark);
+}
+
+.day-number-badge {
+    background: var(--primary-color);
+    color: var(--white);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.day-icon-selector {
+    position: relative;
+    margin-right: 0.75rem;
+}
+
+.day-icon-btn {
+    background: var(--primary-color);
+    color: var(--white);
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 1rem;
+}
+
+.day-icon-btn:hover {
+    background: var(--primary-dark);
+    transform: scale(1.05);
+}
+
+.icon-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.5rem;
+    box-shadow: var(--shadow-medium);
+    z-index: 1000;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.25rem;
+    min-width: 180px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.icon-option {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--primary-color);
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-option:hover {
+    background: var(--light-gray);
+    border-color: var(--primary-color);
+    transform: scale(1.1);
+}
+
+.icon-dropdown::-webkit-scrollbar {
+    width: 4px;
+}
+
+.icon-dropdown::-webkit-scrollbar-track {
+    background: var(--light-gray);
+    border-radius: 4px;
+}
+
+.icon-dropdown::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+}
+
+.icon-dropdown::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-dark);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .carousel-sections {
@@ -1323,5 +1614,15 @@ td {
     
     .carousel-package-controls {
         justify-content: flex-end;
+    }
+    
+    .itinerary-form-row {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .add-activity-form {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
     }
 }
