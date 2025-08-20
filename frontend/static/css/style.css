@@ -48,7 +48,8 @@ body {
     position: fixed;
     top: 0;
     width: 100%;
-    background: var(--primary-color);
+    background: rgba(123, 67, 151, 0.9);
+    backdrop-filter: blur(10px);
     z-index: 1000;
     padding: 1.5rem 0;
     transition: var(--transition);
@@ -173,6 +174,202 @@ body {
     background: var(--white);
     margin: 3px 0;
     transition: var(--transition);
+}
+
+/* Hero Carousel */
+.hero-carousel {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    margin-top: 0; /* Sin margen para ocupar toda la pantalla */
+    overflow: hidden;
+}
+
+.carousel-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.carousel-track-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.carousel-track {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s ease-in-out;
+}
+
+.carousel-slide {
+    position: relative;
+    min-width: 100%;
+    height: 100%;
+    flex-shrink: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.carousel-slide::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(123, 67, 151, 0.7), rgba(155, 89, 182, 0.5));
+    z-index: 1;
+}
+
+.carousel-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    color: var(--white);
+    max-width: 600px;
+    padding: 2rem;
+}
+
+.carousel-content h3 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.carousel-content p {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.carousel-btn {
+    display: inline-block;
+    padding: 12px 30px;
+    background: var(--primary-color);
+    color: var(--white);
+    text-decoration: none;
+    border-radius: 50px;
+    font-weight: 600;
+    transition: var(--transition);
+    border: 2px solid var(--primary-color);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.carousel-btn:hover {
+    background: transparent;
+    border-color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.carousel-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--white);
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    z-index: 1001;
+    transition: var(--transition);
+    backdrop-filter: blur(10px);
+}
+
+.carousel-button:hover {
+    background: rgba(255, 255, 255, 0.4);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.carousel-button--left {
+    left: 30px;
+}
+
+.carousel-button--right {
+    right: 30px;
+}
+
+.carousel-nav {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 1001;
+}
+
+.carousel-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: var(--transition);
+    border: 2px solid transparent;
+}
+
+.carousel-indicator.active {
+    background: var(--white);
+    border-color: var(--primary-color);
+    transform: scale(1.2);
+}
+
+.carousel-indicator:hover {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+/* Responsive carousel */
+@media (max-width: 768px) {
+    .hero-carousel {
+        height: 100vh; /* Mantener altura completa en móvil también */
+        margin-top: 0;
+    }
+    
+    .carousel-content {
+        padding: 1.5rem;
+    }
+    
+    .carousel-content h3 {
+        font-size: 2rem;
+    }
+    
+    .carousel-content p {
+        font-size: 1rem;
+    }
+    
+    .carousel-button {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+    
+    .carousel-button--left {
+        left: 15px;
+    }
+    
+    .carousel-button--right {
+        right: 15px;
+    }
+    
+    .carousel-nav {
+        bottom: 20px;
+    }
 }
 
 /* Hero Section */

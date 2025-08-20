@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadContactConfig();
     loadPackages();
     initPackageFilters();
+    initHeroCarousel();
 });
 
 // Navegación móvil
@@ -390,3 +391,238 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// === HERO CAROUSEL ===
+
+let carouselPackages = [];
+let currentSlide = 0;
+let carouselInterval;
+
+// Inicializar carrusel hero
+async function initHeroCarousel() {
+    try {
+        // Cargar paquetes promocionados
+        const response = await fetch(`${API_BASE_URL}/packages/promoted`);
+        if (response.ok) {
+            carouselPackages = await response.json();
+        } else {
+            carouselPackages = [];
+        }
+        
+        if (carouselPackages.length > 0) {
+            // Hay paquetes promocionados - mostrar carrusel normal
+            createCarouselSlides();
+            createCarouselIndicators();
+            initCarouselControls();
+            startCarouselAutoplay();
+        } else {
+            // No hay paquetes promocionados - mostrar carrusel con imagen random
+            createFallbackCarouselSlide();
+        }
+    } catch (error) {
+        console.error('Error inicializando carrusel:', error);
+        // En caso de error, mostrar carrusel con imagen random
+        createFallbackCarouselSlide();
+    }
+}
+
+// Obtener paquetes de ejemplo para el carrusel
+function getSamplePackagesForCarousel() {
+    return [
+        {
+            id: 1,
+            title: "Buenos Aires Clásico",
+            description: "Descubre la capital argentina con este paquete completo de 3 días.",
+            image: "https://images.unsplash.com/photo-1589909202802-8f4aadce1849?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+        },
+        {
+            id: 2,
+            title: "Bariloche Aventura",
+            description: "Vive la aventura patagónica con deportes extremos y paisajes únicos.",
+            image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+        },
+        {
+            id: 3,
+            title: "Miami Beach",
+            description: "Disfruta de las mejores playas de Florida en este paquete internacional.",
+            image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+        }
+    ];
+}
+
+// Crear slides del carrusel
+function createCarouselSlides() {
+    const carouselTrack = document.getElementById('carouselTrack');
+    if (!carouselTrack) return;
+    
+    carouselTrack.innerHTML = carouselPackages.map(pkg => `
+        <li class="carousel-slide" style="background-image: url('${pkg.image}')">
+            <div class="carousel-content">
+                <h3>${pkg.title}</h3>
+                <p>${pkg.description}</p>
+                <a href="/package-detail/${pkg.id}" class="carousel-btn">Ver más</a>
+            </div>
+        </li>
+    `).join('');
+    
+    // Mostrar botones de navegación cuando hay múltiples slides
+    const prevButton = document.getElementById('prevButton');
+    const nextButton = document.getElementById('nextButton');
+    if (carouselPackages.length > 1) {
+        if (prevButton) prevButton.style.display = 'block';
+        if (nextButton) nextButton.style.display = 'block';
+    } else {
+        if (prevButton) prevButton.style.display = 'none';
+        if (nextButton) nextButton.style.display = 'none';
+    }
+}
+
+// Crear indicadores del carrusel
+function createCarouselIndicators() {
+    const carouselNav = document.getElementById('carouselNav');
+    if (!carouselNav) return;
+    
+    carouselNav.innerHTML = carouselPackages.map((_, index) => `
+        <button class="carousel-indicator ${index === 0 ? 'active' : ''}" data-slide="${index}"></button>
+    `).join('');
+}
+
+// Inicializar controles del carrusel
+function initCarouselControls() {
+    const prevButton = document.getElementById('prevButton');
+    const nextButton = document.getElementById('nextButton');
+    const indicators = document.querySelectorAll('.carousel-indicator');
+    
+    // Botones anterior/siguiente
+    if (prevButton) {
+        prevButton.addEventListener('click', () => {
+            stopCarouselAutoplay();
+            prevSlide();
+            startCarouselAutoplay();
+        });
+    }
+    
+    if (nextButton) {
+        nextButton.addEventListener('click', () => {
+            stopCarouselAutoplay();
+            nextSlide();
+            startCarouselAutoplay();
+        });
+    }
+    
+    // Indicadores
+    indicators.forEach(indicator => {
+        indicator.addEventListener('click', (e) => {
+            stopCarouselAutoplay();
+            const slideIndex = parseInt(e.target.dataset.slide);
+            goToSlide(slideIndex);
+            startCarouselAutoplay();
+        });
+    });
+}
+
+// Ir a slide anterior
+function prevSlide() {
+    currentSlide = currentSlide === 0 ? carouselPackages.length - 1 : currentSlide - 1;
+    updateCarousel();
+}
+
+// Ir a slide siguiente
+function nextSlide() {
+    currentSlide = currentSlide === carouselPackages.length - 1 ? 0 : currentSlide + 1;
+    updateCarousel();
+}
+
+// Ir a slide específico
+function goToSlide(slideIndex) {
+    currentSlide = slideIndex;
+    updateCarousel();
+}
+
+// Actualizar carrusel
+function updateCarousel() {
+    const carouselTrack = document.getElementById('carouselTrack');
+    const indicators = document.querySelectorAll('.carousel-indicator');
+    
+    if (carouselTrack) {
+        const translateX = -currentSlide * 100;
+        carouselTrack.style.transform = `translateX(${translateX}%)`;
+    }
+    
+    // Actualizar indicadores
+    indicators.forEach((indicator, index) => {
+        indicator.classList.toggle('active', index === currentSlide);
+    });
+}
+
+// Iniciar autoplay
+function startCarouselAutoplay() {
+    stopCarouselAutoplay(); // Limpiar cualquier intervalo existente
+    carouselInterval = setInterval(() => {
+        nextSlide();
+    }, 5000); // Cambiar slide cada 5 segundos
+}
+
+// Detener autoplay
+function stopCarouselAutoplay() {
+    if (carouselInterval) {
+        clearInterval(carouselInterval);
+        carouselInterval = null;
+    }
+}
+
+// Pausar autoplay cuando el usuario interactúa
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        stopCarouselAutoplay();
+    } else {
+        startCarouselAutoplay();
+    }
+});
+
+
+// Crear carrusel con imagen random cuando no hay promocionados
+function createFallbackCarouselSlide() {
+    const carouselTrack = document.getElementById('carouselTrack');
+    const carouselNav = document.getElementById('carouselNav');
+    
+    if (!carouselTrack) return;
+    
+    // Imagen random (la misma del hero)
+    const fallbackImage = "https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80";
+    
+    // Crear slide único con imagen random
+    carouselTrack.innerHTML = `
+        <li class="carousel-slide" style="background-image: url('${fallbackImage}')">
+            <div class="carousel-content">
+                <h3>Descubre Destinos Únicos</h3>
+                <p>Explora nuestros increíbles paquetes de viaje y encuentra tu próxima aventura.</p>
+                <a href="#packages" class="carousel-btn" onclick="scrollToPackages(event)">Ver Más</a>
+            </div>
+        </li>
+    `;
+    
+    // Limpiar indicadores (solo una imagen)
+    if (carouselNav) {
+        carouselNav.innerHTML = '';
+    }
+    
+    // Ocultar botones de navegación (solo una imagen)
+    const prevButton = document.getElementById('prevButton');
+    const nextButton = document.getElementById('nextButton');
+    if (prevButton) prevButton.style.display = 'none';
+    if (nextButton) nextButton.style.display = 'none';
+}
+
+// Función para scroll suave a paquetes
+function scrollToPackages(event) {
+    event.preventDefault();
+    const packagesSection = document.getElementById('packages');
+    if (packagesSection) {
+        const offsetTop = packagesSection.offsetTop - 80;
+        window.scrollTo({
+            top: offsetTop,
+            behavior: 'smooth'
+        });
+    }
+}
