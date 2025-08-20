@@ -284,19 +284,53 @@ function displayItinerary(itinerary) {
     
     if (itinerary.length === 0) return;
 
-    const icons = ['fas fa-plane', 'fas fa-camera', 'fas fa-utensils', 'fas fa-map-marked-alt', 'fas fa-star'];
+    const defaultIcons = ['fas fa-plane', 'fas fa-camera', 'fas fa-utensils', 'fas fa-map-marked-alt', 'fas fa-star', 'fas fa-mountain', 'fas fa-swimming-pool'];
     
-    itineraryContainer.innerHTML = itinerary.map((item, index) => `
-        <div class="timeline-item">
-            <div class="timeline-icon">
-                <i class="${icons[index % icons.length]}"></i>
+    itineraryContainer.innerHTML = itinerary.map((item, index) => {
+        // Manejar diferentes formatos de itinerario
+        let title, description, activities = [], icon;
+        
+        if (typeof item === 'string') {
+            // Formato legacy: solo string
+            title = `Día ${index + 1}`;
+            description = item;
+            icon = defaultIcons[index % defaultIcons.length];
+        } else if (item.title && item.description) {
+            // Formato nuevo: objeto con título, descripción, actividades e icono
+            title = item.title;
+            description = item.description;
+            activities = item.activities || [];
+            icon = item.icon || defaultIcons[index % defaultIcons.length];
+        } else {
+            // Formato legacy objeto: solo descripción
+            title = `Día ${index + 1}`;
+            description = item.description || item;
+            icon = item.icon || defaultIcons[index % defaultIcons.length];
+        }
+        
+        // Renderizar actividades si las hay
+        const activitiesHtml = activities.length > 0 ? `
+            <div class="timeline-activities">
+                <h5>Actividades:</h5>
+                <ul>
+                    ${activities.map(activity => `<li>${activity}</li>`).join('')}
+                </ul>
             </div>
-            <div class="timeline-content">
-                <h4>${item.title || `Día ${index + 1}`}</h4>
-                <p>${item.description || item}</p>
+        ` : '';
+        
+        return `
+            <div class="timeline-item">
+                <div class="timeline-icon">
+                    <i class="${icon}"></i>
+                </div>
+                <div class="timeline-content">
+                    <h4>${title}</h4>
+                    <p>${description}</p>
+                    ${activitiesHtml}
+                </div>
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 // Cargar configuración de contacto
