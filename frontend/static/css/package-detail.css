@@ -261,18 +261,10 @@
 
 .itinerary-timeline {
     position: relative;
-    padding-left: 5rem;
+    padding-left: 4.5rem;
 }
 
-.itinerary-timeline::before {
-    content: '';
-    position: absolute;
-    left: 2rem;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: linear-gradient(to bottom, var(--primary-color), var(--primary-light));
-}
+/* .itinerary-timeline::before - Línea vertical removida */
 
 .timeline-item {
     position: relative;
@@ -292,14 +284,15 @@
     color: var(--white);
     font-size: 1rem;
     position: absolute;
-    left: -3rem;
+    left: -4rem;
     z-index: 1;
+    flex-shrink: 0;
 }
 
 .timeline-content {
     flex: 1;
     padding: 0.5rem 0;
-    padding-left: 1rem;
+    padding-left: 0;
 }
 
 .timeline-content h4 {
@@ -652,4 +645,40 @@
     .image-gallery {
         grid-template-columns: 1fr;
     }
+}
+
+/* Estilos para actividades del itinerario */
+.timeline-activities {
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e0e0e0;
+}
+
+.timeline-activities h5 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.timeline-activities ul {
+    margin: 0;
+    padding-left: 1.2rem;
+    list-style-type: none;
+}
+
+.timeline-activities li {
+    position: relative;
+    margin-bottom: 0.3rem;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    line-height: 1.4;
+}
+
+.timeline-activities li:before {
+    content: "•";
+    color: var(--primary-color);
+    font-weight: bold;
+    position: absolute;
+    left: -1rem;
 }
