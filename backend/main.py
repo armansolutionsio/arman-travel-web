@@ -287,13 +287,14 @@ async def send_email(subject: str, body: str, sender_name: str = "ARMAN TRAVEL",
         # No lanzamos excepción para no romper el flujo principal
 
 # Servir archivos estáticos
-# En Render, el frontend se copia al directorio backend
-if os.path.exists("frontend"):
-    frontend_dir = "frontend"
-elif os.path.exists("../frontend"):
+# Docker: frontend está en /app/frontend, ejecutamos desde /app/backend
+# Local: frontend está en ../frontend
+if os.path.exists("../frontend"):
     frontend_dir = "../frontend"
+elif os.path.exists("frontend"):
+    frontend_dir = "frontend"
 else:
-    frontend_dir = "frontend"  # fallback
+    frontend_dir = "../frontend"  # fallback para Docker
     
 print(f"📁 Frontend directory: {frontend_dir}")
 print(f"📁 Frontend exists: {os.path.exists(frontend_dir)}")
