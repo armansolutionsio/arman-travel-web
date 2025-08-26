@@ -73,6 +73,35 @@ class PackageGalleryImage(Base):
             "created_at": self.created_at.isoformat() if self.created_at else None
         }
 
+class PackageHotel(Base):
+    __tablename__ = "package_hotels"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    package_id = Column(Integer, ForeignKey('packages.id'), nullable=False)
+    name = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    image_url = Column(String(500), nullable=False)
+    price = Column(String(100), nullable=False)  # Precio por noche o total
+    amenities = Column(JSON, nullable=False, default=list)  # Lista de amenities del hotel
+    order_index = Column(Integer, default=0)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    def to_dict(self):
+        """Convertir el modelo a diccionario para JSON"""
+        return {
+            "id": self.id,
+            "package_id": self.package_id,
+            "name": self.name,
+            "description": self.description,
+            "image_url": self.image_url,
+            "price": self.price,
+            "amenities": self.amenities if isinstance(self.amenities, list) else json.loads(self.amenities) if self.amenities else [],
+            "order_index": self.order_index,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None
+        }
+
 class ContactMessage(Base):
     __tablename__ = "contact_messages"
     
