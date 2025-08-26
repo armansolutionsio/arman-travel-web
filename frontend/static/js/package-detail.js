@@ -154,6 +154,9 @@ function displayPackageDetail(package) {
     // Galería
     displayGallery(package.gallery_images, package.image, package.title);
 
+    // Hoteles
+    displayHotels(package.id);
+
     // Itinerario
     if (package.itinerary && package.itinerary.length > 0) {
         displayItinerary(package.itinerary);
@@ -641,6 +644,70 @@ function openImageModal(imageSrc, caption = '') {
         }
     };
     document.addEventListener('keydown', closeOnEscape);
+}
+
+// === MOSTRAR HOTELES ===
+
+// Mostrar hoteles del paquete
+async function displayHotels(packageId) {
+    const hotelsContainer = document.getElementById('packageHotels');
+    const noHotelsMessage = hotelsContainer.querySelector('.no-hotels');
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/packages/${packageId}/hotels`);
+        if (response.ok) {
+            const hotels = await response.json();
+            
+            if (hotels.length === 0) {
+                // No hay hoteles, mostrar mensaje y ocultar sección
+                const hotelsSection = document.querySelector('.hotels-section');
+                hotelsSection.style.display = 'none';
+                return;
+            }
+            
+            // Ocultar mensaje de "no hoteles"
+            if (noHotelsMessage) {
+                noHotelsMessage.style.display = 'none';
+            }
+            
+            // Mostrar hoteles
+            const hotelsHtml = hotels.map(hotel => `
+                <div class="hotel-card">
+                    <div class="hotel-image">
+                        <img src="${hotel.image_url}" alt="${hotel.name}" 
+                             onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22200%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23f0f0f0%22/><text x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 fill=%22%23999%22 font-size=%2216%22>Hotel</text></svg>'">
+                        <div class="hotel-price">${hotel.price}</div>
+                    </div>
+                    <div class="hotel-info">
+                        <h3>${hotel.name}</h3>
+                        ${hotel.description ? `<p class="hotel-description">${hotel.description}</p>` : ''}
+                        <div class="hotel-amenities">
+                            ${hotel.amenities && hotel.amenities.length > 0 
+                                ? hotel.amenities.map(amenity => `<span class="amenity"><i class="${amenity.icon}"></i> ${amenity.name}</span>`).join('')
+                                : '<span class="amenity"><i class="fas fa-wifi"></i> WiFi</span><span class="amenity"><i class="fas fa-swimming-pool"></i> Piscina</span><span class="amenity"><i class="fas fa-utensils"></i> Restaurante</span>'
+                            }
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            hotelsContainer.innerHTML = hotelsHtml;
+            
+            // Mostrar sección de hoteles
+            const hotelsSection = document.querySelector('.hotels-section');
+            hotelsSection.style.display = 'block';
+            
+        } else {
+            // Error al cargar hoteles, ocultar sección
+            const hotelsSection = document.querySelector('.hotels-section');
+            hotelsSection.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error cargando hoteles:', error);
+        // Error al cargar hoteles, ocultar sección
+        const hotelsSection = document.querySelector('.hotels-section');
+        hotelsSection.style.display = 'none';
+    }
 }
 
 // Animaciones CSS

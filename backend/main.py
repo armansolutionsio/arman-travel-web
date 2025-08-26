@@ -14,7 +14,7 @@ from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, func
 from database import get_db, test_connection, engine
-from models import Package, ContactMessage, PackageGalleryImage, Base
+from models import Package, ContactMessage, PackageGalleryImage, PackageHotel, Base
 import json
 import smtplib
 import ssl
@@ -117,6 +117,22 @@ class GalleryImageCreate(BaseModel):
     caption: Optional[str] = None
     order_index: Optional[int] = 0
     is_cover: Optional[int] = 0
+
+class HotelCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    image_url: str
+    price: str
+    amenities: Optional[List[dict]] = None
+    order_index: Optional[int] = 0
+
+class HotelUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    image_url: Optional[str] = None
+    price: Optional[str] = None
+    amenities: Optional[List[dict]] = None
+    order_index: Optional[int] = None
 
 # Eventos de inicio y cierre
 @app.on_event("startup")
@@ -922,6 +938,225 @@ async def reorder_carousel_packages(
         print(f"Error al reordenar carrusel: {e}")
         db.rollback()
         raise HTTPException(status_code=500, detail="Error al reordenar carrusel")
+
+# === ENDPOINTS PARA GESTIÓN DE HOTELES ===
+
+@app.get("/packages/{package_id}/hotels")
+async def get_package_hotels(package_id: int, db: Session = Depends(get_db)):
+    """Obtener hoteles de un paquete"""
+    try:
+        # Verificar que el paquete existe
+        package = db.query(Package).filter(Package.id == package_id).first()
+        if not package:
+            raise HTTPException(status_code=404, detail="Paquete no encontrado")
+        
+        # Obtener hoteles del paquete
+        hotels = db.query(PackageHotel).filter(
+            PackageHotel.package_id == package_id
+        ).order_by(PackageHotel.order_index, PackageHotel.id).all()
+        
+        return [hotel.to_dict() for hotel in hotels]
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error al obtener hoteles: {e}")
+        raise HTTPException(status_code=500, detail="Error al obtener hoteles")
+
+@app.post("/admin/packages/{package_id}/hotels")
+async def create_package_hotel(
+    package_id: int,
+    hotel_data: HotelCreate,
+    username: str = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    """Agregar hotel a un paquete"""
+    try:
+        print(f"=== CREANDO HOTEL PARA PAQUETE {package_id} ===")
+        print(f"Datos recibidos: {hotel_data}")
+        
+        # Verificar que el paquete existe
+        package = db.query(Package).filter(Package.id == package_id).first()
+        if not package:
+            raise HTTPException(status_code=404, detail="Paquete no encontrado")
+        
+        # Crear nuevo hotel
+        amenities_list = hotel_data.amenities if hotel_data.amenities is not None else []
+        print(f"Amenities a guardar: {amenities_list}")
+        
+        hotel = PackageHotel(
+            package_id=package_id,
+            name=hotel_data.name,
+            description=hotel_data.description,
+            image_url=hotel_data.image_url,
+            price=hotel_data.price,
+            amenities=amenities_list,
+            order_index=hotel_data.order_index or 0
+        )
+        print(f"Hotel creado en memoria: {hotel.name}")
+        
+        try:
+            print("Agregando hotel a la sesión...")
+            db.add(hotel)
+            print("Hotel agregado, haciendo commit...")
+            db.commit()
+            print("Commit exitoso, refrescando hotel...")
+            db.refresh(hotel)
+            print("Hotel refrescado exitosamente")
+            
+            result = hotel.to_dict()
+            print(f"Hotel convertido a dict: {result}")
+            return result
+        except Exception as db_error:
+            print(f"Error en operación de base de datos: {db_error}")
+            print(f"Tipo de error: {type(db_error)}")
+            db.rollback()
+            raise
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error al crear hotel: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Error al crear hotel")
+
+@app.post("/admin/packages/{package_id}/hotels/upload")
+async def upload_hotel_image(
+    package_id: int,
+    file: UploadFile = File(...),
+    name: str = Form(...),
+    description: str = Form(""),
+    price: str = Form(...),
+    amenities: str = Form("[]"),  # JSON string de amenities
+    order_index: int = Form(0),
+    username: str = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    """Subir imagen y crear hotel"""
+    try:
+        # Verificar que el paquete existe
+        package = db.query(Package).filter(Package.id == package_id).first()
+        if not package:
+            raise HTTPException(status_code=404, detail="Paquete no encontrado")
+        
+        # Validar archivo
+        if not file.filename:
+            raise HTTPException(status_code=400, detail="No se proporcionó archivo")
+        
+        if not is_valid_image_file(file.filename):
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Tipo de archivo no válido. Permitidos: {', '.join(ALLOWED_EXTENSIONS)}"
+            )
+        
+        # Verificar tamaño
+        file.file.seek(0, 2)
+        file_size = file.file.tell()
+        file.file.seek(0)
+        
+        if file_size > MAX_FILE_SIZE:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Archivo muy grande. Máximo permitido: {MAX_FILE_SIZE / (1024*1024):.1f}MB"
+            )
+        
+        # Subir archivo a Cloudinary
+        image_url = upload_to_cloudinary(file, "arman-travel/hotels")
+        
+        # Parsear amenities JSON
+        try:
+            import json
+            amenities_list = json.loads(amenities) if amenities else []
+        except json.JSONDecodeError:
+            amenities_list = []
+        
+        # Crear hotel
+        hotel = PackageHotel(
+            package_id=package_id,
+            name=name,
+            description=description if description else None,
+            image_url=image_url,
+            price=price,
+            amenities=amenities_list,
+            order_index=order_index
+        )
+        
+        db.add(hotel)
+        db.commit()
+        db.refresh(hotel)
+        
+        return hotel.to_dict()
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error al subir hotel: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Error al subir hotel")
+
+@app.put("/admin/packages/{package_id}/hotels/{hotel_id}")
+async def update_package_hotel(
+    package_id: int,
+    hotel_id: int,
+    hotel_data: HotelUpdate,
+    username: str = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    """Actualizar hotel de un paquete"""
+    try:
+        hotel = db.query(PackageHotel).filter(
+            PackageHotel.id == hotel_id,
+            PackageHotel.package_id == package_id
+        ).first()
+        
+        if not hotel:
+            raise HTTPException(status_code=404, detail="Hotel no encontrado")
+        
+        # Actualizar campos proporcionados
+        update_data = hotel_data.dict(exclude_unset=True)
+        for field, value in update_data.items():
+            setattr(hotel, field, value)
+        
+        db.commit()
+        db.refresh(hotel)
+        
+        return hotel.to_dict()
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error al actualizar hotel: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Error al actualizar hotel")
+
+@app.delete("/admin/packages/{package_id}/hotels/{hotel_id}")
+async def delete_package_hotel(
+    package_id: int,
+    hotel_id: int,
+    username: str = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    """Eliminar hotel de un paquete"""
+    try:
+        hotel = db.query(PackageHotel).filter(
+            PackageHotel.id == hotel_id,
+            PackageHotel.package_id == package_id
+        ).first()
+        
+        if not hotel:
+            raise HTTPException(status_code=404, detail="Hotel no encontrado")
+        
+        db.delete(hotel)
+        db.commit()
+        
+        return {"message": "Hotel eliminado correctamente"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error al eliminar hotel: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Error al eliminar hotel")
 
 if __name__ == "__main__":
     import uvicorn
