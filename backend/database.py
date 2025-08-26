@@ -12,14 +12,14 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     # Fallback para desarrollo local
     DATABASE_URL = "postgresql://arman_user:arman_password_2024@localhost:5432/arman_travel"
-    print("⚠️ Usando base de datos de desarrollo local")
+    print("[WARNING] Usando base de datos de desarrollo local")
 
 # Render usa postgres:// pero SQLAlchemy 1.4+ requiere postgresql://
 if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
-    print("🔄 URL de base de datos convertida para SQLAlchemy")
+    print("[INFO] URL de base de datos convertida para SQLAlchemy")
 
-print(f"🔗 Conectando a: {DATABASE_URL[:50]}...")
+print(f"[INFO] Conectando a: {DATABASE_URL[:50]}...")
 
 # Motor de SQLAlchemy
 engine = create_engine(DATABASE_URL, echo=False)

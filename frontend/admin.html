@@ -237,7 +237,13 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="price">Precio *</label>
-                        <input type="text" id="price" name="price" placeholder="ej: $50.000 o USD 500" required>
+                        <div class="price-input-container">
+                            <select id="priceCurrency" name="priceCurrency" class="price-currency" required>
+                                <option value="USD" selected>USD</option>
+                                <option value="$">$</option>
+                            </select>
+                            <input type="number" id="price" name="price" placeholder="1000" min="0" step="1" required>
+                        </div>
                     </div>
                     
                     <div class="form-group">
@@ -364,6 +370,163 @@
                         <div class="itinerary-placeholder" id="itineraryPlaceholder">
                             <i class="fas fa-route"></i>
                             <p>No hay días en el itinerario. Haz clic en "Agregar Día" para comenzar.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gestión de Hoteles -->
+                <div class="form-group" id="hotelsSection" style="display: none;">
+                    <div class="hotels-header">
+                        <label>Hoteles del Paquete</label>
+                        <button type="button" class="btn btn-sm btn-primary" id="addHotelBtn">
+                            <i class="fas fa-plus"></i>
+                            Agregar Hotel
+                        </button>
+                    </div>
+                    
+                    <div class="hotels-management" id="hotelsManagement">
+                        <!-- Se llenará dinámicamente -->
+                    </div>
+                    
+                    <!-- Opciones de agregar hotel (inicialmente oculto) -->
+                    <div class="hotel-add-options" id="hotelAddOptions" style="display: none;">
+                        <div class="add-options-buttons">
+                            <button type="button" class="btn btn-secondary" id="addHotelUrlBtn">
+                                <i class="fas fa-link"></i>
+                                Agregar por URL
+                            </button>
+                            <button type="button" class="btn btn-primary" id="addHotelFileBtn">
+                                <i class="fas fa-upload"></i>
+                                Subir Imagen
+                            </button>
+                            <button type="button" class="btn btn-sm btn-secondary" id="cancelAddHotelBtn">
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Hotel Upload Area -->
+                    <div class="hotel-upload-area" id="hotelUploadArea" style="display: none;">
+                        <div class="hotel-form">
+                            <div class="form-row">
+                                <div class="form-group" style="flex: 1;">
+                                    <label>Nombre del Hotel *</label>
+                                    <input type="text" id="hotelName" placeholder="Nombre del hotel">
+                                </div>
+                                <div class="form-group">
+                                    <label>Precio *</label>
+                                    <div class="price-input-container">
+                                        <select id="hotelPriceCurrency" class="price-currency">
+                                            <option value="USD" selected>USD</option>
+                                            <option value="$">$</option>
+                                        </select>
+                                        <input type="number" id="hotelPrice" placeholder="150" min="0" step="1">
+                                        <span class="price-suffix">/noche</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Descripción</label>
+                                <textarea id="hotelDescription" rows="2" placeholder="Descripción del hotel (opcional)"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <div class="amenities-header">
+                                    <label>Amenities del Hotel</label>
+                                    <button type="button" class="btn-add-amenity" id="addAmenityBtn">
+                                        <i class="fas fa-plus"></i>
+                                        Agregar
+                                    </button>
+                                </div>
+                                <div class="selected-amenities" id="selectedAmenities">
+                                    <!-- Amenities seleccionados -->
+                                </div>
+                                <div class="amenity-selector" id="amenitySelector" style="display: none;">
+                                    <select id="amenityDropdown">
+                                        <option value="">Selecciona un amenity</option>
+                                    </select>
+                                    <div class="amenity-actions">
+                                        <button type="button" class="btn btn-sm btn-primary" id="confirmAmenityBtn">Agregar</button>
+                                        <button type="button" class="btn btn-sm btn-secondary" id="cancelAmenityBtn">Cancelar</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="hotel-upload-zone" id="hotelUploadZone">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Arrastra una imagen aquí o haz clic para seleccionar</p>
+                                <input type="file" id="hotelFileInput" accept="image/*" style="display: none;">
+                            </div>
+                            <div class="hotel-upload-progress" id="hotelUploadProgress" style="display: none;">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="hotelProgressFill"></div>
+                                </div>
+                                <span id="hotelProgressText">0%</span>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-primary" id="addHotelToListBtn">
+                                    <i class="fas fa-plus"></i>
+                                    Agregar a la Lista
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="cancelHotelUploadBtn">Cancelar</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Hotel URL Input -->
+                    <div class="hotel-url-input" id="hotelUrlInput" style="display: none;">
+                        <div class="hotel-form">
+                            <div class="form-row">
+                                <div class="form-group" style="flex: 1;">
+                                    <label>Nombre del Hotel *</label>
+                                    <input type="text" id="hotelUrlName" placeholder="Nombre del hotel">
+                                </div>
+                                <div class="form-group">
+                                    <label>Precio *</label>
+                                    <div class="price-input-container">
+                                        <select id="hotelUrlPriceCurrency" class="price-currency">
+                                            <option value="USD" selected>USD</option>
+                                            <option value="$">$</option>
+                                        </select>
+                                        <input type="number" id="hotelUrlPrice" placeholder="150" min="0" step="1">
+                                        <span class="price-suffix">/noche</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Descripción</label>
+                                <textarea id="hotelUrlDescription" rows="2" placeholder="Descripción del hotel (opcional)"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <div class="amenities-header">
+                                    <label>Amenities del Hotel</label>
+                                    <button type="button" class="btn-add-amenity" id="addUrlAmenityBtn">
+                                        <i class="fas fa-plus"></i>
+                                        Agregar
+                                    </button>
+                                </div>
+                                <div class="selected-amenities" id="selectedUrlAmenities">
+                                    <!-- Amenities seleccionados -->
+                                </div>
+                                <div class="amenity-selector" id="urlAmenitySelector" style="display: none;">
+                                    <select id="urlAmenityDropdown">
+                                        <option value="">Selecciona un amenity</option>
+                                    </select>
+                                    <div class="amenity-actions">
+                                        <button type="button" class="btn btn-sm btn-primary" id="confirmUrlAmenityBtn">Agregar</button>
+                                        <button type="button" class="btn btn-sm btn-secondary" id="cancelUrlAmenityBtn">Cancelar</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>URL de Imagen *</label>
+                                <input type="url" id="hotelImageUrl" placeholder="https://ejemplo.com/imagen.jpg">
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-primary" id="addHotelUrlToListBtn">
+                                    <i class="fas fa-plus"></i>
+                                    Agregar a la Lista
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="cancelHotelUrlBtn">Cancelar</button>
+                            </div>
                         </div>
                     </div>
                 </div>
