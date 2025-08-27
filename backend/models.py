@@ -102,6 +102,52 @@ class PackageHotel(Base):
             "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }
 
+class PackageInfo(Base):
+    __tablename__ = "package_info"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    package_id = Column(Integer, ForeignKey('packages.id'), nullable=False)
+    icon = Column(String(100), nullable=False)  # FontAwesome class like "fas fa-calendar-alt"
+    label = Column(String(255), nullable=False)  # e.g., "Duración", "Ideal para"
+    value = Column(String(255), nullable=False)  # e.g., "7 días", "Familias"
+    order_index = Column(Integer, default=0)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    def to_dict(self):
+        """Convertir el modelo a diccionario para JSON"""
+        return {
+            "id": self.id,
+            "package_id": self.package_id,
+            "icon": self.icon,
+            "label": self.label,
+            "value": self.value,
+            "order_index": self.order_index,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None
+        }
+
+class PackageFeature(Base):
+    __tablename__ = "package_features"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    package_id = Column(Integer, ForeignKey('packages.id'), nullable=False)
+    text = Column(String(255), nullable=False)  # e.g., "Vuelos incluidos", "Hotel 4 estrellas"
+    order_index = Column(Integer, default=0)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    def to_dict(self):
+        """Convertir el modelo a diccionario para JSON"""
+        return {
+            "id": self.id,
+            "package_id": self.package_id,
+            "text": self.text,
+            "order_index": self.order_index,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None
+        }
+
 class ContactMessage(Base):
     __tablename__ = "contact_messages"
     
