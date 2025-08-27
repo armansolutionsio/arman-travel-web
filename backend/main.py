@@ -18,6 +18,7 @@ from models import Package, ContactMessage, PackageGalleryImage, PackageHotel, P
 import json
 import smtplib
 import ssl
+import re
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import cloudinary
@@ -424,17 +425,56 @@ async def get_promoted_packages(db: Session = Depends(get_db)):
             Package.promoted == True
         ).order_by(Package.carousel_order, Package.id).all()
         
-        return [package.to_dict() for package in packages]
+        return [get_package_with_features(package, db) for package in packages]
         
     except Exception as e:
         print(f"Error al obtener paquetes promocionados: {e}")
         raise HTTPException(status_code=500, detail="Error al obtener paquetes promocionados")
 
+def extract_price_value(price_string):
+    """Extraer valor numérico de un string de precio"""
+    # Buscar números en el string, incluyendo decimales
+    numbers = re.findall(r'[\d,]+\.?\d*', price_string.replace(',', ''))
+    if numbers:
+        try:
+            return float(numbers[0])
+        except ValueError:
+            return float('inf')  # Si no se puede convertir, devolver infinito para que no sea el menor
+    return float('inf')
+
+def get_package_with_features(package, db):
+    """Helper para obtener un paquete con sus features de la base de datos y calcular precio"""
+    package_dict = package.to_dict()
+    
+    # Obtener features de la base de datos
+    db_features = db.query(PackageFeature).filter(
+        PackageFeature.package_id == package.id
+    ).order_by(PackageFeature.order_index).all()
+    
+    # Si hay features en la base de datos, usarlas; sino usar las hardcodeadas
+    if db_features:
+        package_dict['features'] = [feature.text for feature in db_features]
+    
+    # Obtener hoteles y calcular precio más bajo
+    hotels = db.query(PackageHotel).filter(
+        PackageHotel.package_id == package.id
+    ).all()
+    
+    if hotels:
+        # Encontrar el precio más bajo entre los hoteles
+        lowest_price = min(extract_price_value(hotel.price) for hotel in hotels)
+        if lowest_price != float('inf'):
+            # Encontrar el hotel con el precio más bajo para usar su formato
+            cheapest_hotel = min(hotels, key=lambda h: extract_price_value(h.price))
+            package_dict['price'] = cheapest_hotel.price
+    
+    return package_dict
+
 @app.get("/packages")
 async def get_packages(db: Session = Depends(get_db)):
     try:
         packages = db.query(Package).all()
-        return [package.to_dict() for package in packages]
+        return [get_package_with_features(package, db) for package in packages]
         
     except Exception as e:
         print(f"Error al obtener paquetes: {e}")
@@ -446,7 +486,7 @@ async def get_package(package_id: int, db: Session = Depends(get_db)):
         package = db.query(Package).filter(Package.id == package_id).first()
         if not package:
             raise HTTPException(status_code=404, detail="Paquete no encontrado")
-        return package.to_dict()
+        return get_package_with_features(package, db)
         
     except HTTPException:
         raise
