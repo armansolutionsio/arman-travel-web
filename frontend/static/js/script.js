@@ -207,10 +207,34 @@ function updateContactInfo() {
         element.textContent = whatsappNumber;
     });
     
+    // Actualizar números de teléfono mostrados
+    document.querySelectorAll('.phone-number').forEach(element => {
+        const formattedPhone = formatPhoneNumber(whatsappNumber);
+        element.textContent = formattedPhone;
+        element.href = `tel:+${whatsappNumber}`;
+    });
+    
     // Actualizar emails mostrados
     document.querySelectorAll('.contact-email').forEach(element => {
         element.textContent = email;
     });
+}
+
+// Formatear número de teléfono
+function formatPhoneNumber(phoneNumber) {
+    // Si el número empieza con 549, formatear como +54 11 xxxx-xxxx
+    if (phoneNumber.startsWith('549')) {
+        const cleanNumber = phoneNumber.substring(2); // Quitar '54'
+        if (cleanNumber.startsWith('11')) {
+            return `+54 11 ${cleanNumber.substring(2, 6)}-${cleanNumber.substring(6)}`;
+        }
+    }
+    // Si el número empieza con 11, formatear como +54 11 xxxx-xxxx
+    else if (phoneNumber.startsWith('11')) {
+        return `+54 11 ${phoneNumber.substring(2, 6)}-${phoneNumber.substring(6)}`;
+    }
+    // Formato por defecto
+    return `+${phoneNumber}`;
 }
 
 // Cargar paquetes
