@@ -175,8 +175,23 @@
                     <!-- Gallery -->
                     <div class="gallery-section">
                         <h2>Galería de Imágenes</h2>
-                        <div class="image-gallery" id="packageGallery">
-                            <!-- Se llenará con JavaScript o imágenes por defecto -->
+                        <div class="gallery-carousel">
+                            <div class="gallery-carousel-container">
+                                <div class="gallery-carousel-track-container">
+                                    <div class="gallery-carousel-track" id="galleryCarouselTrack">
+                                        <!-- Se llenará con JavaScript -->
+                                    </div>
+                                </div>
+                                <button class="gallery-carousel-button gallery-carousel-button--left" id="galleryPrevButton">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <button class="gallery-carousel-button gallery-carousel-button--right" id="galleryNextButton">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                                <div class="gallery-carousel-nav" id="galleryCarouselNav">
+                                    <!-- Los indicadores se crearán dinámicamente -->
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
