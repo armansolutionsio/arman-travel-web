@@ -1000,14 +1000,11 @@ function selectHotel(hotelId, hotelPrice) {
     // Marcar hotel como seleccionado visualmente
     markSelectedHotel(hotelId);
     
-    // Scroll suave hacia el formulario de reserva
-    const reservationCard = document.querySelector('.price-card');
-    if (reservationCard) {
-        reservationCard.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'center' 
-        });
-    }
+    // Scroll suave hacia el top para ver el cambio de precio
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
 }
 
 // Marcar hotel seleccionado visualmente
