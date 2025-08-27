@@ -561,6 +561,10 @@ function openPackageModal(packageId = null) {
             modalTitle.textContent = 'Editar Paquete';
             submitBtn.textContent = 'Actualizar Paquete';
             
+            // Establecer packageId global y en el dataset del formulario
+            window.currentPackageId = packageId;
+            document.getElementById('packageForm').dataset.packageId = packageId;
+            
             // Llenar formulario con datos existentes
             document.getElementById('title').value = package.title;
             document.getElementById('description').value = package.description;
@@ -588,6 +592,16 @@ function openPackageModal(packageId = null) {
             hotelsSection.style.display = 'block';
             loadPackageHotels(packageId);
             
+            // Mostrar sección de información del paquete y cargarla
+            const packageInfoSection = document.getElementById('packageInfoSection');
+            packageInfoSection.style.display = 'block';
+            loadPackageInfo(packageId);
+            
+            // Mostrar sección de características y cargarlas
+            const packageFeaturesSection = document.getElementById('packageFeaturesSection');
+            packageFeaturesSection.style.display = 'block';
+            loadPackageFeatures(packageId);
+            
             // Cargar itinerario
             loadItineraryData(package.itinerary || []);
         }
@@ -603,6 +617,12 @@ function openPackageModal(packageId = null) {
         // Ocultar sección de hoteles para paquetes nuevos
         const hotelsSection = document.getElementById('hotelsSection');
         hotelsSection.style.display = 'none';
+        
+        // Ocultar secciones de información y características para paquetes nuevos
+        const packageInfoSection = document.getElementById('packageInfoSection');
+        packageInfoSection.style.display = 'none';
+        const packageFeaturesSection = document.getElementById('packageFeaturesSection');
+        packageFeaturesSection.style.display = 'none';
         
         // Limpiar datos temporales
         clearTempHotels();

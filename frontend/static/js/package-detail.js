@@ -133,22 +133,23 @@ function displayPackageDetail(package) {
     document.getElementById('heroPrice').textContent = package.price;
     
     const heroCategory = document.getElementById('heroCategory');
-    heroCategory.querySelector('span').textContent = getCategoryName(package.category);
+    if (heroCategory) {
+        heroCategory.querySelector('span').textContent = getCategoryName(package.category);
+    }
 
-    // Quick info
-    document.getElementById('duration').textContent = package.duration || 'Consultar';
-    document.getElementById('idealFor').textContent = package.ideal_for || 'Todos los públicos';
-    document.getElementById('destination').textContent = package.destination || getDestinationFromTitle(package.title);
-    document.getElementById('categoryInfo').textContent = getCategoryName(package.category);
+    // Quick info - Cargar desde la base de datos
+    loadPackageInfo(package.id);
 
     // Descripción completa
     document.getElementById('fullDescription').innerHTML = formatDescription(package.description);
 
-    // Características/Features
-    displayFeatures(package.features);
+    // Características/Features - Cargar desde la base de datos
+    loadPackageFeatures(package.id);
 
     // Sidebar precio
-    document.getElementById('sidebarPrice').textContent = package.price;
+    const sidebarPrice = document.getElementById('sidebarPrice');
+    if (sidebarPrice) sidebarPrice.textContent = package.price;
+    
     updateTotalPrice();
 
     // Galería
@@ -213,9 +214,12 @@ function displayFeatures(features) {
 }
 
 // Mostrar galería
-async function displayGallery(galleryImages, mainImage, title) {
-    const galleryContainer = document.getElementById('packageGallery');
-    
+// Variables globales para el carrusel de galería
+let galleryImages = [];
+let currentGallerySlide = 0;
+let galleryCarouselInterval;
+
+async function displayGallery(galleryImagesParam, mainImage, title) {
     // Intentar cargar galería real desde la base de datos
     let realGalleryImages = [];
     if (currentPackage && currentPackage.id) {
@@ -245,9 +249,9 @@ async function displayGallery(galleryImages, mainImage, title) {
             if (!a.isCover && b.isCover) return 1;
             return 0;
         });
-    } else if (galleryImages && galleryImages.length > 0) {
+    } else if (galleryImagesParam && galleryImagesParam.length > 0) {
         // Usar imágenes del campo JSON legacy
-        images = galleryImages.map((image, index) => ({
+        images = galleryImagesParam.map((image, index) => ({
             url: image,
             caption: `${title} - Imagen ${index + 1}`,
             isCover: false
@@ -270,16 +274,140 @@ async function displayGallery(galleryImages, mainImage, title) {
         });
     }
 
-    galleryContainer.innerHTML = images.map((image, index) => `
-        <div class="gallery-image-wrapper">
-            <img src="${image.url}" 
-                 alt="${image.caption}" 
-                 class="gallery-image ${image.isCover ? 'cover-image' : ''}" 
-                 onclick="openImageModal('${image.url}', '${image.caption}')"
-                 onerror="this.style.display='none'">
+    galleryImages = images;
+    createGalleryCarousel();
+    initGalleryCarouselControls();
+    startGalleryAutoplay();
+}
+
+// Crear slides del carrusel de galería
+function createGalleryCarousel() {
+    const carouselTrack = document.getElementById('galleryCarouselTrack');
+    const carouselNav = document.getElementById('galleryCarouselNav');
+    
+    if (!carouselTrack || !galleryImages.length) return;
+    
+    // Crear slides
+    carouselTrack.innerHTML = galleryImages.map((image, index) => `
+        <div class="gallery-carousel-slide ${index === 0 ? 'active' : ''}"
+             onclick="openImageModal('${image.url}', '${image.caption}')"
+             style="background-image: url('${image.url}')">
         </div>
     `).join('');
+    
+    // Crear indicadores
+    if (carouselNav && galleryImages.length > 1) {
+        carouselNav.innerHTML = galleryImages.map((_, index) => `
+            <button class="gallery-carousel-indicator ${index === 0 ? 'active' : ''}" 
+                    data-slide="${index}"></button>
+        `).join('');
+    }
+    
+    // Mostrar/ocultar botones según cantidad de imágenes
+    const prevButton = document.getElementById('galleryPrevButton');
+    const nextButton = document.getElementById('galleryNextButton');
+    if (galleryImages.length > 1) {
+        if (prevButton) prevButton.style.display = 'flex';
+        if (nextButton) nextButton.style.display = 'flex';
+    } else {
+        if (prevButton) prevButton.style.display = 'none';
+        if (nextButton) nextButton.style.display = 'none';
+    }
 }
+
+// Inicializar controles del carrusel de galería
+function initGalleryCarouselControls() {
+    const prevButton = document.getElementById('galleryPrevButton');
+    const nextButton = document.getElementById('galleryNextButton');
+    const indicators = document.querySelectorAll('.gallery-carousel-indicator');
+    
+    // Botones anterior/siguiente
+    if (prevButton) {
+        prevButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            stopGalleryAutoplay();
+            prevGallerySlide();
+            startGalleryAutoplay();
+        });
+    }
+    
+    if (nextButton) {
+        nextButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            stopGalleryAutoplay();
+            nextGallerySlide();
+            startGalleryAutoplay();
+        });
+    }
+    
+    // Indicadores
+    indicators.forEach((indicator, index) => {
+        indicator.addEventListener('click', (e) => {
+            e.stopPropagation();
+            stopGalleryAutoplay();
+            goToGallerySlide(index);
+            startGalleryAutoplay();
+        });
+    });
+}
+
+// Navegación del carrusel de galería
+function prevGallerySlide() {
+    currentGallerySlide = currentGallerySlide === 0 ? galleryImages.length - 1 : currentGallerySlide - 1;
+    updateGalleryCarousel();
+}
+
+function nextGallerySlide() {
+    currentGallerySlide = currentGallerySlide === galleryImages.length - 1 ? 0 : currentGallerySlide + 1;
+    updateGalleryCarousel();
+}
+
+function goToGallerySlide(slideIndex) {
+    currentGallerySlide = slideIndex;
+    updateGalleryCarousel();
+}
+
+// Actualizar carrusel de galería
+function updateGalleryCarousel() {
+    const slides = document.querySelectorAll('.gallery-carousel-slide');
+    const indicators = document.querySelectorAll('.gallery-carousel-indicator');
+    
+    // Actualizar slides
+    slides.forEach((slide, index) => {
+        slide.classList.toggle('active', index === currentGallerySlide);
+    });
+    
+    // Actualizar indicadores
+    indicators.forEach((indicator, index) => {
+        indicator.classList.toggle('active', index === currentGallerySlide);
+    });
+}
+
+// Autoplay del carrusel de galería (cada 4 segundos)
+function startGalleryAutoplay() {
+    if (galleryImages.length <= 1) return; // No autoplay si hay solo una imagen
+    
+    stopGalleryAutoplay();
+    galleryCarouselInterval = setInterval(() => {
+        nextGallerySlide();
+    }, 4000); // 4 segundos como solicitado
+}
+
+function stopGalleryAutoplay() {
+    if (galleryCarouselInterval) {
+        clearInterval(galleryCarouselInterval);
+        galleryCarouselInterval = null;
+    }
+}
+
+// Pausar autoplay cuando no está visible
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        stopGalleryAutoplay();
+    } else {
+        startGalleryAutoplay();
+    }
+});
 
 // Mostrar itinerario
 function displayItinerary(itinerary) {
@@ -425,17 +553,23 @@ function displayRelatedPackages() {
 function initReservationForm() {
     const form = document.getElementById('reservationForm');
     const travelersSelect = document.getElementById('travelers');
-
-    // Actualizar precio total cuando cambie cantidad de viajeros
-    travelersSelect.addEventListener('change', updateTotalPrice);
-
-    // Manejar envío del formulario
-    form.addEventListener('submit', handleReservationSubmit);
-
-    // Establecer fecha mínima como hoy
     const dateInput = document.getElementById('departure');
-    const today = new Date().toISOString().split('T')[0];
-    dateInput.min = today;
+
+    if (form) {
+        // Manejar envío del formulario
+        form.addEventListener('submit', handleReservationSubmit);
+    }
+
+    if (travelersSelect) {
+        // Actualizar precio total cuando cambie cantidad de viajeros
+        travelersSelect.addEventListener('change', updateTotalPrice);
+    }
+
+    if (dateInput) {
+        // Establecer fecha mínima como hoy
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.min = today;
+    }
 }
 
 // Actualizar precio total
@@ -444,7 +578,9 @@ function updateTotalPrice() {
     const totalPriceElement = document.getElementById('totalPrice');
     
     if (!currentPackage || !travelers) {
-        totalPriceElement.innerHTML = '<strong>Total: Selecciona cantidad</strong>';
+        if (totalPriceElement) {
+            totalPriceElement.innerHTML = '<strong>Total: Selecciona cantidad</strong>';
+        }
         return;
     }
 
@@ -452,12 +588,12 @@ function updateTotalPrice() {
     const priceText = currentPackage.price;
     const priceMatch = priceText.match(/[\d,]+/);
     
-    if (priceMatch) {
+    if (priceMatch && totalPriceElement) {
         const basePrice = parseInt(priceMatch[0].replace(/,/g, ''));
         const total = basePrice * parseInt(travelers);
         const currency = priceText.includes('USD') ? 'USD' : '$';
         totalPriceElement.innerHTML = `<strong>Total: ${currency} ${total.toLocaleString()}</strong>`;
-    } else {
+    } else if (totalPriceElement) {
         totalPriceElement.innerHTML = `<strong>Total: ${priceText} x ${travelers}</strong>`;
     }
 }
@@ -646,6 +782,119 @@ function openImageModal(imageSrc, caption = '') {
     document.addEventListener('keydown', closeOnEscape);
 }
 
+// === CARGAR INFORMACIÓN DEL PAQUETE ===
+
+// Cargar información del paquete desde la API
+async function loadPackageInfo(packageId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/packages/${packageId}/info`);
+        if (response.ok) {
+            const infoItems = await response.json();
+            displayPackageInfo(infoItems);
+        } else {
+            // Si no hay datos, usar valores por defecto
+            displayDefaultPackageInfo();
+        }
+    } catch (error) {
+        console.error('Error cargando información del paquete:', error);
+        displayDefaultPackageInfo();
+    }
+}
+
+// Mostrar información del paquete
+function displayPackageInfo(infoItems) {
+    const container = document.getElementById('packageFeatures');
+    
+    if (!infoItems || infoItems.length === 0) {
+        displayDefaultPackageInfo();
+        return;
+    }
+    
+    // Limpiar el contenido actual
+    const infoGrid = document.querySelector('.info-grid');
+    if (infoGrid) {
+        infoGrid.innerHTML = infoItems.map(item => `
+            <div class="info-item">
+                <i class="${item.icon}"></i>
+                <div>
+                    <strong>${item.label}</strong>
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+// Mostrar información por defecto si no hay datos
+function displayDefaultPackageInfo() {
+    const infoGrid = document.querySelector('.info-grid');
+    if (infoGrid && currentPackage) {
+        infoGrid.innerHTML = `
+            <div class="info-item">
+                <i class="fas fa-calendar-alt"></i>
+                <div>
+                    <strong>Duración</strong>
+                    <span>${currentPackage.duration || 'Consultar'}</span>
+                </div>
+            </div>
+            <div class="info-item">
+                <i class="fas fa-users"></i>
+                <div>
+                    <strong>Ideal para</strong>
+                    <span>${currentPackage.ideal_for || 'Todos los públicos'}</span>
+                </div>
+            </div>
+            <div class="info-item">
+                <i class="fas fa-map-marker-alt"></i>
+                <div>
+                    <strong>Destino</strong>
+                    <span>${currentPackage.destination || getDestinationFromTitle(currentPackage.title)}</span>
+                </div>
+            </div>
+            <div class="info-item">
+                <i class="fas fa-star"></i>
+                <div>
+                    <strong>Categoría</strong>
+                    <span>${getCategoryName(currentPackage.category)}</span>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Cargar características del paquete desde la API
+async function loadPackageFeatures(packageId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/packages/${packageId}/features`);
+        if (response.ok) {
+            const features = await response.json();
+            displayPackageFeatures(features);
+        } else {
+            // Si no hay datos, usar características del JSON legacy
+            displayFeatures(currentPackage.features);
+        }
+    } catch (error) {
+        console.error('Error cargando características del paquete:', error);
+        displayFeatures(currentPackage.features);
+    }
+}
+
+// Mostrar características del paquete
+function displayPackageFeatures(features) {
+    const featuresContainer = document.getElementById('packageFeatures');
+    
+    if (!features || features.length === 0) {
+        displayFeatures(currentPackage.features);
+        return;
+    }
+    
+    featuresContainer.innerHTML = features.map(feature => `
+        <div class="feature-item">
+            <i class="fas fa-check"></i>
+            <span>${feature.text}</span>
+        </div>
+    `).join('');
+}
+
 // === MOSTRAR HOTELES ===
 
 // Mostrar hoteles del paquete
@@ -665,6 +914,13 @@ async function displayHotels(packageId) {
                 return;
             }
             
+            // Ordenar hoteles por precio más bajo primero
+            hotels.sort((a, b) => {
+                const priceA = extractNumericPrice(a.price);
+                const priceB = extractNumericPrice(b.price);
+                return priceA - priceB;
+            });
+            
             // Ocultar mensaje de "no hoteles"
             if (noHotelsMessage) {
                 noHotelsMessage.style.display = 'none';
@@ -672,7 +928,7 @@ async function displayHotels(packageId) {
             
             // Mostrar hoteles
             const hotelsHtml = hotels.map(hotel => `
-                <div class="hotel-card">
+                <div class="hotel-card" onclick="selectHotel(${hotel.id}, '${hotel.price}')">
                     <div class="hotel-image">
                         <img src="${hotel.image_url}" alt="${hotel.name}" 
                              onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22200%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23f0f0f0%22/><text x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 fill=%22%23999%22 font-size=%2216%22>Hotel</text></svg>'">
@@ -707,6 +963,64 @@ async function displayHotels(packageId) {
         // Error al cargar hoteles, ocultar sección
         const hotelsSection = document.querySelector('.hotels-section');
         hotelsSection.style.display = 'none';
+    }
+}
+
+// Extraer precio numérico para ordenamiento
+function extractNumericPrice(priceString) {
+    if (!priceString) return 0;
+    // Extraer números de la cadena de precio
+    const match = priceString.match(/[\d,]+/);
+    if (match) {
+        return parseInt(match[0].replace(/,/g, ''));
+    }
+    return 0;
+}
+
+// Seleccionar hotel y actualizar precios
+function selectHotel(hotelId, hotelPrice) {
+    // Guardar información del hotel seleccionado
+    currentPackage.selectedHotelId = hotelId;
+    currentPackage.selectedHotelPrice = hotelPrice;
+    
+    // Actualizar precio en la foto de portada
+    const heroPrice = document.getElementById('heroPrice');
+    if (heroPrice) heroPrice.textContent = hotelPrice;
+    
+    // Actualizar precio en el sidebar
+    const sidebarPrice = document.getElementById('sidebarPrice');
+    if (sidebarPrice) sidebarPrice.textContent = hotelPrice;
+    
+    // Actualizar el precio base del paquete para los cálculos
+    currentPackage.price = hotelPrice;
+    
+    // Recalcular el precio total
+    updateTotalPrice();
+    
+    // Marcar hotel como seleccionado visualmente
+    markSelectedHotel(hotelId);
+    
+    // Scroll suave hacia el formulario de reserva
+    const reservationCard = document.querySelector('.price-card');
+    if (reservationCard) {
+        reservationCard.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+        });
+    }
+}
+
+// Marcar hotel seleccionado visualmente
+function markSelectedHotel(selectedHotelId) {
+    // Remover selección previa
+    document.querySelectorAll('.hotel-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    
+    // Agregar clase de seleccionado al hotel actual
+    const selectedCard = document.querySelector(`[onclick*="${selectedHotelId}"]`);
+    if (selectedCard) {
+        selectedCard.classList.add('selected');
     }
 }
 

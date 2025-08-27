@@ -14,7 +14,7 @@ from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, func
 from database import get_db, test_connection, engine
-from models import Package, ContactMessage, PackageGalleryImage, PackageHotel, Base
+from models import Package, ContactMessage, PackageGalleryImage, PackageHotel, PackageInfo, PackageFeature, Base
 import json
 import smtplib
 import ssl
@@ -1157,6 +1157,270 @@ async def delete_package_hotel(
         print(f"Error al eliminar hotel: {e}")
         db.rollback()
         raise HTTPException(status_code=500, detail="Error al eliminar hotel")
+
+# ===== RUTAS PACKAGE INFO =====
+
+class PackageInfoCreate(BaseModel):
+    icon: str
+    label: str
+    value: str
+
+class PackageInfoUpdate(BaseModel):
+    icon: Optional[str] = None
+    label: Optional[str] = None
+    value: Optional[str] = None
+
+@app.get("/packages/{package_id}/info")
+async def get_package_info(package_id: int, db: Session = Depends(get_db)):
+    """Obtener información de un paquete"""
+    try:
+        package = db.query(Package).filter(Package.id == package_id).first()
+        if not package:
+            raise HTTPException(status_code=404, detail="Paquete no encontrado")
+        
+        info_items = db.query(PackageInfo).filter(
+            PackageInfo.package_id == package_id
+        ).order_by(PackageInfo.order_index).all()
+        
+        return [item.to_dict() for item in info_items]
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error al obtener info del paquete: {e}")
+        raise HTTPException(status_code=500, detail="Error al obtener información")
+
+@app.post("/admin/packages/{package_id}/info")
+async def create_package_info(
+    package_id: int,
+    info_data: PackageInfoCreate,
+    username: str = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    """Crear nueva información para un paquete"""
+    try:
+        package = db.query(Package).filter(Package.id == package_id).first()
+        if not package:
+            raise HTTPException(status_code=404, detail="Paquete no encontrado")
+        
+        # Obtener el siguiente order_index
+        max_order = db.query(func.max(PackageInfo.order_index)).filter(
+            PackageInfo.package_id == package_id
+        ).scalar() or 0
+        
+        new_info = PackageInfo(
+            package_id=package_id,
+            icon=info_data.icon,
+            label=info_data.label,
+            value=info_data.value,
+            order_index=max_order + 1
+        )
+        
+        db.add(new_info)
+        db.commit()
+        db.refresh(new_info)
+        
+        return new_info.to_dict()
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error al crear info: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Error al crear información")
+
+@app.put("/admin/packages/{package_id}/info/{info_id}")
+async def update_package_info(
+    package_id: int,
+    info_id: int,
+    info_data: PackageInfoUpdate,
+    username: str = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    """Actualizar información de un paquete"""
+    try:
+        info = db.query(PackageInfo).filter(
+            PackageInfo.id == info_id,
+            PackageInfo.package_id == package_id
+        ).first()
+        
+        if not info:
+            raise HTTPException(status_code=404, detail="Información no encontrada")
+        
+        if info_data.icon is not None:
+            info.icon = info_data.icon
+        if info_data.label is not None:
+            info.label = info_data.label
+        if info_data.value is not None:
+            info.value = info_data.value
+        
+        db.commit()
+        db.refresh(info)
+        
+        return info.to_dict()
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error al actualizar info: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Error al actualizar información")
+
+@app.delete("/admin/packages/{package_id}/info/{info_id}")
+async def delete_package_info(
+    package_id: int,
+    info_id: int,
+    username: str = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    """Eliminar información de un paquete"""
+    try:
+        info = db.query(PackageInfo).filter(
+            PackageInfo.id == info_id,
+            PackageInfo.package_id == package_id
+        ).first()
+        
+        if not info:
+            raise HTTPException(status_code=404, detail="Información no encontrada")
+        
+        db.delete(info)
+        db.commit()
+        
+        return {"message": "Información eliminada correctamente"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error al eliminar info: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Error al eliminar información")
+
+# ===== RUTAS PACKAGE FEATURES =====
+
+class PackageFeatureCreate(BaseModel):
+    text: str
+
+class PackageFeatureUpdate(BaseModel):
+    text: Optional[str] = None
+
+@app.get("/packages/{package_id}/features")
+async def get_package_features(package_id: int, db: Session = Depends(get_db)):
+    """Obtener características de un paquete"""
+    try:
+        package = db.query(Package).filter(Package.id == package_id).first()
+        if not package:
+            raise HTTPException(status_code=404, detail="Paquete no encontrado")
+        
+        features = db.query(PackageFeature).filter(
+            PackageFeature.package_id == package_id
+        ).order_by(PackageFeature.order_index).all()
+        
+        return [feature.to_dict() for feature in features]
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error al obtener features del paquete: {e}")
+        raise HTTPException(status_code=500, detail="Error al obtener características")
+
+@app.post("/admin/packages/{package_id}/features")
+async def create_package_feature(
+    package_id: int,
+    feature_data: PackageFeatureCreate,
+    username: str = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    """Crear nueva característica para un paquete"""
+    try:
+        package = db.query(Package).filter(Package.id == package_id).first()
+        if not package:
+            raise HTTPException(status_code=404, detail="Paquete no encontrado")
+        
+        # Obtener el siguiente order_index
+        max_order = db.query(func.max(PackageFeature.order_index)).filter(
+            PackageFeature.package_id == package_id
+        ).scalar() or 0
+        
+        new_feature = PackageFeature(
+            package_id=package_id,
+            text=feature_data.text,
+            order_index=max_order + 1
+        )
+        
+        db.add(new_feature)
+        db.commit()
+        db.refresh(new_feature)
+        
+        return new_feature.to_dict()
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error al crear feature: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Error al crear característica")
+
+@app.put("/admin/packages/{package_id}/features/{feature_id}")
+async def update_package_feature(
+    package_id: int,
+    feature_id: int,
+    feature_data: PackageFeatureUpdate,
+    username: str = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    """Actualizar característica de un paquete"""
+    try:
+        feature = db.query(PackageFeature).filter(
+            PackageFeature.id == feature_id,
+            PackageFeature.package_id == package_id
+        ).first()
+        
+        if not feature:
+            raise HTTPException(status_code=404, detail="Característica no encontrada")
+        
+        if feature_data.text is not None:
+            feature.text = feature_data.text
+        
+        db.commit()
+        db.refresh(feature)
+        
+        return feature.to_dict()
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error al actualizar feature: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Error al actualizar característica")
+
+@app.delete("/admin/packages/{package_id}/features/{feature_id}")
+async def delete_package_feature(
+    package_id: int,
+    feature_id: int,
+    username: str = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    """Eliminar característica de un paquete"""
+    try:
+        feature = db.query(PackageFeature).filter(
+            PackageFeature.id == feature_id,
+            PackageFeature.package_id == package_id
+        ).first()
+        
+        if not feature:
+            raise HTTPException(status_code=404, detail="Característica no encontrada")
+        
+        db.delete(feature)
+        db.commit()
+        
+        return {"message": "Característica eliminada correctamente"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error al eliminar feature: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Error al eliminar característica")
 
 if __name__ == "__main__":
     import uvicorn

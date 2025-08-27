@@ -531,6 +531,91 @@
                     </div>
                 </div>
 
+                <!-- Información del Paquete -->
+                <div class="form-group" id="packageInfoSection" style="display: none;">
+                    <div class="info-header">
+                        <label>Información del Paquete</label>
+                        <button type="button" class="btn btn-sm btn-primary" id="addPackageInfoBtn">
+                            <i class="fas fa-plus"></i>
+                            Agregar Información
+                        </button>
+                    </div>
+                    
+                    <div class="package-info-management" id="packageInfoManagement">
+                        <!-- Se llenará dinámicamente -->
+                    </div>
+                    
+                    <!-- Form para agregar información (inicialmente oculto) -->
+                    <div class="package-info-form" id="packageInfoForm" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Icono</label>
+                                <select id="infoIcon" class="icon-selector">
+                                    <option value="">Seleccionar icono...</option>
+                                    <option value="fas fa-calendar-alt">Calendario</option>
+                                    <option value="fas fa-users">Usuarios</option>
+                                    <option value="fas fa-map-marker-alt">Ubicación</option>
+                                    <option value="fas fa-star">Estrella</option>
+                                    <option value="fas fa-clock">Reloj</option>
+                                    <option value="fas fa-plane">Avión</option>
+                                    <option value="fas fa-bed">Cama</option>
+                                    <option value="fas fa-utensils">Comida</option>
+                                    <option value="fas fa-car">Transporte</option>
+                                    <option value="fas fa-camera">Cámara</option>
+                                    <option value="fas fa-mountain">Montaña</option>
+                                    <option value="fas fa-swimming-pool">Piscina</option>
+                                    <option value="fas fa-wifi">WiFi</option>
+                                    <option value="fas fa-heart">Corazón</option>
+                                    <option value="fas fa-gift">Regalo</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Título/Etiqueta</label>
+                                <input type="text" id="infoLabel" placeholder="ej: Duración, Ideal para, Incluye desayuno...">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-sm btn-primary" id="savePackageInfoBtn">
+                                <i class="fas fa-save"></i>
+                                <span id="saveInfoBtnText">Guardar</span>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-secondary" id="cancelPackageInfoBtn">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Qué Incluye (Características) -->
+                <div class="form-group" id="packageFeaturesSection" style="display: none;">
+                    <div class="features-header">
+                        <label>¿Qué Incluye?</label>
+                        <button type="button" class="btn btn-sm btn-primary" id="addPackageFeatureBtn">
+                            <i class="fas fa-plus"></i>
+                            Agregar Característica
+                        </button>
+                    </div>
+                    
+                    <div class="package-features-management" id="packageFeaturesManagement">
+                        <!-- Se llenará dinámicamente -->
+                    </div>
+                    
+                    <!-- Form para agregar característica (inicialmente oculto) -->
+                    <div class="package-feature-form" id="packageFeatureForm" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 1;">
+                                <label>Característica</label>
+                                <input type="text" id="featureText" placeholder="ej: Vuelos incluidos, Hotel 4 estrellas...">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-sm btn-primary" id="savePackageFeatureBtn">
+                                <i class="fas fa-save"></i>
+                                <span id="saveFeatureBtnText">Guardar</span>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-secondary" id="cancelPackageFeatureBtn">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" id="cancelBtn">Cancelar</button>
                     <button type="submit" class="btn btn-primary">
@@ -550,5 +635,6 @@
     </div>
 
     <script src="static/js/admin.js"></script>
+    <script src="static/js/admin-package-info.js"></script>
 </body>
 </html>
