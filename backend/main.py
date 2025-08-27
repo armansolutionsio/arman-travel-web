@@ -43,7 +43,7 @@ Base.metadata.create_all(bind=engine)
 # Seguridad
 SECRET_KEY = os.getenv("SECRET_KEY", "arman-secret-key-super-secure-2024")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "300"))
 
 # Configuración de email
 SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
@@ -412,6 +412,17 @@ async def admin_login(credentials: AdminLogin):
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": credentials.username},
+        expires_delta=access_token_expires
+    )
+    
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@app.post("/admin/refresh-token")
+async def refresh_token(token_data = Depends(verify_token)):
+    """Renovar token de acceso para el usuario autenticado"""
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": token_data},
         expires_delta=access_token_expires
     )
     
