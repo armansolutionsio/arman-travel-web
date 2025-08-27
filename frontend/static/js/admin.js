@@ -264,6 +264,9 @@ function initializeAdmin() {
     document.getElementById('addPackageBtn').addEventListener('click', () => openPackageModal());
     document.getElementById('refreshMessagesBtn').addEventListener('click', loadMessages);
     document.getElementById('packageForm').addEventListener('submit', handlePackageSubmit);
+    
+    // Inicializar timer de renovación de sesión
+    initializeSessionTimer();
 }
 
 // Inicializar sidebar
@@ -341,12 +344,12 @@ function initModal() {
         // removeItineraryHandlers(); 
     }
 
-    closeModal.addEventListener('click', closeModalHandler);
-    cancelBtn.addEventListener('click', closeModalHandler);
+    closeModal.addEventListener('click', () => showExitConfirmationPopup(closeModalHandler));
+    cancelBtn.addEventListener('click', () => showExitConfirmationPopup(closeModalHandler));
 
     window.addEventListener('click', (e) => {
         if (e.target === modal) {
-            closeModalHandler();
+            showExitConfirmationPopup(closeModalHandler);
         }
     });
 }
@@ -2915,3 +2918,407 @@ function clearSelectedAmenities(type) {
         displaySelectedAmenities('url');
     }
 }
+
+// ========================================
+// SISTEMA DE RENOVACIÓN DE TOKEN
+// ========================================
+
+let sessionTimer = null;
+let renewalPopupShown = false;
+
+// Inicializar el timer de renovación de token
+function initializeSessionTimer() {
+    clearSessionTimer();
+    
+    // Configurar timer para mostrar popup 15 minutos antes del vencimiento
+    // 5 horas - 15 minutos = 285 minutos = 17100000 ms
+    sessionTimer = setTimeout(() => {
+        showSessionRenewalPopup();
+    }, 17100000); // 285 minutos
+}
+
+// Limpiar timer existente
+function clearSessionTimer() {
+    if (sessionTimer) {
+        clearTimeout(sessionTimer);
+        sessionTimer = null;
+    }
+    renewalPopupShown = false;
+}
+
+// Mostrar popup de renovación de sesión
+function showSessionRenewalPopup() {
+    if (renewalPopupShown) return;
+    renewalPopupShown = true;
+
+    const popup = document.createElement('div');
+    popup.className = 'session-renewal-popup';
+    popup.innerHTML = `
+        <div class="session-renewal-content">
+            <div class="session-renewal-header">
+                <i class="fas fa-clock"></i>
+                <h3>¿Seguís conectado?</h3>
+            </div>
+            <p>Tu sesión expirará en 15 minutos por seguridad.</p>
+            <p>¿Querés renovar tu sesión?</p>
+            <div class="session-renewal-buttons">
+                <button id="renewSession" class="btn-renew">Sí, renovar</button>
+                <button id="logoutSession" class="btn-logout">No, cerrar sesión</button>
+            </div>
+        </div>
+        <div class="session-renewal-overlay"></div>
+    `;
+
+    // Agregar estilos
+    const style = document.createElement('style');
+    style.textContent = `
+        .session-renewal-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .session-renewal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: -1;
+        }
+
+        .session-renewal-content {
+            position: relative;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            animation: popupSlideIn 0.3s ease-out;
+            z-index: 100000;
+            pointer-events: auto;
+        }
+
+        @keyframes popupSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .session-renewal-header {
+            margin-bottom: 20px;
+        }
+
+        .session-renewal-header i {
+            font-size: 48px;
+            color: #ff6b35;
+            margin-bottom: 10px;
+        }
+
+        .session-renewal-header h3 {
+            margin: 0;
+            color: #333;
+            font-size: 24px;
+        }
+
+        .session-renewal-content p {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .session-renewal-buttons {
+            margin-top: 25px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn-renew, .btn-logout {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            min-width: 120px;
+            pointer-events: auto;
+            position: relative;
+            z-index: 100001;
+        }
+
+        .btn-renew {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-renew:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .btn-logout {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-logout:hover {
+            background: #da190b;
+            transform: translateY(-2px);
+        }
+    `;
+    
+    document.head.appendChild(style);
+    document.body.appendChild(popup);
+
+    // Event listeners
+    document.getElementById('renewSession').addEventListener('click', async () => {
+        await renewToken();
+        closeSessionPopup(popup, style);
+    });
+
+    document.getElementById('logoutSession').addEventListener('click', () => {
+        logout();
+        closeSessionPopup(popup, style);
+    });
+
+    // Auto-logout después de 15 minutos si no se responde
+    setTimeout(() => {
+        if (document.body.contains(popup)) {
+            logout();
+            closeSessionPopup(popup, style);
+        }
+    }, 900000); // 15 minutos
+}
+
+// Cerrar popup de sesión
+function closeSessionPopup(popup, style) {
+    if (document.body.contains(popup)) {
+        document.body.removeChild(popup);
+    }
+    if (document.head.contains(style)) {
+        document.head.removeChild(style);
+    }
+    renewalPopupShown = false;
+}
+
+// Renovar token
+async function renewToken() {
+    try {
+        const token = localStorage.getItem('admin_token');
+        if (!token) {
+            logout();
+            return;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/admin/refresh-token`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            localStorage.setItem('admin_token', data.access_token);
+            
+            // Reinicializar el timer
+            initializeSessionTimer();
+            
+            // Mostrar notificación de éxito
+            showNotification('Sesión renovada exitosamente', 'success');
+        } else {
+            // Token expirado o inválido
+            logout();
+        }
+    } catch (error) {
+        console.error('Error renovando token:', error);
+        logout();
+    }
+}
+
+// Logout
+function logout() {
+    localStorage.removeItem('admin_token');
+    clearSessionTimer();
+    window.location.reload();
+}
+
+// ========================================
+// POPUP DE CONFIRMACIÓN DE SALIDA DEL EDITOR
+// ========================================
+
+function showExitConfirmationPopup(confirmCallback) {
+    // Crear el popup
+    const exitPopup = document.createElement('div');
+    exitPopup.className = 'exit-confirmation-popup';
+    exitPopup.innerHTML = `
+        <div class="exit-confirmation-content">
+            <div class="exit-confirmation-header">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>¿Estás seguro que deseas salir del editor?</h3>
+            </div>
+            <p>Se perderán todos los cambios no guardados.</p>
+            <div class="exit-confirmation-buttons">
+                <button id="confirmExit" class="btn-exit-confirm">Sí, salir</button>
+                <button id="cancelExit" class="btn-exit-cancel">No, continuar editando</button>
+            </div>
+        </div>
+        <div class="exit-confirmation-overlay"></div>
+    `;
+
+    // Agregar estilos
+    const exitStyle = document.createElement('style');
+    exitStyle.textContent = `
+        .exit-confirmation-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .exit-confirmation-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: -1;
+        }
+
+        .exit-confirmation-content {
+            position: relative;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            animation: popupSlideIn 0.3s ease-out;
+            z-index: 100001;
+            pointer-events: auto;
+        }
+
+        .exit-confirmation-header {
+            margin-bottom: 20px;
+        }
+
+        .exit-confirmation-header i {
+            font-size: 48px;
+            color: #f39c12;
+            margin-bottom: 15px;
+        }
+
+        .exit-confirmation-header h3 {
+            margin: 0;
+            color: #333;
+            font-size: 22px;
+            line-height: 1.3;
+        }
+
+        .exit-confirmation-content p {
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 16px;
+            line-height: 1.4;
+        }
+
+        .exit-confirmation-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn-exit-confirm, .btn-exit-cancel {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            min-width: 140px;
+            pointer-events: auto;
+            position: relative;
+            z-index: 100002;
+        }
+
+        .btn-exit-confirm {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-exit-confirm:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .btn-exit-cancel {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .btn-exit-cancel:hover {
+            background: #27ae60;
+            transform: translateY(-2px);
+        }
+    `;
+    
+    document.head.appendChild(exitStyle);
+    document.body.appendChild(exitPopup);
+
+    // Event listeners
+    document.getElementById('confirmExit').addEventListener('click', () => {
+        closeExitPopup(exitPopup, exitStyle);
+        confirmCallback(); // Ejecutar el callback de cerrar modal
+    });
+
+    document.getElementById('cancelExit').addEventListener('click', () => {
+        closeExitPopup(exitPopup, exitStyle);
+    });
+
+    // Cerrar con ESC
+    const handleEscape = (e) => {
+        if (e.key === 'Escape') {
+            closeExitPopup(exitPopup, exitStyle);
+            document.removeEventListener('keydown', handleEscape);
+        }
+    };
+    document.addEventListener('keydown', handleEscape);
+}
+
+// Cerrar popup de confirmación de salida
+function closeExitPopup(popup, style) {
+    if (document.body.contains(popup)) {
+        document.body.removeChild(popup);
+    }
+    if (document.head.contains(style)) {
+        document.head.removeChild(style);
+    }
+}
+
+// Inicializar timer de sesión cuando se inicializa el admin
+// (Se agregará al final de la función initializeAdmin existente)
