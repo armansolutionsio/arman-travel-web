@@ -133,7 +133,9 @@ function displayPackageDetail(package) {
     document.getElementById('heroPrice').textContent = package.price;
     
     const heroCategory = document.getElementById('heroCategory');
-    heroCategory.querySelector('span').textContent = getCategoryName(package.category);
+    if (heroCategory) {
+        heroCategory.querySelector('span').textContent = getCategoryName(package.category);
+    }
 
     // Quick info - Cargar desde la base de datos
     loadPackageInfo(package.id);
@@ -145,7 +147,9 @@ function displayPackageDetail(package) {
     loadPackageFeatures(package.id);
 
     // Sidebar precio
-    document.getElementById('sidebarPrice').textContent = package.price;
+    const sidebarPrice = document.getElementById('sidebarPrice');
+    if (sidebarPrice) sidebarPrice.textContent = package.price;
+    
     updateTotalPrice();
 
     // Galería
@@ -549,17 +553,23 @@ function displayRelatedPackages() {
 function initReservationForm() {
     const form = document.getElementById('reservationForm');
     const travelersSelect = document.getElementById('travelers');
-
-    // Actualizar precio total cuando cambie cantidad de viajeros
-    travelersSelect.addEventListener('change', updateTotalPrice);
-
-    // Manejar envío del formulario
-    form.addEventListener('submit', handleReservationSubmit);
-
-    // Establecer fecha mínima como hoy
     const dateInput = document.getElementById('departure');
-    const today = new Date().toISOString().split('T')[0];
-    dateInput.min = today;
+
+    if (form) {
+        // Manejar envío del formulario
+        form.addEventListener('submit', handleReservationSubmit);
+    }
+
+    if (travelersSelect) {
+        // Actualizar precio total cuando cambie cantidad de viajeros
+        travelersSelect.addEventListener('change', updateTotalPrice);
+    }
+
+    if (dateInput) {
+        // Establecer fecha mínima como hoy
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.min = today;
+    }
 }
 
 // Actualizar precio total
@@ -568,7 +578,9 @@ function updateTotalPrice() {
     const totalPriceElement = document.getElementById('totalPrice');
     
     if (!currentPackage || !travelers) {
-        totalPriceElement.innerHTML = '<strong>Total: Selecciona cantidad</strong>';
+        if (totalPriceElement) {
+            totalPriceElement.innerHTML = '<strong>Total: Selecciona cantidad</strong>';
+        }
         return;
     }
 
@@ -576,12 +588,12 @@ function updateTotalPrice() {
     const priceText = currentPackage.price;
     const priceMatch = priceText.match(/[\d,]+/);
     
-    if (priceMatch) {
+    if (priceMatch && totalPriceElement) {
         const basePrice = parseInt(priceMatch[0].replace(/,/g, ''));
         const total = basePrice * parseInt(travelers);
         const currency = priceText.includes('USD') ? 'USD' : '$';
         totalPriceElement.innerHTML = `<strong>Total: ${currency} ${total.toLocaleString()}</strong>`;
-    } else {
+    } else if (totalPriceElement) {
         totalPriceElement.innerHTML = `<strong>Total: ${priceText} x ${travelers}</strong>`;
     }
 }
@@ -902,6 +914,13 @@ async function displayHotels(packageId) {
                 return;
             }
             
+            // Ordenar hoteles por precio más bajo primero
+            hotels.sort((a, b) => {
+                const priceA = extractNumericPrice(a.price);
+                const priceB = extractNumericPrice(b.price);
+                return priceA - priceB;
+            });
+            
             // Ocultar mensaje de "no hoteles"
             if (noHotelsMessage) {
                 noHotelsMessage.style.display = 'none';
@@ -909,7 +928,7 @@ async function displayHotels(packageId) {
             
             // Mostrar hoteles
             const hotelsHtml = hotels.map(hotel => `
-                <div class="hotel-card">
+                <div class="hotel-card" onclick="selectHotel(${hotel.id}, '${hotel.price}')">
                     <div class="hotel-image">
                         <img src="${hotel.image_url}" alt="${hotel.name}" 
                              onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22200%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23f0f0f0%22/><text x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 fill=%22%23999%22 font-size=%2216%22>Hotel</text></svg>'">
@@ -944,6 +963,64 @@ async function displayHotels(packageId) {
         // Error al cargar hoteles, ocultar sección
         const hotelsSection = document.querySelector('.hotels-section');
         hotelsSection.style.display = 'none';
+    }
+}
+
+// Extraer precio numérico para ordenamiento
+function extractNumericPrice(priceString) {
+    if (!priceString) return 0;
+    // Extraer números de la cadena de precio
+    const match = priceString.match(/[\d,]+/);
+    if (match) {
+        return parseInt(match[0].replace(/,/g, ''));
+    }
+    return 0;
+}
+
+// Seleccionar hotel y actualizar precios
+function selectHotel(hotelId, hotelPrice) {
+    // Guardar información del hotel seleccionado
+    currentPackage.selectedHotelId = hotelId;
+    currentPackage.selectedHotelPrice = hotelPrice;
+    
+    // Actualizar precio en la foto de portada
+    const heroPrice = document.getElementById('heroPrice');
+    if (heroPrice) heroPrice.textContent = hotelPrice;
+    
+    // Actualizar precio en el sidebar
+    const sidebarPrice = document.getElementById('sidebarPrice');
+    if (sidebarPrice) sidebarPrice.textContent = hotelPrice;
+    
+    // Actualizar el precio base del paquete para los cálculos
+    currentPackage.price = hotelPrice;
+    
+    // Recalcular el precio total
+    updateTotalPrice();
+    
+    // Marcar hotel como seleccionado visualmente
+    markSelectedHotel(hotelId);
+    
+    // Scroll suave hacia el formulario de reserva
+    const reservationCard = document.querySelector('.price-card');
+    if (reservationCard) {
+        reservationCard.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+        });
+    }
+}
+
+// Marcar hotel seleccionado visualmente
+function markSelectedHotel(selectedHotelId) {
+    // Remover selección previa
+    document.querySelectorAll('.hotel-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    
+    // Agregar clase de seleccionado al hotel actual
+    const selectedCard = document.querySelector(`[onclick*="${selectedHotelId}"]`);
+    if (selectedCard) {
+        selectedCard.classList.add('selected');
     }
 }
 
