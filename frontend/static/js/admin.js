@@ -2650,12 +2650,59 @@ function editTempHotel(index) {
 }
 
 // Eliminar hotel temporal
-function removeTempHotel(index) {
-    if (!confirm('¿Eliminar este hotel de la lista?')) return;
-    
+async function removeTempHotel(index) {
+    const hotel = tempHotels[index];
+    if (!hotel) return;
+
+    if (!confirm('¿Eliminar este hotel permanentemente?')) return;
+
+    // Si es un hotel existente, eliminarlo de la base de datos inmediatamente
+    if (hotel.isExisting && hotel.id) {
+        try {
+            // Obtener el ID del paquete de las variables globales
+            const packageId = window.currentPackageId || document.getElementById('packageForm')?.dataset?.packageId;
+            console.log('Package ID encontrado:', packageId);
+            console.log('Hotel a eliminar:', hotel);
+
+            if (!packageId) {
+                console.error('No se pudo obtener el packageId. window.currentPackageId:', window.currentPackageId);
+                console.error('Dataset del form:', document.getElementById('packageForm')?.dataset);
+                showGalleryNotification('Error: No se puede identificar el paquete', 'error');
+                return;
+            }
+
+            const token = localStorage.getItem('admin_token');
+            console.log('Eliminando hotel con URL:', `${API_BASE_URL}/admin/packages/${packageId}/hotels/${hotel.id}`);
+
+            const response = await fetch(`${API_BASE_URL}/admin/packages/${packageId}/hotels/${hotel.id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            console.log('Respuesta del servidor:', response.status, response.statusText);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Error del servidor:', errorText);
+                throw new Error(`Error al eliminar hotel del servidor: ${response.status} - ${errorText}`);
+            }
+
+            showGalleryNotification('Hotel eliminado permanentemente', 'success');
+
+            // Actualizar la lista de paquetes para reflejar el nuevo precio
+            await loadPackages();
+        } catch (error) {
+            console.error('Error eliminando hotel:', error);
+            showGalleryNotification('Error al eliminar hotel: ' + error.message, 'error');
+            return; // No continuar si hay error
+        }
+    } else {
+        showGalleryNotification('Hotel eliminado de la lista', 'success');
+    }
+
+    // Eliminar del array temporal
     tempHotels.splice(index, 1);
     displayTempHotels();
-    showGalleryNotification('Hotel eliminado de la lista', 'success');
 }
 
 // Guardar hoteles al confirmar el paquete
