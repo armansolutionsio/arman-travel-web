@@ -4,6 +4,10 @@ let currentFilter = 'all';
 let config = { whatsapp_number: '1132551565', recipient_email: 'info.armansolutions@gmail.com' };
 let contactConfig = {};
 
+// Detección de dispositivos móviles
+const isMobile = () => {
+    return window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+};
 
 // API Base URL
 const API_BASE_URL = window.location.protocol + '//' + window.location.host;
@@ -21,6 +25,32 @@ document.addEventListener('DOMContentLoaded', function() {
     loadPackages();
     initPackageFilters();
     initHeroCarousel();
+
+    // Manejar cambios de orientación en móviles
+    window.addEventListener('orientationchange', () => {
+        setTimeout(() => {
+            const carouselContainer = document.querySelector('.hero-carousel');
+            if (carouselContainer) {
+                if (isMobile() && !carouselContainer.classList.contains('mobile-optimized')) {
+                    carouselContainer.classList.add('mobile-optimized');
+                } else if (!isMobile() && carouselContainer.classList.contains('mobile-optimized')) {
+                    carouselContainer.classList.remove('mobile-optimized');
+                }
+            }
+        }, 200);
+    });
+
+    // Manejar redimensionamiento de ventana
+    window.addEventListener('resize', () => {
+        const carouselContainer = document.querySelector('.hero-carousel');
+        if (carouselContainer) {
+            if (isMobile() && !carouselContainer.classList.contains('mobile-optimized')) {
+                carouselContainer.classList.add('mobile-optimized');
+            } else if (!isMobile() && carouselContainer.classList.contains('mobile-optimized')) {
+                carouselContainer.classList.remove('mobile-optimized');
+            }
+        }
+    });
 });
 
 // Navegación móvil
@@ -386,6 +416,12 @@ let carouselInterval;
 // Inicializar carrusel hero
 async function initHeroCarousel() {
     try {
+        // Aplicar clase móvil si es necesario
+        const carouselContainer = document.querySelector('.hero-carousel');
+        if (carouselContainer && isMobile()) {
+            carouselContainer.classList.add('mobile-optimized');
+        }
+
         // Cargar paquetes promocionados
         const response = await fetch(`${API_BASE_URL}/packages/promoted`);
         if (response.ok) {
@@ -393,7 +429,7 @@ async function initHeroCarousel() {
         } else {
             carouselPackages = [];
         }
-        
+
         if (carouselPackages.length > 0) {
             // Hay paquetes promocionados - mostrar carrusel normal
             createCarouselSlides();
@@ -453,7 +489,7 @@ function initCarouselControls() {
     const prevButton = document.getElementById('prevButton');
     const nextButton = document.getElementById('nextButton');
     const indicators = document.querySelectorAll('.carousel-indicator');
-    
+
     // Botones anterior/siguiente
     if (prevButton) {
         prevButton.addEventListener('click', () => {
@@ -462,7 +498,7 @@ function initCarouselControls() {
             startCarouselAutoplay();
         });
     }
-    
+
     if (nextButton) {
         nextButton.addEventListener('click', () => {
             stopCarouselAutoplay();
@@ -470,7 +506,7 @@ function initCarouselControls() {
             startCarouselAutoplay();
         });
     }
-    
+
     // Indicadores
     indicators.forEach(indicator => {
         indicator.addEventListener('click', (e) => {
@@ -480,6 +516,11 @@ function initCarouselControls() {
             startCarouselAutoplay();
         });
     });
+
+    // Gestos táctiles para móviles
+    if (isMobile()) {
+        initTouchGestures();
+    }
 }
 
 // Ir a slide anterior
@@ -530,6 +571,58 @@ function stopCarouselAutoplay() {
         clearInterval(carouselInterval);
         carouselInterval = null;
     }
+}
+
+// Inicializar gestos táctiles para móviles
+function initTouchGestures() {
+    const carouselContainer = document.querySelector('.carousel-track-container');
+    if (!carouselContainer) return;
+
+    let startX = 0;
+    let currentX = 0;
+    let isDragging = false;
+    const sensitivity = 50; // Píxeles mínimos para activar el swipe
+
+    // Inicio del toque
+    carouselContainer.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX;
+        isDragging = true;
+        stopCarouselAutoplay();
+    }, { passive: true });
+
+    // Movimiento del toque
+    carouselContainer.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        currentX = e.touches[0].clientX;
+    }, { passive: true });
+
+    // Fin del toque
+    carouselContainer.addEventListener('touchend', (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+
+        const diffX = startX - currentX;
+
+        // Swipe hacia la izquierda (siguiente slide)
+        if (diffX > sensitivity) {
+            nextSlide();
+        }
+        // Swipe hacia la derecha (slide anterior)
+        else if (diffX < -sensitivity) {
+            prevSlide();
+        }
+
+        // Reiniciar autoplay después de un breve delay
+        setTimeout(() => {
+            startCarouselAutoplay();
+        }, 100);
+    }, { passive: true });
+
+    // Cancelar el gesto si se va fuera del área
+    carouselContainer.addEventListener('touchcancel', () => {
+        isDragging = false;
+        startCarouselAutoplay();
+    }, { passive: true });
 }
 
 // Pausar autoplay cuando el usuario interactúa
