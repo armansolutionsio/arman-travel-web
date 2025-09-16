@@ -579,7 +579,8 @@ function openPackageModal(packageId = null) {
             
             document.getElementById('image').value = package.image;
             document.getElementById('category').value = package.category;
-            document.getElementById('features').value = package.features.join('\n');
+            // Cargar características desde la nueva API
+            loadFeaturesIntoTextarea(packageId);
             
             // Llenar campos adicionales
             document.getElementById('duration').value = package.duration || '';
@@ -3303,6 +3304,227 @@ function logout() {
     localStorage.removeItem('admin_token');
     clearSessionTimer();
     window.location.reload();
+}
+
+// ========================================
+// GESTIÓN DE CARACTERÍSTICAS
+// ========================================
+
+// Event listener para el botón de actualizar características
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, configurando event listener para updateFeaturesBtn');
+
+    // Usar delegación de eventos para asegurar que funcione
+    document.addEventListener('click', function(e) {
+        console.log('Click detectado en:', e.target.id, e.target.tagName);
+        if (e.target && e.target.id === 'updateFeaturesBtn') {
+            console.log('Botón actualizar características clickeado');
+            e.preventDefault();
+            updatePackageFeatures();
+        }
+    });
+});
+
+// Función para actualizar características desde el textarea a la sección "¿Qué Incluye?"
+async function updatePackageFeatures() {
+    console.log('=== updatePackageFeatures iniciado ===');
+
+    const featuresTextarea = document.getElementById('features');
+    const packageId = window.currentPackageId;
+
+    console.log('Textarea encontrado:', !!featuresTextarea);
+    console.log('Package ID:', packageId);
+    console.log('Valor del textarea:', featuresTextarea?.value);
+
+    if (!packageId) {
+        console.error('No package ID found');
+        showNotification('Error: No se puede identificar el paquete actual', 'error');
+        return;
+    }
+
+    if (!featuresTextarea.value.trim()) {
+        console.log('Textarea vacío');
+        try {
+            showNotification('Por favor, escribe algunas características primero', 'warning');
+        } catch (e) {
+            console.error('Error en showNotification:', e);
+            alert('Por favor, escribe algunas características primero');
+        }
+        return;
+    }
+
+    const newFeatures = featuresTextarea.value
+        .split('\n')
+        .map(f => f.trim())
+        .filter(f => f.length > 0);
+
+    if (newFeatures.length === 0) {
+        showNotification('No hay características válidas para sincronizar', 'warning');
+        return;
+    }
+
+    try {
+        const token = localStorage.getItem('admin_token');
+
+        // PASO 1: Obtener características existentes
+        const existingResponse = await fetch(`${API_BASE_URL}/packages/${packageId}/features`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        let existingFeatures = [];
+        if (existingResponse.ok) {
+            existingFeatures = await existingResponse.json();
+        }
+
+        // PASO 2: Eliminar todas las características existentes
+        console.log('Eliminando características existentes:', existingFeatures.length);
+        for (const feature of existingFeatures) {
+            await fetch(`${API_BASE_URL}/admin/packages/${packageId}/features/${feature.id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+        }
+
+        // PASO 3: Agregar todas las características del textarea
+        console.log('Agregando nuevas características:', newFeatures.length);
+        let addedCount = 0;
+        for (const feature of newFeatures) {
+            const response = await fetch(`${API_BASE_URL}/admin/packages/${packageId}/features`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text: feature })
+            });
+
+            if (response.ok) {
+                addedCount++;
+            } else {
+                console.error(`Error al agregar característica "${feature}":`, response.statusText);
+            }
+        }
+
+        if (addedCount > 0) {
+            showNotification(`Características sincronizadas exitosamente (${addedCount} características)`, 'success');
+
+            // NO limpiar el textarea - mantener el contenido
+            // featuresTextarea.value = '';
+
+            // Recargar las características en la sección "¿Qué Incluye?"
+            loadPackageFeatures(packageId);
+        } else {
+            showNotification('No se pudieron sincronizar las características', 'error');
+        }
+
+    } catch (error) {
+        console.error('Error al actualizar características:', error);
+        showNotification('Error al actualizar características', 'error');
+    }
+}
+
+// Función para cargar características en el textarea
+async function loadFeaturesIntoTextarea(packageId) {
+    try {
+        const token = localStorage.getItem('admin_token');
+        const response = await fetch(`${API_BASE_URL}/packages/${packageId}/features`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+            const features = await response.json();
+            const featuresText = features.map(f => f.text).join('\n');
+            const featuresTextarea = document.getElementById('features');
+            if (featuresTextarea) {
+                featuresTextarea.value = featuresText;
+            }
+        } else {
+            console.error('Error al cargar características para textarea:', response.statusText);
+        }
+    } catch (error) {
+        console.error('Error al cargar características para textarea:', error);
+    }
+}
+
+// Función para cargar características del paquete
+async function loadPackageFeatures(packageId) {
+    try {
+        const token = localStorage.getItem('admin_token');
+        const response = await fetch(`${API_BASE_URL}/packages/${packageId}/features`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            const features = await response.json();
+            displayPackageFeatures(features);
+        } else {
+            console.error('Error al cargar características:', response.statusText);
+        }
+    } catch (error) {
+        console.error('Error al cargar características:', error);
+    }
+}
+
+// Función para mostrar características en la interfaz
+function displayPackageFeatures(features) {
+    const managementDiv = document.getElementById('packageFeaturesManagement');
+    if (!managementDiv) return;
+
+    if (features.length === 0) {
+        managementDiv.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-check-circle"></i>
+                <p>No hay características agregadas. Usa la sección "Características" arriba para agregar algunas.</p>
+            </div>
+        `;
+        return;
+    }
+
+    managementDiv.innerHTML = features.map(feature => `
+        <div class="package-feature-item" data-feature-id="${feature.id}">
+            <div class="feature-content">
+                <i class="fas fa-check"></i>
+                <span class="feature-text">${feature.text}</span>
+            </div>
+            <div class="feature-actions">
+                <button type="button" class="btn-edit-feature" onclick="editPackageFeature(${feature.id}, '${feature.text.replace(/'/g, "\\'")}')">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button type="button" class="btn-delete-feature" onclick="deletePackageFeature(${feature.id})">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Función para eliminar una característica
+async function deletePackageFeature(featureId) {
+    if (!confirm('¿Eliminar esta característica?')) return;
+
+    try {
+        const token = localStorage.getItem('admin_token');
+        const packageId = window.currentPackageId;
+
+        const response = await fetch(`${API_BASE_URL}/admin/packages/${packageId}/features/${featureId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            showNotification('Característica eliminada exitosamente', 'success');
+            loadPackageFeatures(packageId);
+        } else {
+            showNotification('Error al eliminar característica', 'error');
+        }
+    } catch (error) {
+        console.error('Error al eliminar característica:', error);
+        showNotification('Error al eliminar característica', 'error');
+    }
 }
 
 // ========================================
