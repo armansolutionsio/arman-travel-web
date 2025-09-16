@@ -5,6 +5,27 @@ let allPackages = [];
 let config = { whatsapp_number: '1132551565', recipient_email: 'info.armansolutions@gmail.com' };
 let contactConfig = {};
 
+// Función para formatear precios con puntos como separadores de miles
+function formatPrice(priceString) {
+    if (!priceString) return priceString;
+
+    // Extraer la parte numérica y la moneda
+    const match = priceString.match(/^(.*?)(\d+(?:,\d+)*)(.*?)$/);
+    if (!match) return priceString;
+
+    const prefix = match[1]; // Ejemplo: "USD ", "$", etc.
+    const numberPart = match[2]; // Ejemplo: "1500", "1,500"
+    const suffix = match[3]; // Ejemplo: " por persona", etc.
+
+    // Remover comas existentes y convertir a número
+    const number = parseInt(numberPart.replace(/,/g, ''));
+
+    // Formatear con puntos como separadores de miles
+    const formattedNumber = number.toLocaleString('es-AR');
+
+    return prefix + formattedNumber + suffix;
+}
+
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', function() {
@@ -130,7 +151,7 @@ function displayPackageDetail(package) {
     document.getElementById('heroImage').alt = package.title;
     document.getElementById('heroTitle').textContent = package.title;
     document.getElementById('heroDescription').textContent = package.description;
-    document.getElementById('heroPrice').textContent = package.price;
+    document.getElementById('heroPrice').textContent = formatPrice(package.price);
     
     const heroCategory = document.getElementById('heroCategory');
     if (heroCategory) {
@@ -148,7 +169,7 @@ function displayPackageDetail(package) {
 
     // Sidebar precio
     const sidebarPrice = document.getElementById('sidebarPrice');
-    if (sidebarPrice) sidebarPrice.textContent = package.price;
+    if (sidebarPrice) sidebarPrice.textContent = formatPrice(package.price);
     
     updateTotalPrice();
 
@@ -543,7 +564,7 @@ function displayRelatedPackages() {
                 <a href="/package-detail/${pkg.id}">
                     <h4>${pkg.title}</h4>
                 </a>
-                <div class="price">${pkg.price}</div>
+                <div class="price">${formatPrice(pkg.price)}</div>
             </div>
         </div>
     `).join('');
@@ -592,7 +613,7 @@ function updateTotalPrice() {
         const basePrice = parseInt(priceMatch[0].replace(/,/g, ''));
         const total = basePrice * parseInt(travelers);
         const currency = priceText.includes('USD') ? 'USD' : '$';
-        totalPriceElement.innerHTML = `<strong>Total: ${currency} ${total.toLocaleString()}</strong>`;
+        totalPriceElement.innerHTML = `<strong>Total: ${currency} ${total.toLocaleString('es-AR')}</strong>`;
     } else if (totalPriceElement) {
         totalPriceElement.innerHTML = `<strong>Total: ${priceText} x ${travelers}</strong>`;
     }
@@ -932,7 +953,7 @@ async function displayHotels(packageId) {
                     <div class="hotel-image">
                         <img src="${hotel.image_url}" alt="${hotel.name}" 
                              onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22200%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23f0f0f0%22/><text x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 fill=%22%23999%22 font-size=%2216%22>Hotel</text></svg>'">
-                        <div class="hotel-price">${hotel.price}</div>
+                        <div class="hotel-price">${formatPrice(hotel.price)}</div>
                     </div>
                     <div class="hotel-info">
                         <h3>${hotel.name}</h3>
@@ -985,11 +1006,11 @@ function selectHotel(hotelId, hotelPrice) {
     
     // Actualizar precio en la foto de portada
     const heroPrice = document.getElementById('heroPrice');
-    if (heroPrice) heroPrice.textContent = hotelPrice;
-    
+    if (heroPrice) heroPrice.textContent = formatPrice(hotelPrice);
+
     // Actualizar precio en el sidebar
     const sidebarPrice = document.getElementById('sidebarPrice');
-    if (sidebarPrice) sidebarPrice.textContent = hotelPrice;
+    if (sidebarPrice) sidebarPrice.textContent = formatPrice(hotelPrice);
     
     // Actualizar el precio base del paquete para los cálculos
     currentPackage.price = hotelPrice;
