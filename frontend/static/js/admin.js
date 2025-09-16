@@ -2259,7 +2259,7 @@ const HOTEL_AMENITIES = [
 // Inicializar manejadores de hoteles
 function initializeHotelHandlers() {
     const addHotelBtn = document.getElementById('addHotelBtn');
-    const addHotelUrlBtn = document.getElementById('addHotelUrlBtn');
+    // const addHotelUrlBtn = document.getElementById('addHotelUrlBtn'); // Removido
     const addHotelFileBtn = document.getElementById('addHotelFileBtn');
     const cancelAddHotelBtn = document.getElementById('cancelAddHotelBtn');
     const hotelUploadZone = document.getElementById('hotelUploadZone');
@@ -2280,10 +2280,7 @@ function initializeHotelHandlers() {
         document.getElementById('cancelAddHotelBtn').addEventListener('click', hideHotelAddOptions);
     }
     
-    if (addHotelUrlBtn) {
-        addHotelUrlBtn.replaceWith(addHotelUrlBtn.cloneNode(true));
-        document.getElementById('addHotelUrlBtn').addEventListener('click', showHotelUrlInput);
-    }
+    // Botón de URL removido - solo mantenemos subida de archivos
     
     if (addHotelFileBtn) {
         addHotelFileBtn.replaceWith(addHotelFileBtn.cloneNode(true));
@@ -2311,6 +2308,9 @@ function initializeHotelHandlers() {
             newHotelUploadZone.classList.remove('dragover');
             const files = e.dataTransfer.files;
             if (files.length > 0) {
+                // Auto-subir la imagen cuando se arrastra
+                uploadHotelImage(files[0]);
+                // También actualizar el input para mantener consistencia
                 document.getElementById('hotelFileInput').files = files;
             }
         });
@@ -2319,6 +2319,14 @@ function initializeHotelHandlers() {
     // File input
     if (hotelFileInput) {
         hotelFileInput.replaceWith(hotelFileInput.cloneNode(true));
+
+        // Agregar event listener para carga automática
+        document.getElementById('hotelFileInput').addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                // Auto-subir la imagen cuando se selecciona
+                uploadHotelImage(e.target.files[0]);
+            }
+        });
     }
 
     // Botones
@@ -2463,6 +2471,16 @@ function showHotelFileUpload() {
 // Ocultar área de subida de archivos para hotel
 function hideHotelUploadArea() {
     document.getElementById('hotelUploadArea').style.display = 'none';
+
+    // Limpiar preview si existe
+    const previewContainer = document.getElementById('hotelImagePreview');
+    if (previewContainer) {
+        previewContainer.style.display = 'none';
+    }
+
+    // Limpiar variables temporales
+    window.tempHotelImageUrl = null;
+
     clearHotelUploadForm();
 }
 
@@ -2515,104 +2533,161 @@ function addHotelFromUrl() {
     displayTempHotels();
 }
 
+
+// Mostrar preview de imagen de hotel cargada
+function showHotelImagePreview(imageUrl) {
+    const uploadZone = document.getElementById('hotelUploadZone');
+    const progressContainer = document.getElementById('hotelUploadProgress');
+
+    // Ocultar zona de upload y progreso
+    uploadZone.style.display = 'none';
+    progressContainer.style.display = 'none';
+
+    // Crear o actualizar el preview
+    let previewContainer = document.getElementById('hotelImagePreview');
+    if (!previewContainer) {
+        previewContainer = document.createElement('div');
+        previewContainer.id = 'hotelImagePreview';
+        previewContainer.className = 'hotel-image-preview';
+        uploadZone.parentNode.insertBefore(previewContainer, uploadZone.nextSibling);
+    }
+
+    previewContainer.innerHTML = `
+        <div class="image-preview-content">
+            <img src="${imageUrl}" alt="Vista previa del hotel" class="preview-image">
+            <button type="button" class="btn-remove-hotel-image" onclick="removeHotelImagePreview()" title="Eliminar imagen">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+    previewContainer.style.display = 'block';
+}
+
+// Eliminar preview de imagen de hotel
+function removeHotelImagePreview() {
+    const previewContainer = document.getElementById('hotelImagePreview');
+    const uploadZone = document.getElementById('hotelUploadZone');
+    const fileInput = document.getElementById('hotelFileInput');
+
+    if (previewContainer) {
+        previewContainer.style.display = 'none';
+    }
+
+    // Mostrar zona de upload nuevamente
+    uploadZone.style.display = 'block';
+
+    // Limpiar variables y input
+    window.tempHotelImageUrl = null;
+    fileInput.value = '';
+
+    showGalleryNotification('Imagen eliminada', 'success');
+}
+
+// Subir imagen de hotel automáticamente
+async function uploadHotelImage(file) {
+    if (!file.type.startsWith('image/')) {
+        showGalleryNotification('El archivo debe ser una imagen', 'error');
+        return;
+    }
+
+    try {
+        // Mostrar barra de progreso
+        const progressContainer = document.getElementById('hotelUploadProgress');
+        const progressFill = document.getElementById('hotelProgressFill');
+        const progressText = document.getElementById('hotelProgressText');
+
+        progressContainer.style.display = 'block';
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const xhr = new XMLHttpRequest();
+
+        // Manejar progreso de carga
+        xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+                const percentage = Math.round((e.loaded / e.total) * 100);
+                progressFill.style.width = percentage + '%';
+                progressText.textContent = percentage + '%';
+            }
+        });
+
+        // Manejar respuesta
+        xhr.addEventListener('load', () => {
+            if (xhr.status === 200) {
+                const response = JSON.parse(xhr.responseText);
+                // Guardar la URL en una variable temporal para el hotel
+                window.tempHotelImageUrl = response.image_url || response.url;
+                showHotelImagePreview(window.tempHotelImageUrl);
+                showGalleryNotification('Imagen cargada exitosamente', 'success');
+            } else {
+                showGalleryNotification('Error al cargar imagen', 'error');
+            }
+            progressContainer.style.display = 'none';
+        });
+
+        xhr.addEventListener('error', () => {
+            showGalleryNotification('Error al cargar imagen', 'error');
+            progressContainer.style.display = 'none';
+        });
+
+        // Enviar archivo
+        const token = localStorage.getItem('admin_token');
+        xhr.open('POST', `${API_BASE_URL}/admin/upload-cover-image`);
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+        xhr.send(formData);
+
+    } catch (error) {
+        console.error('Error subiendo imagen:', error);
+        showGalleryNotification('Error al cargar imagen: ' + error.message, 'error');
+    }
+}
+
 // Agregar hotel desde upload al array temporal
 async function addHotelFromUpload() {
     const name = document.getElementById('hotelName').value.trim();
     const description = document.getElementById('hotelDescription').value.trim();
     const amount = document.getElementById('hotelPrice').value.trim();
     const currency = document.getElementById('hotelPriceCurrency').value;
-    const fileInput = document.getElementById('hotelFileInput');
-    const file = fileInput.files[0];
 
-    if (!name || !amount || !file) {
+    if (!name || !amount) {
         showGalleryNotification('Por favor completa todos los campos requeridos', 'error');
         return;
     }
 
-    // Validar archivo
-    if (!file.type.startsWith('image/')) {
-        showGalleryNotification('El archivo debe ser una imagen', 'error');
+    // Verificar que se haya cargado una imagen
+    if (!window.tempHotelImageUrl) {
+        showGalleryNotification('Por favor sube una imagen primero', 'error');
         return;
     }
-
-    if (file.size > 5 * 1024 * 1024) { // 5MB
-        showGalleryNotification('El archivo es muy grande (máximo 5MB)', 'error');
-        return;
-    }
-
-    const token = localStorage.getItem('admin_token');
-    const hotelUploadProgress = document.getElementById('hotelUploadProgress');
-    const hotelProgressFill = document.getElementById('hotelProgressFill');
-    const hotelProgressText = document.getElementById('hotelProgressText');
 
     try {
-        // Mostrar progreso
-        hotelUploadProgress.style.display = 'block';
-        
-        const formData = new FormData();
-        formData.append('file', file);
+        const price = formatHotelPrice(currency, amount);
 
-        // Simular progreso
-        let progress = 0;
-        const progressInterval = setInterval(() => {
-            progress += 10;
-            if (progress <= 90) {
-                hotelProgressFill.style.width = progress + '%';
-                hotelProgressText.textContent = progress + '%';
-            }
-        }, 100);
-
-        // Subir imagen a Cloudinary
-        const response = await fetch(`${API_BASE_URL}/admin/upload-cover-image`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
-            body: formData
-        });
-
-        clearInterval(progressInterval);
-
-        if (response.ok) {
-            const result = await response.json();
-            
-            // Completar progreso
-            hotelProgressFill.style.width = '100%';
-            hotelProgressText.textContent = '100%';
-            
-            const price = formatHotelPrice(currency, amount);
-            
-            // Agregar al array temporal con amenities
-            tempHotels.push({
+        // Agregar al array temporal con amenities usando la imagen ya cargada
+        tempHotels.push({
                 name: name,
                 description: description || null,
                 price: price,
-                image_url: result.image_url,
+                image_url: window.tempHotelImageUrl,
                 amenities: [...selectedAmenities], // Copia de las amenities seleccionadas
                 isExisting: false
             });
-            
-            setTimeout(() => {
-                hotelUploadProgress.style.display = 'none';
-                hotelProgressFill.style.width = '0%';
-                hotelProgressText.textContent = '0%';
-                hideHotelUploadArea();
-                clearSelectedAmenities('upload'); // Limpiar amenities después de agregar
-                displayTempHotels();
-            }, 1000);
-            
-            showGalleryNotification('Hotel agregado a la lista', 'success');
-        } else {
-            throw new Error('Error al subir imagen');
+
+        // Limpiar variables temporales y preview
+        window.tempHotelImageUrl = null;
+        const previewContainer = document.getElementById('hotelImagePreview');
+        if (previewContainer) {
+            previewContainer.style.display = 'none';
         }
+        hideHotelUploadArea();
+        clearSelectedAmenities('upload'); // Limpiar amenities después de agregar
+        displayTempHotels();
+        showGalleryNotification('Hotel agregado a la lista', 'success');
+
     } catch (error) {
         console.error('Error:', error);
-        showGalleryNotification('Error al subir imagen', 'error');
-        
-        // Ocultar progreso
-        hotelUploadProgress.style.display = 'none';
-        hotelProgressFill.style.width = '0%';
-        hotelProgressText.textContent = '0%';
+        showGalleryNotification('Error al agregar hotel', 'error');
     }
 }
 

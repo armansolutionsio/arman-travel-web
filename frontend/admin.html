@@ -216,12 +216,18 @@
             </div>
             
             <form id="packageForm" class="modal-body">
-                <div class="form-row">
+                <!-- Sección 1: Información Básica -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fas fa-info-circle"></i>
+                        Información Básica
+                    </div>
+
                     <div class="form-group">
                         <label for="title">Título *</label>
                         <input type="text" id="title" name="title" required>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="category">Categoría *</label>
                         <select id="category" name="category" required>
@@ -232,9 +238,7 @@
                             <option value="relax">Relax</option>
                         </select>
                     </div>
-                </div>
 
-                <div class="form-row">
                     <div class="form-group">
                         <label for="price">Precio *</label>
                         <div class="price-input-container">
@@ -245,7 +249,20 @@
                             <input type="number" id="price" name="price" placeholder="1000" min="0" step="1" required>
                         </div>
                     </div>
-                    
+
+                    <div class="form-group">
+                        <label for="description">Descripción *</label>
+                        <textarea id="description" name="description" rows="4" required></textarea>
+                    </div>
+                </div>
+
+                <!-- Sección 2: Imagen y Detalles -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fas fa-image"></i>
+                        Imagen y Detalles
+                    </div>
+
                     <div class="form-group">
                         <div class="cover-image-header">
                             <label for="image">URL de Imagen *</label>
@@ -255,7 +272,7 @@
                             </button>
                         </div>
                         <input type="text" id="image" name="image" placeholder="https://... o sube una imagen">
-                        
+
                         <!-- Cover Image Upload Area -->
                         <div class="cover-upload-area" id="coverUploadArea" style="display: none;">
                             <div class="cover-upload-zone" id="coverUploadZone">
@@ -270,7 +287,7 @@
                                 <span id="coverProgressText">0%</span>
                             </div>
                         </div>
-                        
+
                         <!-- Preview de imagen de portada -->
                         <div class="cover-image-preview" id="coverImagePreview" style="display: none;">
                             <img id="coverPreviewImg" src="" alt="Vista previa">
@@ -279,39 +296,43 @@
                             </button>
                         </div>
                     </div>
-                </div>
 
-                <div class="form-group">
-                    <label for="description">Descripción *</label>
-                    <textarea id="description" name="description" rows="3" required></textarea>
-                </div>
-
-                <div class="form-row">
                     <div class="form-group">
                         <label for="duration">Duración</label>
                         <input type="text" id="duration" name="duration" placeholder="ej: 3 días / 2 noches">
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="destination">Destino</label>
                         <input type="text" id="destination" name="destination" placeholder="ej: Buenos Aires">
                     </div>
+
+                    <div class="form-group">
+                        <label for="idealFor">Ideal para</label>
+                        <input type="text" id="idealFor" name="idealFor" placeholder="ej: Familias, Parejas, Aventureros">
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="idealFor">Ideal para</label>
-                    <input type="text" id="idealFor" name="idealFor" placeholder="ej: Familias, Parejas, Aventureros">
+                <!-- Sección 3: Características -->
+                <div class="form-section full-width">
+                    <div class="form-section-title">
+                        <i class="fas fa-list-ul"></i>
+                        Características
+                    </div>
+
+                    <div class="form-group">
+                        <label for="features">Características (una por línea) *</label>
+                        <textarea id="features" name="features" rows="4" placeholder="3 días / 2 noches&#10;Desayuno incluido&#10;City tour" required></textarea>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="features">Características (una por línea) *</label>
-                    <textarea id="features" name="features" rows="4" placeholder="3 días / 2 noches&#10;Desayuno incluido&#10;City tour" required></textarea>
-                </div>
-
-                <!-- Galería de Imágenes -->
-                <div class="form-group" id="gallerySection" style="display: none;">
+                <!-- Sección 4: Galería de Imágenes -->
+                <div class="form-section full-width" id="gallerySection" style="display: none;">
+                    <div class="form-section-title">
+                        <i class="fas fa-images"></i>
+                        Galería de Imágenes
+                    </div>
                     <div class="gallery-header">
-                        <label>Galería de Imágenes</label>
                         <button type="button" class="btn btn-sm btn-secondary" id="addImageUrlBtn">
                             <i class="fas fa-link"></i>
                             Agregar por URL
@@ -356,10 +377,13 @@
                     </div>
                 </div>
 
-                <!-- Itinerario -->
-                <div class="form-group">
+                <!-- Sección 5: Itinerario -->
+                <div class="form-section full-width">
+                    <div class="form-section-title">
+                        <i class="fas fa-route"></i>
+                        Itinerario Sugerido
+                    </div>
                     <div class="itinerary-header">
-                        <label>Itinerario Sugerido</label>
                         <button type="button" class="btn btn-sm btn-primary" id="addItineraryDayBtn">
                             <i class="fas fa-plus"></i>
                             Agregar Día
@@ -374,10 +398,13 @@
                     </div>
                 </div>
 
-                <!-- Gestión de Hoteles -->
-                <div class="form-group" id="hotelsSection" style="display: none;">
+                <!-- Sección 6: Gestión de Hoteles -->
+                <div class="form-section full-width" id="hotelsSection" style="display: none;">
+                    <div class="form-section-title">
+                        <i class="fas fa-hotel"></i>
+                        Hoteles del Paquete
+                    </div>
                     <div class="hotels-header">
-                        <label>Hoteles del Paquete</label>
                         <button type="button" class="btn btn-sm btn-primary" id="addHotelBtn">
                             <i class="fas fa-plus"></i>
                             Agregar Hotel
@@ -391,10 +418,6 @@
                     <!-- Opciones de agregar hotel (inicialmente oculto) -->
                     <div class="hotel-add-options" id="hotelAddOptions" style="display: none;">
                         <div class="add-options-buttons">
-                            <button type="button" class="btn btn-secondary" id="addHotelUrlBtn">
-                                <i class="fas fa-link"></i>
-                                Agregar por URL
-                            </button>
                             <button type="button" class="btn btn-primary" id="addHotelFileBtn">
                                 <i class="fas fa-upload"></i>
                                 Subir Imagen
@@ -531,10 +554,13 @@
                     </div>
                 </div>
 
-                <!-- Información del Paquete -->
-                <div class="form-group" id="packageInfoSection" style="display: none;">
+                <!-- Sección 7: Información del Paquete -->
+                <div class="form-section full-width" id="packageInfoSection" style="display: none;">
+                    <div class="form-section-title">
+                        <i class="fas fa-info"></i>
+                        Información del Paquete
+                    </div>
                     <div class="info-header">
-                        <label>Información del Paquete</label>
                         <button type="button" class="btn btn-sm btn-primary" id="addPackageInfoBtn">
                             <i class="fas fa-plus"></i>
                             Agregar Información
@@ -584,10 +610,13 @@
                     </div>
                 </div>
 
-                <!-- Qué Incluye (Características) -->
-                <div class="form-group" id="packageFeaturesSection" style="display: none;">
+                <!-- Sección 8: ¿Qué Incluye? (Características) -->
+                <div class="form-section full-width" id="packageFeaturesSection" style="display: none;">
+                    <div class="form-section-title">
+                        <i class="fas fa-check-circle"></i>
+                        ¿Qué Incluye?
+                    </div>
                     <div class="features-header">
-                        <label>¿Qué Incluye?</label>
                         <button type="button" class="btn btn-sm btn-primary" id="addPackageFeatureBtn">
                             <i class="fas fa-plus"></i>
                             Agregar Característica
@@ -617,8 +646,12 @@
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">
+                        <i class="fas fa-times"></i>
+                        Cancelar
+                    </button>
                     <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
                         <span id="submitBtnText">Guardar Paquete</span>
                     </button>
                 </div>

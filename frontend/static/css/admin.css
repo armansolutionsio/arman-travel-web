@@ -529,42 +529,215 @@ td {
 
 .modal-content {
     background: var(--white);
-    margin: 2% auto;
+    margin: 1% auto;
     border-radius: 15px;
-    width: 90%;
-    max-width: 600px;
-    max-height: 90vh;
+    width: 95%;
+    max-width: 1200px;
+    max-height: 95vh;
     overflow-y: auto;
     position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
 .modal-header {
-    padding: 2rem 2rem 1rem;
-    border-bottom: 1px solid var(--border-color);
+    padding: 2rem 3rem 1.5rem;
+    border-bottom: 2px solid var(--primary-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+    border-radius: 15px 15px 0 0;
 }
 
 .modal-header h3 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--dark-gray);
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--white);
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .close {
     font-size: 2rem;
-    color: var(--gray);
+    color: rgba(255, 255, 255, 0.8);
     cursor: pointer;
     line-height: 1;
+    transition: all 0.3s ease;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .close:hover {
-    color: var(--dark-gray);
+    color: var(--white);
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
 }
 
 .modal-body {
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    background: #fafbfc;
+}
+
+/* Secciones del formulario */
+.form-section {
+    background: var(--white);
     padding: 2rem;
+    border-radius: 12px;
+    margin: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e9ecef;
+}
+
+.form-section-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-section-title i {
+    font-size: 1.1rem;
+}
+
+/* Layout especial para secciones que ocupan todo el ancho */
+.form-section.full-width {
+    grid-column: 1 / -1;
+    margin: 1.5rem;
+}
+
+/* Estilos para dispositivos móviles */
+@media (max-width: 1024px) {
+    .modal-body {
+        grid-template-columns: 1fr;
+    }
+
+    .form-section.full-width {
+        grid-column: 1;
+    }
+}
+
+/* Mejoras para inputs y formularios */
+.form-section .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-section .form-group label {
+    display: block;
+    font-weight: 600;
+    color: var(--dark-gray);
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.form-section .form-group input,
+.form-section .form-group select,
+.form-section .form-group textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    background: #fff;
+}
+
+.form-section .form-group input:focus,
+.form-section .form-group select:focus,
+.form-section .form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(123, 67, 151, 0.1);
+    transform: translateY(-2px);
+}
+
+.form-section .form-group input:hover,
+.form-section .form-group select:hover,
+.form-section .form-group textarea:hover {
+    border-color: var(--primary-light);
+}
+
+/* Estilos para headers de secciones */
+.gallery-header,
+.itinerary-header,
+.hotels-header {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    align-items: center;
+}
+
+/* Mejoras en botones */
+.form-section .btn {
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-section .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.form-section .btn-primary {
+    background: var(--primary-color);
+    color: var(--white);
+}
+
+.form-section .btn-primary:hover {
+    background: var(--primary-dark);
+}
+
+.form-section .btn-secondary {
+    background: var(--gray);
+    color: var(--white);
+}
+
+.form-section .btn-secondary:hover {
+    background: var(--dark-gray);
+}
+
+/* Placeholder mejorado */
+.itinerary-placeholder,
+.gallery-placeholder {
+    text-align: center;
+    padding: 3rem 1rem;
+    background: #f8f9fa;
+    border: 2px dashed #dee2e6;
+    border-radius: 12px;
+    color: var(--gray);
+}
+
+.itinerary-placeholder i,
+.gallery-placeholder i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+    opacity: 0.7;
+}
+
+.itinerary-placeholder p,
+.gallery-placeholder p {
+    font-size: 1rem;
+    margin: 0;
 }
 
 .form-row {
@@ -609,10 +782,46 @@ td {
 }
 
 .modal-footer {
-    padding: 1rem 2rem 2rem;
+    padding: 2rem 3rem;
+    border-top: 2px solid #e9ecef;
     display: flex;
+    justify-content: space-between;
     gap: 1rem;
-    justify-content: flex-end;
+    background: #f8f9fa;
+    border-radius: 0 0 15px 15px;
+    align-items: center;
+}
+
+.modal-footer .btn {
+    padding: 0.8rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 140px;
+    justify-content: center;
+}
+
+.modal-footer .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.modal-footer .btn-primary {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+    color: var(--white);
+    box-shadow: 0 4px 15px rgba(123, 67, 151, 0.3);
+}
+
+.modal-footer .btn-secondary {
+    background: var(--gray);
+    color: var(--white);
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.2);
 }
 
 /* Loading Overlay */
@@ -684,7 +893,78 @@ td {
     .modal-body,
     .modal-footer {
         padding: 1.5rem;
+        flex-direction: column-reverse;
+        gap: 1rem;
     }
+
+    .modal-footer .btn {
+        width: 100%;
+        min-width: auto;
+    }
+
+    .modal-content {
+        width: 98%;
+        margin: 2% auto;
+    }
+
+    .form-section {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+}
+
+/* Preview de imagen de hotel */
+.hotel-image-preview {
+    margin-top: 1rem;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    position: relative;
+    max-width: 300px;
+    border: 2px solid #e9ecef;
+}
+
+.image-preview-content {
+    position: relative;
+    width: 100%;
+}
+
+.preview-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+}
+
+.btn-remove-hotel-image {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(220, 53, 69, 0.9);
+    color: white;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.btn-remove-hotel-image:hover {
+    background: rgba(220, 53, 69, 1);
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+}
+
+.btn-remove-hotel-image:active {
+    transform: scale(0.95);
+}
     
     .section-header {
         flex-direction: column;
