@@ -2757,9 +2757,32 @@ async function removeTempHotel(index) {
             console.log('Respuesta del servidor:', response.status, response.statusText);
 
             if (!response.ok) {
-                const errorText = await response.text();
-                console.error('Error del servidor:', errorText);
-                throw new Error(`Error al eliminar hotel del servidor: ${response.status} - ${errorText}`);
+                if (response.status === 401) {
+                    // Token expirado, intentar renovar y reintentar
+                    console.log('Token expirado, intentando renovar...');
+                    await renewToken();
+
+                    // Reintentar la eliminación con el nuevo token
+                    const newToken = localStorage.getItem('admin_token');
+                    if (newToken) {
+                        const retryResponse = await fetch(`${API_BASE_URL}/admin/packages/${packageId}/hotels/${hotel.id}`, {
+                            method: 'DELETE',
+                            headers: { 'Authorization': `Bearer ${newToken}` }
+                        });
+
+                        if (!retryResponse.ok) {
+                            const errorText = await retryResponse.text();
+                            console.error('Error del servidor después de renovar token:', errorText);
+                            throw new Error(`Error al eliminar hotel del servidor: ${retryResponse.status} - ${errorText}`);
+                        }
+                    } else {
+                        throw new Error('No se pudo renovar el token. Por favor, vuelve a hacer login.');
+                    }
+                } else {
+                    const errorText = await response.text();
+                    console.error('Error del servidor:', errorText);
+                    throw new Error(`Error al eliminar hotel del servidor: ${response.status} - ${errorText}`);
+                }
             }
 
             showGalleryNotification('Hotel eliminado permanentemente', 'success');

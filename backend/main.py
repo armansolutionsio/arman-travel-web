@@ -222,20 +222,20 @@ def is_valid_image_file(filename: str) -> bool:
 
 def upload_to_cloudinary(file: UploadFile, folder: str = "arman-travel") -> str:
     """Subir archivo a Cloudinary y retornar la URL"""
-    
+
     # Verificar que Cloudinary esté configurado
     if not all([os.getenv("CLOUDINARY_CLOUD_NAME"), os.getenv("CLOUDINARY_API_KEY"), os.getenv("CLOUDINARY_API_SECRET")]):
         raise HTTPException(status_code=500, detail="Cloudinary no está configurado correctamente")
-    
+
     try:
         # Leer el archivo
         file_content = file.file.read()
         file.file.seek(0)  # Reset para posibles usos posteriores
-        
+
         # Generar public_id único
         file_extension = os.path.splitext(file.filename)[1].lower()
         public_id = f"{folder}/{uuid.uuid4()}"
-        
+
         # Subir a Cloudinary con optimizaciones
         upload_result = cloudinary.uploader.upload(
             file_content,
@@ -245,10 +245,67 @@ def upload_to_cloudinary(file: UploadFile, folder: str = "arman-travel") -> str:
                 {"width": 1200, "height": 800, "crop": "limit"}
             ]
         )
-        
+
         print(f"✅ Imagen subida a Cloudinary: {upload_result.get('secure_url')}")
-        
+
         return upload_result.get('secure_url')
+
+    except Exception as e:
+        print(f"❌ Error al subir imagen a Cloudinary: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al subir imagen: {str(e)}")
+
+def extract_cloudinary_public_id(image_url: str) -> str:
+    """Extraer public_id de una URL de Cloudinary"""
+    if not image_url or "cloudinary.com" not in image_url:
+        return None
+
+    try:
+        # Ejemplo URL: https://res.cloudinary.com/cloud/image/upload/v1234567890/arman-travel/covers/uuid.jpg
+        # Queremos extraer: arman-travel/covers/uuid
+        parts = image_url.split('/')
+        if 'upload' in parts:
+            upload_index = parts.index('upload')
+            # Tomar todo después de 'upload' excepto la versión (v1234567890)
+            public_id_parts = parts[upload_index + 1:]
+
+            # Remover versión si existe (empieza con 'v' y seguido de números)
+            if public_id_parts and public_id_parts[0].startswith('v') and public_id_parts[0][1:].isdigit():
+                public_id_parts = public_id_parts[1:]
+
+            # Unir las partes y remover extensión
+            public_id = '/'.join(public_id_parts)
+            if '.' in public_id:
+                public_id = public_id.rsplit('.', 1)[0]
+
+            return public_id
+    except Exception as e:
+        print(f"❌ Error extrayendo public_id de {image_url}: {e}")
+        return None
+
+def delete_cloudinary_image(image_url: str) -> bool:
+    """Eliminar imagen de Cloudinary usando su URL"""
+    if not image_url:
+        return False
+
+    public_id = extract_cloudinary_public_id(image_url)
+    if not public_id:
+        print(f"⚠️ No es una URL de Cloudinary o no se pudo extraer public_id: {image_url}")
+        return False
+
+    try:
+        # Eliminar de Cloudinary
+        result = cloudinary.uploader.destroy(public_id)
+
+        if result.get('result') == 'ok':
+            print(f"✅ Imagen eliminada de Cloudinary: {public_id}")
+            return True
+        else:
+            print(f"⚠️ No se pudo eliminar imagen de Cloudinary: {result}")
+            return False
+
+    except Exception as e:
+        print(f"❌ Error eliminando imagen de Cloudinary {public_id}: {e}")
+        return False
         
     except Exception as e:
         print(f"❌ Error subiendo a Cloudinary: {e}")
@@ -560,10 +617,34 @@ async def delete_package(package_id: int, username: str = Depends(verify_token),
         db_package = db.query(Package).filter(Package.id == package_id).first()
         if not db_package:
             raise HTTPException(status_code=404, detail="Paquete no encontrado")
-        
+
+        # Eliminar imagen de portada de Cloudinary si existe
+        if db_package.image:
+            delete_cloudinary_image(db_package.image)
+
+        # Eliminar imágenes de galería de Cloudinary
+        gallery_images = db.query(PackageGalleryImage).filter(PackageGalleryImage.package_id == package_id).all()
+        for gallery_image in gallery_images:
+            if gallery_image.image_url:
+                if gallery_image.image_url.startswith("/static/uploads/"):
+                    # Archivo local
+                    file_path = f"frontend{gallery_image.image_url}"
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+                else:
+                    # Imagen de Cloudinary
+                    delete_cloudinary_image(gallery_image.image_url)
+
+        # Eliminar imágenes de hoteles de Cloudinary
+        hotels = db.query(PackageHotel).filter(PackageHotel.package_id == package_id).all()
+        for hotel in hotels:
+            if hotel.image_url:
+                delete_cloudinary_image(hotel.image_url)
+
+        # Eliminar el paquete (las relaciones se eliminarán por CASCADE)
         db.delete(db_package)
         db.commit()
-        
+
         return {"message": "Paquete eliminado correctamente"}
             
     except HTTPException:
@@ -828,16 +909,21 @@ async def delete_gallery_image(
             PackageGalleryImage.id == image_id,
             PackageGalleryImage.package_id == package_id
         ).first()
-        
+
         if not gallery_image:
             raise HTTPException(status_code=404, detail="Imagen no encontrada")
-        
-        # Eliminar archivo si es archivo subido
-        if gallery_image.image_filename and gallery_image.image_url.startswith("/static/uploads/"):
-            file_path = f"frontend{gallery_image.image_url}"
-            if os.path.exists(file_path):
-                os.remove(file_path)
-        
+
+        # Eliminar archivo según el tipo
+        if gallery_image.image_url:
+            if gallery_image.image_url.startswith("/static/uploads/"):
+                # Archivo local - eliminar del servidor
+                file_path = f"frontend{gallery_image.image_url}"
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+            else:
+                # Imagen de Cloudinary - eliminar de Cloudinary
+                delete_cloudinary_image(gallery_image.image_url)
+
         db.delete(gallery_image)
         db.commit()
         
@@ -1193,10 +1279,14 @@ async def delete_package_hotel(
             PackageHotel.id == hotel_id,
             PackageHotel.package_id == package_id
         ).first()
-        
+
         if not hotel:
             raise HTTPException(status_code=404, detail="Hotel no encontrado")
-        
+
+        # Eliminar imagen de Cloudinary si existe
+        if hotel.image_url:
+            delete_cloudinary_image(hotel.image_url)
+
         db.delete(hotel)
         db.commit()
         
