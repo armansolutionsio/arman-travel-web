@@ -464,8 +464,14 @@ function displayPackages() {
         return;
     }
 
-    tbody.innerHTML = packages.map(package => `
-        <tr>
+    tbody.innerHTML = '';
+
+    packages.forEach(package => {
+        const row = document.createElement('tr');
+        row.style.cursor = 'pointer';
+        row.className = 'package-row';
+
+        row.innerHTML = `
             <td class="package-image-cell">
                 <img src="${package.image}" alt="${package.title}" onerror="this.src='https://via.placeholder.com/60x40?text=IMG'">
             </td>
@@ -479,15 +485,25 @@ function displayPackages() {
             </td>
             <td><strong>${package.price}</strong></td>
             <td class="actions-cell">
-                <button class="btn btn-sm btn-secondary" onclick="editPackage(${package.id})">
+                <button class="btn btn-sm btn-secondary" onclick="editPackage(${package.id}); event.stopPropagation();">
                     <i class="fas fa-edit"></i> Editar
                 </button>
-                <button class="btn btn-sm btn-danger" onclick="deletePackage(${package.id})">
+                <button class="btn btn-sm btn-danger" onclick="deletePackage(${package.id}); event.stopPropagation();">
                     <i class="fas fa-trash"></i> Eliminar
                 </button>
             </td>
-        </tr>
-    `).join('');
+        `;
+
+        // Agregar click handler para toda la fila
+        row.addEventListener('click', function(e) {
+            // Solo redirigir si no se hizo click en los botones de acciones
+            if (!e.target.closest('.actions-cell')) {
+                window.open(`/package-detail.html?id=${package.id}`, '_blank');
+            }
+        });
+
+        tbody.appendChild(row);
+    });
 }
 
 // Cargar mensajes
@@ -1537,6 +1553,7 @@ function displayCarouselPackages(packages) {
         promotedContainer.innerHTML = '<div class="carousel-empty">No hay paquetes promocionados</div>';
     } else {
         promotedContainer.innerHTML = promoted.map((pkg, index) => createCarouselPackageCard(pkg, true, index + 1)).join('');
+        addCarouselClickHandlers(promotedContainer);
     }
 
     // Display non-promoted packages
@@ -1544,6 +1561,7 @@ function displayCarouselPackages(packages) {
         nonPromotedContainer.innerHTML = '<div class="carousel-empty">Todos los paquetes están promocionados</div>';
     } else {
         nonPromotedContainer.innerHTML = nonPromoted.map(pkg => createCarouselPackageCard(pkg, false)).join('');
+        addCarouselClickHandlers(nonPromotedContainer);
     }
 
     // Initialize drag and drop
@@ -1559,19 +1577,19 @@ function createCarouselPackageCard(pkg, isPromoted, order = null) {
     const buttonIcon = isPromoted ? 'fas fa-star-half-alt' : 'fas fa-star';
 
     return `
-        <div class="carousel-package-item" data-package-id="${pkg.id}" data-promoted="${isPromoted}">
+        <div class="carousel-package-item clickable-card" data-package-id="${pkg.id}" data-promoted="${isPromoted}" style="cursor: pointer;">
             ${isPromoted ? `<div class="carousel-order-badge">Orden: ${order}</div>` : ''}
-            
+
             <div class="carousel-package-header">
                 <div class="carousel-package-info">
                     <h4>${pkg.title}</h4>
                     <p>${pkg.category} - ${pkg.price}</p>
                 </div>
-                
-                <div class="carousel-package-controls">
+
+                <div class="carousel-package-controls" onclick="event.stopPropagation();">
                     <span class="promotion-status ${statusClass}">${statusText}</span>
-                    <button class="btn-toggle-promotion ${buttonClass}" 
-                            onclick="togglePackagePromotion(${pkg.id}, ${!isPromoted})">
+                    <button class="btn-toggle-promotion ${buttonClass}"
+                            onclick="togglePackagePromotion(${pkg.id}, ${!isPromoted}); event.stopPropagation();">
                         <i class="${buttonIcon}"></i>
                         ${buttonText}
                     </button>
@@ -1579,6 +1597,20 @@ function createCarouselPackageCard(pkg, isPromoted, order = null) {
             </div>
         </div>
     `;
+}
+
+// Add click handlers to carousel package cards
+function addCarouselClickHandlers(container) {
+    const cards = container.querySelectorAll('.clickable-card');
+    cards.forEach(card => {
+        card.addEventListener('click', function(e) {
+            // Solo redirigir si no se hizo click en los controles
+            if (!e.target.closest('.carousel-package-controls')) {
+                const packageId = card.dataset.packageId;
+                window.open(`/package-detail.html?id=${packageId}`, '_blank');
+            }
+        });
+    });
 }
 
 // Toggle package promotion

@@ -1030,7 +1030,7 @@ function createDestinationHotelsHTML(destination, hotels) {
             </div>
             <div class="hotels-grid">
                 ${hotels.map(hotel => `
-                    <div class="hotel-card" data-hotel-id="${hotel.id}" data-destination="${destination}">
+                    <div class="hotel-card" data-hotel-id="${hotel.id}" data-destination="${destination}" onclick="selectHotelCard('${hotel.id}', '${destination}', '${hotel.price}', event)">
                         <div class="hotel-image">
                             <img src="${hotel.image_url}" alt="${hotel.name}"
                                  onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22200%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23f0f0f0%22/><text x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 fill=%22%23999%22 font-size=%2216%22>Hotel</text></svg>'">
@@ -1047,9 +1047,10 @@ function createDestinationHotelsHTML(destination, hotels) {
                             </div>
                             <div class="hotel-selection">
                                 <div class="selection-controls">
-                                    <label>
+                                    <label onclick="event.stopPropagation()">
                                         <input type="checkbox" class="hotel-checkbox"
-                                               onchange="toggleHotelSelection('${hotel.id}', '${destination}', '${hotel.price}')">
+                                               onchange="toggleHotelSelection('${hotel.id}', '${destination}', '${hotel.price}')"
+                                               onclick="event.stopPropagation()">
                                         Seleccionar
                                     </label>
                                     <div class="days-input" style="display: none;">
@@ -1057,7 +1058,8 @@ function createDestinationHotelsHTML(destination, hotels) {
                                         ${hotel.allow_user_days
                                             ? `<input type="number" min="1" max="30" value="${hotel.days || 1}"
                                                      class="days-count"
-                                                     onchange="updateHotelDays('${hotel.id}', '${destination}', this.value)">`
+                                                     onchange="updateHotelDays('${hotel.id}', '${destination}', this.value)"
+                                                     onclick="event.stopPropagation()">`
                                             : `<span class="days-fixed">${hotel.days || 1} día${(hotel.days || 1) > 1 ? 's' : ''} (fijo)</span>`
                                         }
                                     </div>
@@ -1307,6 +1309,28 @@ function updateTotalPackagePrice() {
     updateTotalPrice();
 }
 
+// Función para seleccionar hotel al hacer click en la tarjeta
+function selectHotelCard(hotelId, destination, hotelPrice, event) {
+    // Evitar que el click se propague si es en elementos interactivos
+    if (event.target.closest('.selection-controls') ||
+        event.target.closest('.hotel-checkbox') ||
+        event.target.closest('.days-count')) {
+        return;
+    }
+
+    const hotelCard = document.querySelector(`[data-hotel-id="${hotelId}"][data-destination="${destination}"]`);
+    const checkbox = hotelCard.querySelector('.hotel-checkbox');
+
+    if (checkbox) {
+        // Alternar el estado del checkbox
+        checkbox.checked = !checkbox.checked;
+
+        // Disparar el evento change
+        const changeEvent = new Event('change', { bubbles: true });
+        checkbox.dispatchEvent(changeEvent);
+    }
+}
+
 // Animaciones CSS y estilos para tabs de hoteles
 const style = document.createElement('style');
 style.textContent = `
@@ -1415,6 +1439,7 @@ style.textContent = `
         width: 100%;
         height: auto;
         border: 2px solid transparent;
+        cursor: pointer;
     }
 
     .hotel-card:hover {
