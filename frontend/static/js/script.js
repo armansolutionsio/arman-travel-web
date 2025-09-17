@@ -4,6 +4,27 @@ let currentFilter = 'all';
 let config = { whatsapp_number: '1132551565', recipient_email: 'info.armansolutions@gmail.com' };
 let contactConfig = {};
 
+// Función para formatear precios con puntos como separadores de miles
+function formatPrice(priceString) {
+    if (!priceString) return priceString;
+
+    // Extraer la parte numérica y la moneda
+    const match = priceString.match(/^(.*?)(\d+(?:,\d+)*)(.*?)$/);
+    if (!match) return priceString;
+
+    const prefix = match[1]; // Ejemplo: "USD ", "$", etc.
+    const numberPart = match[2]; // Ejemplo: "1500", "1,500"
+    const suffix = match[3]; // Ejemplo: " por persona", etc.
+
+    // Remover comas existentes y convertir a número
+    const number = parseInt(numberPart.replace(/,/g, ''));
+
+    // Formatear con puntos como separadores de miles
+    const formattedNumber = number.toLocaleString('es-AR');
+
+    return prefix + formattedNumber + suffix;
+}
+
 // Detección de dispositivos móviles
 const isMobile = () => {
     return window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -304,7 +325,7 @@ function displayPackages(packagesToShow) {
             <div class="package-content">
                 <h3 class="package-title">${pkg.title}</h3>
                 <p class="package-description">${pkg.description}</p>
-                <div class="package-price">${pkg.price}</div>
+                <div class="package-price">${formatPrice(pkg.price)}</div>
                 <ul class="package-features">
                     ${pkg.features.map(feature => `<li>${feature}</li>`).join('')}
                 </ul>
