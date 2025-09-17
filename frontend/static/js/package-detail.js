@@ -918,62 +918,41 @@ function displayPackageFeatures(features) {
 
 // === MOSTRAR HOTELES ===
 
-// Mostrar hoteles del paquete
+// Variables globales para hoteles
+let hotelSelections = {}; // { destination: [{ hotelId, days, price }] }
+let destinationsData = {};
+
+// Mostrar hoteles del paquete agrupados por destino
 async function displayHotels(packageId) {
     const hotelsContainer = document.getElementById('packageHotels');
     const noHotelsMessage = hotelsContainer.querySelector('.no-hotels');
-    
+
     try {
         const response = await fetch(`${API_BASE_URL}/packages/${packageId}/hotels`);
         if (response.ok) {
-            const hotels = await response.json();
-            
-            if (hotels.length === 0) {
+            const destinations = await response.json();
+
+            if (Object.keys(destinations).length === 0) {
                 // No hay hoteles, mostrar mensaje y ocultar sección
                 const hotelsSection = document.querySelector('.hotels-section');
                 hotelsSection.style.display = 'none';
                 return;
             }
-            
-            // Ordenar hoteles por precio más bajo primero
-            hotels.sort((a, b) => {
-                const priceA = extractNumericPrice(a.price);
-                const priceB = extractNumericPrice(b.price);
-                return priceA - priceB;
-            });
-            
+
+            destinationsData = destinations;
+
             // Ocultar mensaje de "no hoteles"
             if (noHotelsMessage) {
                 noHotelsMessage.style.display = 'none';
             }
-            
-            // Mostrar hoteles
-            const hotelsHtml = hotels.map(hotel => `
-                <div class="hotel-card" onclick="selectHotel(${hotel.id}, '${hotel.price}')">
-                    <div class="hotel-image">
-                        <img src="${hotel.image_url}" alt="${hotel.name}" 
-                             onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22200%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23f0f0f0%22/><text x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 fill=%22%23999%22 font-size=%2216%22>Hotel</text></svg>'">
-                        <div class="hotel-price">${formatPrice(hotel.price)}</div>
-                    </div>
-                    <div class="hotel-info">
-                        <h3>${hotel.name}</h3>
-                        ${hotel.description ? `<p class="hotel-description">${hotel.description}</p>` : ''}
-                        <div class="hotel-amenities">
-                            ${hotel.amenities && hotel.amenities.length > 0 
-                                ? hotel.amenities.map(amenity => `<span class="amenity"><i class="${amenity.icon}"></i> ${amenity.name}</span>`).join('')
-                                : '<span class="amenity"><i class="fas fa-wifi"></i> WiFi</span><span class="amenity"><i class="fas fa-swimming-pool"></i> Piscina</span><span class="amenity"><i class="fas fa-utensils"></i> Restaurante</span>'
-                            }
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-            
-            hotelsContainer.innerHTML = hotelsHtml;
-            
+
+            // Crear estructura de tabs
+            createHotelTabsStructure(destinations);
+
             // Mostrar sección de hoteles
             const hotelsSection = document.querySelector('.hotels-section');
             hotelsSection.style.display = 'block';
-            
+
         } else {
             // Error al cargar hoteles, ocultar sección
             const hotelsSection = document.querySelector('.hotels-section');
@@ -987,6 +966,102 @@ async function displayHotels(packageId) {
     }
 }
 
+// Crear estructura de tabs para hoteles por destino
+function createHotelTabsStructure(destinations) {
+    const hotelsContainer = document.getElementById('packageHotels');
+    const destinationNames = Object.keys(destinations);
+
+    if (destinationNames.length === 1) {
+        // Solo un destino, no mostrar tabs
+        const singleDestination = destinationNames[0];
+        hotelsContainer.innerHTML = createDestinationHotelsHTML(singleDestination, destinations[singleDestination]);
+        return;
+    }
+
+    // Múltiples destinos, crear tabs
+    const tabsHTML = `
+        <div class="hotel-tabs">
+            <div class="tab-buttons">
+                ${destinationNames.map((destination, index) => `
+                    <button class="tab-button ${index === 0 ? 'active' : ''}"
+                            onclick="switchDestinationTab('${destination}')">
+                        ${destination}
+                    </button>
+                `).join('')}
+            </div>
+            <div class="tab-content">
+                ${destinationNames.map((destination, index) => `
+                    <div class="tab-panel ${index === 0 ? 'active' : ''}" id="tab-${destination.replace(/\s+/g, '-')}">
+                        ${createDestinationHotelsHTML(destination, destinations[destination])}
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+
+    hotelsContainer.innerHTML = tabsHTML;
+}
+
+// Crear HTML para hoteles de un destino específico
+function createDestinationHotelsHTML(destination, hotels) {
+    // Ordenar hoteles por precio más bajo primero
+    hotels.sort((a, b) => {
+        const priceA = extractNumericPrice(a.price);
+        const priceB = extractNumericPrice(b.price);
+        return priceA - priceB;
+    });
+
+    return `
+        <div class="destination-hotels">
+            <div class="destination-selection-info">
+                <h4>Selecciona hoteles para ${destination}</h4>
+                <p class="selection-helper">Puedes seleccionar múltiples hoteles y especificar los días en cada uno</p>
+            </div>
+            <div class="hotels-grid">
+                ${hotels.map(hotel => `
+                    <div class="hotel-card" data-hotel-id="${hotel.id}" data-destination="${destination}">
+                        <div class="hotel-image">
+                            <img src="${hotel.image_url}" alt="${hotel.name}"
+                                 onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22200%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23f0f0f0%22/><text x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 fill=%22%23999%22 font-size=%2216%22>Hotel</text></svg>'">
+                            <div class="hotel-price">${formatPrice(hotel.price)}/noche</div>
+                        </div>
+                        <div class="hotel-info">
+                            <h3>${hotel.name}</h3>
+                            ${hotel.description ? `<p class="hotel-description">${hotel.description}</p>` : ''}
+                            <div class="hotel-amenities">
+                                ${hotel.amenities && hotel.amenities.length > 0
+                                    ? hotel.amenities.map(amenity => `<span class="amenity"><i class="${amenity.icon}"></i> ${amenity.name}</span>`).join('')
+                                    : '<span class="amenity"><i class="fas fa-wifi"></i> WiFi</span><span class="amenity"><i class="fas fa-swimming-pool"></i> Piscina</span><span class="amenity"><i class="fas fa-utensils"></i> Restaurante</span>'
+                                }
+                            </div>
+                            <div class="hotel-selection">
+                                <div class="selection-controls">
+                                    <label>
+                                        <input type="checkbox" class="hotel-checkbox"
+                                               onchange="toggleHotelSelection('${hotel.id}', '${destination}', '${hotel.price}')">
+                                        Seleccionar
+                                    </label>
+                                    <div class="days-input" style="display: none;">
+                                        <label>Días:</label>
+                                        <input type="number" min="1" max="30" value="${hotel.days || 1}"
+                                               class="days-count"
+                                               onchange="updateHotelDays('${hotel.id}', '${destination}', this.value)">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="destination-summary" id="summary-${destination.replace(/\s+/g, '-')}" style="display: none;">
+                <h5>Hoteles seleccionados en ${destination}:</h5>
+                <div class="selected-hotels-list"></div>
+                <div class="destination-total">Total: <span class="destination-price">$0</span></div>
+            </div>
+        </div>
+    `;
+}
+
 // Extraer precio numérico para ordenamiento
 function extractNumericPrice(priceString) {
     if (!priceString) return 0;
@@ -998,61 +1073,398 @@ function extractNumericPrice(priceString) {
     return 0;
 }
 
-// Seleccionar hotel y actualizar precios
-function selectHotel(hotelId, hotelPrice) {
-    // Guardar información del hotel seleccionado
-    currentPackage.selectedHotelId = hotelId;
-    currentPackage.selectedHotelPrice = hotelPrice;
-    
-    // Actualizar precio en la foto de portada
-    const heroPrice = document.getElementById('heroPrice');
-    if (heroPrice) heroPrice.textContent = formatPrice(hotelPrice);
+// === FUNCIONES PARA MANEJO DE TABS Y SELECCIÓN ===
 
-    // Actualizar precio en el sidebar
-    const sidebarPrice = document.getElementById('sidebarPrice');
-    if (sidebarPrice) sidebarPrice.textContent = formatPrice(hotelPrice);
-    
-    // Actualizar el precio base del paquete para los cálculos
-    currentPackage.price = hotelPrice;
-    
-    // Recalcular el precio total
-    updateTotalPrice();
-    
-    // Marcar hotel como seleccionado visualmente
-    markSelectedHotel(hotelId);
-    
-    // Scroll suave hacia el top para ver el cambio de precio
-    window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-    });
+// Cambiar entre tabs de destinos
+function switchDestinationTab(destination) {
+    // Desactivar todos los tabs y paneles
+    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+
+    // Activar el tab y panel seleccionado
+    const tabButton = event.target;
+    const panelId = `tab-${destination.replace(/\s+/g, '-')}`;
+    const panel = document.getElementById(panelId);
+
+    tabButton.classList.add('active');
+    if (panel) panel.classList.add('active');
 }
 
-// Marcar hotel seleccionado visualmente
-function markSelectedHotel(selectedHotelId) {
-    // Remover selección previa
-    document.querySelectorAll('.hotel-card').forEach(card => {
-        card.classList.remove('selected');
-    });
-    
-    // Agregar clase de seleccionado al hotel actual
-    const selectedCard = document.querySelector(`[onclick*="${selectedHotelId}"]`);
-    if (selectedCard) {
-        selectedCard.classList.add('selected');
+// Alternar selección de hotel
+function toggleHotelSelection(hotelId, destination, hotelPrice) {
+    const checkbox = event.target;
+    const hotelCard = checkbox.closest('.hotel-card');
+    const daysInput = hotelCard.querySelector('.days-input');
+
+    if (checkbox.checked) {
+        // Seleccionar hotel
+        daysInput.style.display = 'block';
+        hotelCard.classList.add('selected');
+
+        // Inicializar selección si no existe
+        if (!hotelSelections[destination]) {
+            hotelSelections[destination] = [];
+        }
+
+        // Agregar hotel a la selección
+        const days = parseInt(daysInput.querySelector('.days-count').value) || 1;
+        hotelSelections[destination].push({
+            hotelId: hotelId,
+            days: days,
+            price: hotelPrice,
+            name: hotelCard.querySelector('h3').textContent
+        });
+    } else {
+        // Deseleccionar hotel
+        daysInput.style.display = 'none';
+        hotelCard.classList.remove('selected');
+
+        // Remover hotel de la selección
+        if (hotelSelections[destination]) {
+            hotelSelections[destination] = hotelSelections[destination].filter(
+                selection => selection.hotelId !== hotelId
+            );
+        }
+    }
+
+    updateDestinationSummary(destination);
+    updateTotalPackagePrice();
+}
+
+// Actualizar días de un hotel seleccionado
+function updateHotelDays(hotelId, destination, days) {
+    if (hotelSelections[destination]) {
+        const selection = hotelSelections[destination].find(s => s.hotelId === hotelId);
+        if (selection) {
+            selection.days = parseInt(days);
+            updateDestinationSummary(destination);
+            updateTotalPackagePrice();
+        }
     }
 }
 
-// Animaciones CSS
+// Actualizar resumen de destino
+function updateDestinationSummary(destination) {
+    const summaryId = `summary-${destination.replace(/\s+/g, '-')}`;
+    const summary = document.getElementById(summaryId);
+
+    if (!summary || !hotelSelections[destination] || hotelSelections[destination].length === 0) {
+        if (summary) summary.style.display = 'none';
+        return;
+    }
+
+    const selectedHotels = hotelSelections[destination];
+    let totalDestinationPrice = 0;
+
+    const hotelsListHTML = selectedHotels.map(selection => {
+        const hotelTotal = extractNumericPrice(selection.price) * selection.days;
+        totalDestinationPrice += hotelTotal;
+
+        return `
+            <div class="selected-hotel-item">
+                <span class="hotel-name">${selection.name}</span>
+                <span class="hotel-duration">${selection.days} día${selection.days > 1 ? 's' : ''}</span>
+                <span class="hotel-subtotal">${formatPrice(hotelTotal.toString())}</span>
+            </div>
+        `;
+    }).join('');
+
+    summary.querySelector('.selected-hotels-list').innerHTML = hotelsListHTML;
+    summary.querySelector('.destination-price').textContent = formatPrice(totalDestinationPrice.toString());
+    summary.style.display = 'block';
+}
+
+// Actualizar precio total del paquete
+function updateTotalPackagePrice() {
+    let totalPrice = 0;
+    let hasSelections = false;
+
+    // Sumar precios de todos los destinos
+    Object.values(hotelSelections).forEach(destinationSelections => {
+        if (destinationSelections.length > 0) {
+            hasSelections = true;
+            destinationSelections.forEach(selection => {
+                totalPrice += extractNumericPrice(selection.price) * selection.days;
+            });
+        }
+    });
+
+    if (hasSelections) {
+        // Actualizar precio en la interfaz
+        const heroPrice = document.getElementById('heroPrice');
+        const sidebarPrice = document.getElementById('sidebarPrice');
+
+        if (heroPrice) heroPrice.textContent = formatPrice(totalPrice.toString());
+        if (sidebarPrice) sidebarPrice.textContent = formatPrice(totalPrice.toString());
+
+        // Actualizar precio base para cálculos de viajeros
+        currentPackage.price = totalPrice.toString();
+    }
+
+    // Recalcular el precio total con cantidad de viajeros
+    updateTotalPrice();
+}
+
+// Animaciones CSS y estilos para tabs de hoteles
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideInRight {
         from { transform: translateX(100%); opacity: 0; }
         to { transform: translateX(0); opacity: 1; }
     }
-    
+
     @keyframes slideOutRight {
         from { transform: translateX(0); opacity: 1; }
         to { transform: translateX(100%); opacity: 0; }
+    }
+
+    /* Expandir sección de hoteles a ancho completo */
+    .hotels-section {
+        width: 100vw;
+        margin-left: calc(-50vw + 50%);
+        padding: 2rem calc(50vw - 50%);
+        background: var(--white);
+        border-radius: 15px;
+        box-shadow: var(--shadow-light);
+    }
+
+    .hotels-section h2 {
+        text-align: center;
+        max-width: 1200px;
+        margin: 0 auto 2rem auto;
+    }
+
+    /* Estilos para tabs de hoteles */
+    .hotel-tabs {
+        margin-top: 1rem;
+        max-width: 1200px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .tab-buttons {
+        display: flex;
+        border-bottom: 2px solid #e1e5e9;
+        margin-bottom: 1.5rem;
+        overflow-x: auto;
+        justify-content: center;
+    }
+
+    .tab-button {
+        background: none;
+        border: none;
+        padding: 12px 24px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 500;
+        color: #666;
+        border-bottom: 2px solid transparent;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+
+    .tab-button:hover {
+        color: #007bff;
+        background: #f8f9fa;
+    }
+
+    .tab-button.active {
+        color: #007bff;
+        border-bottom-color: #007bff;
+        background: #f8f9fa;
+    }
+
+    .tab-panel {
+        display: none;
+    }
+
+    .tab-panel.active {
+        display: block;
+    }
+
+    /* Estilos para selección de hoteles */
+    .destination-hotels {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .destination-selection-info {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid #007bff;
+    }
+
+    .destination-selection-info h4 {
+        margin: 0 0 0.5rem 0;
+        color: #007bff;
+    }
+
+    .selection-helper {
+        margin: 0;
+        color: #666;
+        font-size: 14px;
+    }
+
+    .hotels-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .hotel-card {
+        position: relative;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+    }
+
+    .hotel-card.selected {
+        border-color: #007bff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    }
+
+    .hotel-selection {
+        padding: 1rem;
+        border-top: 1px solid #e1e5e9;
+        background: #fafbfc;
+    }
+
+    .selection-controls {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .selection-controls label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        font-weight: 500;
+    }
+
+    .hotel-checkbox {
+        width: 18px;
+        height: 18px;
+        accent-color: #007bff;
+    }
+
+    .days-input {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: white;
+        padding: 0.5rem;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+    }
+
+    .days-count {
+        width: 60px;
+        padding: 0.25rem 0.5rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        text-align: center;
+    }
+
+    /* Resumen de destino */
+    .destination-summary {
+        margin-top: 1.5rem;
+        background: #e8f4f8;
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid #bee5eb;
+    }
+
+    .destination-summary h5 {
+        margin: 0 0 1rem 0;
+        color: #0c5460;
+    }
+
+    .selected-hotel-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #bee5eb;
+    }
+
+    .selected-hotel-item:last-child {
+        border-bottom: none;
+    }
+
+    .hotel-name {
+        font-weight: 500;
+        color: #333;
+    }
+
+    .hotel-duration {
+        color: #666;
+        font-size: 14px;
+    }
+
+    .hotel-subtotal {
+        font-weight: 600;
+        color: #0c5460;
+    }
+
+    .destination-total {
+        margin-top: 1rem;
+        text-align: right;
+        font-size: 18px;
+        font-weight: 600;
+        color: #0c5460;
+        border-top: 2px solid #bee5eb;
+        padding-top: 1rem;
+    }
+
+    .destination-price {
+        color: #007bff;
+    }
+
+    /* Responsive para hoteles con ancho completo */
+    @media (max-width: 1024px) {
+        .hotels-section {
+            width: 100%;
+            margin-left: 0;
+            padding: 2rem 1rem;
+        }
+
+        .hotels-grid {
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .tab-buttons {
+            justify-content: flex-start;
+            padding-bottom: 0.5rem;
+        }
+
+        .hotels-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .hotel-card {
+            margin: 0 auto;
+            max-width: 400px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .hotels-section {
+            padding: 1.5rem 0.5rem;
+        }
+
+        .tab-button {
+            padding: 10px 16px;
+            font-size: 14px;
+        }
     }
 `;
 document.head.appendChild(style);

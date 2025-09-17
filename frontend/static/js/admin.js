@@ -2359,6 +2359,9 @@ function initializeHotelHandlers() {
 
 // Mostrar opciones de agregar hotel
 function showHotelAddOptions() {
+    // Asegurar que todo esté limpio antes de mostrar las opciones
+    hideHotelUploadArea();
+    hideHotelUrlInput();
     document.getElementById('hotelAddOptions').style.display = 'block';
 }
 
@@ -2388,7 +2391,19 @@ async function loadPackageHotels(packageId) {
     try {
         const response = await fetch(`${API_BASE_URL}/packages/${packageId}/hotels`);
         if (response.ok) {
-            const hotels = await response.json();
+            const hotelsData = await response.json();
+            // Si el nuevo formato devuelve un objeto agrupado por destinos, aplanarlo
+            let hotels = [];
+            if (typeof hotelsData === 'object' && !Array.isArray(hotelsData)) {
+                // Nuevo formato: { "Destino 1": [hotels], "Destino 2": [hotels] }
+                Object.values(hotelsData).forEach(destinationHotels => {
+                    hotels = hotels.concat(destinationHotels);
+                });
+            } else {
+                // Formato legacy: array directo
+                hotels = hotelsData;
+            }
+
             // Cargar hoteles existentes al array temporal
             tempHotels = hotels.map(hotel => ({
                 id: hotel.id,
@@ -2396,6 +2411,8 @@ async function loadPackageHotels(packageId) {
                 description: hotel.description,
                 image_url: hotel.image_url,
                 price: hotel.price,
+                destination: hotel.destination || 'Destino principal',
+                days: hotel.days || 1,
                 isExisting: true // Marcar como existente para no eliminarlo si no se modifica
             }));
             displayTempHotels();
@@ -2430,7 +2447,11 @@ function displayTempHotels() {
             <div class="hotel-info">
                 <h4>${hotel.name}</h4>
                 <p class="hotel-description">${hotel.description || 'Sin descripción'}</p>
-                <div class="hotel-price">${hotel.price}/noche</div>
+                <div class="hotel-details">
+                    <div class="hotel-price">${hotel.price}/noche</div>
+                    <div class="hotel-destination"><i class="fas fa-map-marker-alt"></i> ${hotel.destination}</div>
+                    <div class="hotel-days"><i class="fas fa-calendar-alt"></i> ${hotel.days} día${hotel.days > 1 ? 's' : ''}</div>
+                </div>
                 <div class="hotel-actions">
                     <button type="button" class="btn-edit" onclick="editTempHotel(${index})" title="Editar">
                         <i class="fas fa-edit"></i>
@@ -2463,9 +2484,20 @@ function hideHotelUrlInput() {
 
 // Mostrar área de subida de archivos para hotel
 function showHotelFileUpload() {
+    // Limpiar cualquier estado previo
+    clearHotelUploadForm();
+    clearSelectedAmenities('upload'); // Limpiar amenities
+
     document.getElementById('hotelAddOptions').style.display = 'none';
     document.getElementById('hotelUploadArea').style.display = 'block';
     document.getElementById('hotelUrlInput').style.display = 'none';
+
+    // Asegurar que la zona de upload esté visible
+    const uploadZone = document.getElementById('hotelUploadZone');
+    const progressContainer = document.getElementById('hotelUploadProgress');
+    if (uploadZone) uploadZone.style.display = 'block';
+    if (progressContainer) progressContainer.style.display = 'none';
+
     document.getElementById('hotelName').focus();
 }
 
@@ -2477,10 +2509,17 @@ function hideHotelUploadArea() {
     const previewContainer = document.getElementById('hotelImagePreview');
     if (previewContainer) {
         previewContainer.style.display = 'none';
+        previewContainer.remove(); // Eliminar completamente el preview
     }
 
     // Limpiar variables temporales
     window.tempHotelImageUrl = null;
+
+    // Restablecer zona de upload
+    const uploadZone = document.getElementById('hotelUploadZone');
+    const progressContainer = document.getElementById('hotelUploadProgress');
+    if (uploadZone) uploadZone.style.display = 'block';
+    if (progressContainer) progressContainer.style.display = 'none';
 
     clearHotelUploadForm();
 }
@@ -2491,6 +2530,8 @@ function clearHotelUrlForm() {
     document.getElementById('hotelUrlDescription').value = '';
     document.getElementById('hotelUrlPrice').value = '';
     document.getElementById('hotelUrlPriceCurrency').value = 'USD';
+    document.getElementById('hotelUrlDestination').value = '';
+    document.getElementById('hotelUrlDays').value = '1';
     document.getElementById('hotelImageUrl').value = '';
 }
 
@@ -2500,7 +2541,23 @@ function clearHotelUploadForm() {
     document.getElementById('hotelDescription').value = '';
     document.getElementById('hotelPrice').value = '';
     document.getElementById('hotelPriceCurrency').value = 'USD';
+    document.getElementById('hotelDestination').value = '';
+    document.getElementById('hotelDays').value = '1';
     document.getElementById('hotelFileInput').value = '';
+
+    // Limpiar imagen temporal y preview
+    window.tempHotelImageUrl = null;
+    const previewContainer = document.getElementById('hotelImagePreview');
+    if (previewContainer) {
+        previewContainer.style.display = 'none';
+        previewContainer.remove();
+    }
+
+    // Mostrar zona de upload nuevamente
+    const uploadZone = document.getElementById('hotelUploadZone');
+    const progressContainer = document.getElementById('hotelUploadProgress');
+    if (uploadZone) uploadZone.style.display = 'block';
+    if (progressContainer) progressContainer.style.display = 'none';
 }
 
 // Agregar hotel desde URL al array temporal
@@ -2510,20 +2567,24 @@ function addHotelFromUrl() {
     const amount = document.getElementById('hotelUrlPrice').value.trim();
     const currency = document.getElementById('hotelUrlPriceCurrency').value;
     const imageUrl = document.getElementById('hotelImageUrl').value.trim();
-    
-    if (!name || !amount || !imageUrl) {
+    const destination = document.getElementById('hotelUrlDestination').value.trim();
+    const days = parseInt(document.getElementById('hotelUrlDays').value) || 1;
+
+    if (!name || !amount || !imageUrl || !destination) {
         showGalleryNotification('Por favor completa todos los campos requeridos', 'error');
         return;
     }
 
     const price = formatHotelPrice(currency, amount);
-    
+
     // Agregar al array temporal con amenities
     tempHotels.push({
         name: name,
         description: description || null,
         price: price,
         image_url: imageUrl,
+        destination: destination,
+        days: days,
         amenities: [...selectedUrlAmenities], // Copia de las amenities seleccionadas
         isExisting: false
     });
@@ -2650,8 +2711,10 @@ async function addHotelFromUpload() {
     const description = document.getElementById('hotelDescription').value.trim();
     const amount = document.getElementById('hotelPrice').value.trim();
     const currency = document.getElementById('hotelPriceCurrency').value;
+    const destination = document.getElementById('hotelDestination').value.trim();
+    const days = parseInt(document.getElementById('hotelDays').value) || 1;
 
-    if (!name || !amount) {
+    if (!name || !amount || !destination) {
         showGalleryNotification('Por favor completa todos los campos requeridos', 'error');
         return;
     }
@@ -2671,6 +2734,8 @@ async function addHotelFromUpload() {
                 description: description || null,
                 price: price,
                 image_url: window.tempHotelImageUrl,
+                destination: destination,
+                days: days,
                 amenities: [...selectedAmenities], // Copia de las amenities seleccionadas
                 isExisting: false
             });
@@ -2696,19 +2761,25 @@ async function addHotelFromUpload() {
 function editTempHotel(index) {
     const hotel = tempHotels[index];
     const parsedPrice = parseHotelPrice(hotel.price);
-    
+
     const name = prompt('Nombre del hotel:', hotel.name);
     if (name === null) return;
-    
+
     const description = prompt('Descripción del hotel:', hotel.description || '');
     if (description === null) return;
-    
+
+    const destination = prompt('Destino/Ciudad:', hotel.destination || 'Destino principal');
+    if (destination === null) return;
+
+    const days = prompt('Días en el hotel:', hotel.days || 1);
+    if (days === null) return;
+
     const amount = prompt('Precio (solo número):', parsedPrice.amount);
     if (amount === null) return;
-    
+
     const currency = prompt('Moneda ($ o USD):', parsedPrice.currency);
     if (currency === null) return;
-    
+
     const imageUrl = prompt('URL de imagen:', hotel.image_url);
     if (imageUrl === null) return;
 
@@ -2717,10 +2788,12 @@ function editTempHotel(index) {
         ...hotel,
         name: name.trim(),
         description: description.trim() || null,
+        destination: destination.trim(),
+        days: parseInt(days) || 1,
         price: formatHotelPrice(currency.trim(), amount.trim()),
         image_url: imageUrl.trim()
     };
-    
+
     displayTempHotels();
     showGalleryNotification('Hotel actualizado en la lista', 'success');
 }
@@ -2821,11 +2894,21 @@ async function saveHotelsToPackage(packageId) {
         const existingResponse = await fetch(`${API_BASE_URL}/packages/${packageId}/hotels`);
         let existingHotels = [];
         if (existingResponse.ok) {
-            existingHotels = await existingResponse.json();
+            const hotelsData = await existingResponse.json();
+            // Si el nuevo formato devuelve un objeto agrupado por destinos, aplanarlo
+            if (typeof hotelsData === 'object' && !Array.isArray(hotelsData)) {
+                // Nuevo formato: { "Destino 1": [hotels], "Destino 2": [hotels] }
+                Object.values(hotelsData).forEach(destinationHotels => {
+                    existingHotels = existingHotels.concat(destinationHotels);
+                });
+            } else {
+                // Formato legacy: array directo
+                existingHotels = hotelsData;
+            }
         }
-        
+
         console.log('Hoteles existentes:', existingHotels);
-        
+
         // Eliminar hoteles que ya no están en tempHotels
         const tempHotelIds = tempHotels.filter(h => h.isExisting && h.id).map(h => h.id);
         for (const existingHotel of existingHotels) {
@@ -2852,6 +2935,8 @@ async function saveHotelsToPackage(packageId) {
                     description: hotel.description,
                     price: hotel.price,
                     image_url: hotel.image_url,
+                    destination: hotel.destination || 'Destino principal',
+                    days: hotel.days || 1,
                     amenities: hotel.amenities || []
                 })
             });
@@ -2868,6 +2953,8 @@ async function saveHotelsToPackage(packageId) {
                 description: hotel.description,
                 price: hotel.price,
                 image_url: hotel.image_url,
+                destination: hotel.destination || 'Destino principal',
+                days: hotel.days || 1,
                 amenities: hotel.amenities || []
             };
             console.log('Datos del hotel a enviar:', JSON.stringify(hotelDataToSend, null, 2));
@@ -2897,6 +2984,44 @@ async function saveHotelsToPackage(packageId) {
         throw error; // Re-lanzar el error para que se muestre en la UI principal
     }
 }
+
+// Agregar estilos CSS para los nuevos campos de hoteles
+const adminHotelStyle = document.createElement('style');
+adminHotelStyle.textContent = `
+    .hotel-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .hotel-destination,
+    .hotel-days {
+        font-size: 0.85rem;
+        color: #666;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .hotel-destination i,
+    .hotel-days i {
+        color: #007bff;
+        width: 12px;
+    }
+
+    .hotel-item {
+        border: 1px solid #e1e5e9;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: box-shadow 0.2s ease;
+    }
+
+    .hotel-item:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+`;
+document.head.appendChild(adminHotelStyle);
 
 // Limpiar array temporal de hoteles
 function clearTempHotels() {
