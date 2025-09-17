@@ -2413,6 +2413,8 @@ async function loadPackageHotels(packageId) {
                 price: hotel.price,
                 destination: hotel.destination || 'Destino principal',
                 days: hotel.days || 1,
+                allow_user_days: hotel.allow_user_days || false,
+                allow_multiple_per_destination: hotel.allow_multiple_per_destination || false,
                 isExisting: true // Marcar como existente para no eliminarlo si no se modifica
             }));
             displayTempHotels();
@@ -2451,6 +2453,14 @@ function displayTempHotels() {
                     <div class="hotel-price">${hotel.price}/noche</div>
                     <div class="hotel-destination"><i class="fas fa-map-marker-alt"></i> ${hotel.destination}</div>
                     <div class="hotel-days"><i class="fas fa-calendar-alt"></i> ${hotel.days} día${hotel.days > 1 ? 's' : ''}</div>
+                    <div class="hotel-user-days">
+                        <i class="fas ${hotel.allow_user_days ? 'fa-user-edit' : 'fa-lock'}"></i>
+                        ${hotel.allow_user_days ? 'Usuario puede cambiar días' : 'Días fijos'}
+                    </div>
+                    <div class="hotel-multiple-selection">
+                        <i class="fas ${hotel.allow_multiple_per_destination ? 'fa-layer-group' : 'fa-hand-pointer'}"></i>
+                        ${hotel.allow_multiple_per_destination ? 'Múltiples selecciones permitidas' : 'Solo una selección'}
+                    </div>
                 </div>
                 <div class="hotel-actions">
                     <button type="button" class="btn-edit" onclick="editTempHotel(${index})" title="Editar">
@@ -2532,6 +2542,8 @@ function clearHotelUrlForm() {
     document.getElementById('hotelUrlPriceCurrency').value = 'USD';
     document.getElementById('hotelUrlDestination').value = '';
     document.getElementById('hotelUrlDays').value = '1';
+    document.getElementById('hotelUrlAllowUserDays').checked = false;
+    document.getElementById('hotelUrlAllowMultiple').checked = false;
     document.getElementById('hotelImageUrl').value = '';
 }
 
@@ -2543,6 +2555,8 @@ function clearHotelUploadForm() {
     document.getElementById('hotelPriceCurrency').value = 'USD';
     document.getElementById('hotelDestination').value = '';
     document.getElementById('hotelDays').value = '1';
+    document.getElementById('hotelAllowUserDays').checked = false;
+    document.getElementById('hotelAllowMultiple').checked = false;
     document.getElementById('hotelFileInput').value = '';
 
     // Limpiar imagen temporal y preview
@@ -2569,6 +2583,8 @@ function addHotelFromUrl() {
     const imageUrl = document.getElementById('hotelImageUrl').value.trim();
     const destination = document.getElementById('hotelUrlDestination').value.trim();
     const days = parseInt(document.getElementById('hotelUrlDays').value) || 1;
+    const allowUserDays = document.getElementById('hotelUrlAllowUserDays').checked;
+    const allowMultiple = document.getElementById('hotelUrlAllowMultiple').checked;
 
     if (!name || !amount || !imageUrl || !destination) {
         showGalleryNotification('Por favor completa todos los campos requeridos', 'error');
@@ -2585,6 +2601,8 @@ function addHotelFromUrl() {
         image_url: imageUrl,
         destination: destination,
         days: days,
+        allow_user_days: allowUserDays,
+        allow_multiple_per_destination: allowMultiple,
         amenities: [...selectedUrlAmenities], // Copia de las amenities seleccionadas
         isExisting: false
     });
@@ -2713,6 +2731,8 @@ async function addHotelFromUpload() {
     const currency = document.getElementById('hotelPriceCurrency').value;
     const destination = document.getElementById('hotelDestination').value.trim();
     const days = parseInt(document.getElementById('hotelDays').value) || 1;
+    const allowUserDays = document.getElementById('hotelAllowUserDays').checked;
+    const allowMultiple = document.getElementById('hotelAllowMultiple').checked;
 
     if (!name || !amount || !destination) {
         showGalleryNotification('Por favor completa todos los campos requeridos', 'error');
@@ -2736,6 +2756,8 @@ async function addHotelFromUpload() {
                 image_url: window.tempHotelImageUrl,
                 destination: destination,
                 days: days,
+                allow_user_days: allowUserDays,
+                allow_multiple_per_destination: allowMultiple,
                 amenities: [...selectedAmenities], // Copia de las amenities seleccionadas
                 isExisting: false
             });
@@ -2774,6 +2796,11 @@ function editTempHotel(index) {
     const days = prompt('Días en el hotel:', hotel.days || 1);
     if (days === null) return;
 
+    const allowUserDaysText = hotel.allow_user_days ? 'sí' : 'no';
+    const allowUserDaysPrompt = prompt('¿Permitir al usuario cambiar días? (sí/no):', allowUserDaysText);
+    if (allowUserDaysPrompt === null) return;
+    const allowUserDays = allowUserDaysPrompt.toLowerCase().includes('sí') || allowUserDaysPrompt.toLowerCase().includes('si');
+
     const amount = prompt('Precio (solo número):', parsedPrice.amount);
     if (amount === null) return;
 
@@ -2790,6 +2817,7 @@ function editTempHotel(index) {
         description: description.trim() || null,
         destination: destination.trim(),
         days: parseInt(days) || 1,
+        allow_user_days: allowUserDays,
         price: formatHotelPrice(currency.trim(), amount.trim()),
         image_url: imageUrl.trim()
     };
@@ -2937,6 +2965,8 @@ async function saveHotelsToPackage(packageId) {
                     image_url: hotel.image_url,
                     destination: hotel.destination || 'Destino principal',
                     days: hotel.days || 1,
+                    allow_user_days: hotel.allow_user_days || false,
+                    allow_multiple_per_destination: hotel.allow_multiple_per_destination || false,
                     amenities: hotel.amenities || []
                 })
             });
@@ -2955,6 +2985,8 @@ async function saveHotelsToPackage(packageId) {
                 image_url: hotel.image_url,
                 destination: hotel.destination || 'Destino principal',
                 days: hotel.days || 1,
+                allow_user_days: hotel.allow_user_days || false,
+                allow_multiple_per_destination: hotel.allow_multiple_per_destination || false,
                 amenities: hotel.amenities || []
             };
             console.log('Datos del hotel a enviar:', JSON.stringify(hotelDataToSend, null, 2));
@@ -2996,7 +3028,9 @@ adminHotelStyle.textContent = `
     }
 
     .hotel-destination,
-    .hotel-days {
+    .hotel-days,
+    .hotel-user-days,
+    .hotel-multiple-selection {
         font-size: 0.85rem;
         color: #666;
         display: flex;
@@ -3005,9 +3039,27 @@ adminHotelStyle.textContent = `
     }
 
     .hotel-destination i,
-    .hotel-days i {
+    .hotel-days i,
+    .hotel-user-days i,
+    .hotel-multiple-selection i {
         color: #007bff;
         width: 12px;
+    }
+
+    .hotel-user-days i.fa-lock {
+        color: #dc3545;
+    }
+
+    .hotel-user-days i.fa-user-edit {
+        color: #28a745;
+    }
+
+    .hotel-multiple-selection i.fa-hand-pointer {
+        color: #ffc107;
+    }
+
+    .hotel-multiple-selection i.fa-layer-group {
+        color: #17a2b8;
     }
 
     .hotel-item {
@@ -3019,6 +3071,102 @@ adminHotelStyle.textContent = `
 
     .hotel-item:hover {
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Estilos mejorados para checkboxes */
+    .checkbox-section {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin: 0.5rem 0;
+    }
+
+    .checkbox-section-title {
+        margin: 0 0 1rem 0;
+        color: #495057;
+        font-size: 16px;
+        font-weight: 600;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 0.5rem;
+    }
+
+    .checkbox-container {
+        margin-bottom: 1rem;
+    }
+
+    .checkbox-container:last-child {
+        margin-bottom: 0;
+    }
+
+    .checkbox-label {
+        display: flex;
+        align-items: flex-start;
+        cursor: pointer;
+        position: relative;
+        margin-bottom: 0.5rem;
+        padding-left: 2rem;
+    }
+
+    .checkbox-label input[type="checkbox"] {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        height: 0;
+        width: 0;
+    }
+
+    .checkmark {
+        position: absolute;
+        left: 0;
+        top: 2px;
+        height: 18px;
+        width: 18px;
+        background-color: #fff;
+        border: 2px solid #ddd;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .checkbox-label:hover .checkmark {
+        border-color: #007bff;
+    }
+
+    .checkbox-label input:checked ~ .checkmark {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+    .checkmark:after {
+        content: "";
+        position: absolute;
+        display: none;
+        left: 5px;
+        top: 2px;
+        width: 6px;
+        height: 10px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+    }
+
+    .checkbox-label input:checked ~ .checkmark:after {
+        display: block;
+    }
+
+    .checkbox-text {
+        color: #495057;
+        font-weight: 500;
+        line-height: 1.4;
+    }
+
+    .form-help {
+        display: block;
+        color: #6c757d;
+        font-size: 13px;
+        line-height: 1.3;
+        margin-top: 0.25rem;
+        margin-left: 2rem;
     }
 `;
 document.head.appendChild(adminHotelStyle);

@@ -127,6 +127,8 @@ class HotelCreate(BaseModel):
     amenities: Optional[List[dict]] = None
     destination: str = "Destino principal"
     days: int = 1
+    allow_user_days: bool = False
+    allow_multiple_per_destination: bool = False
     order_index: Optional[int] = 0
     order_in_destination: Optional[int] = 0
 
@@ -138,6 +140,8 @@ class HotelUpdate(BaseModel):
     amenities: Optional[List[dict]] = None
     destination: Optional[str] = None
     days: Optional[int] = None
+    allow_user_days: Optional[bool] = None
+    allow_multiple_per_destination: Optional[bool] = None
     order_index: Optional[int] = None
     order_in_destination: Optional[int] = None
 
@@ -1148,6 +1152,8 @@ async def create_package_hotel(
             amenities=amenities_list,
             destination=hotel_data.destination,
             days=hotel_data.days,
+            allow_user_days=hotel_data.allow_user_days,
+            allow_multiple_per_destination=hotel_data.allow_multiple_per_destination,
             order_index=hotel_data.order_index or 0,
             order_in_destination=hotel_data.order_in_destination or 0
         )
@@ -1238,6 +1244,8 @@ async def upload_hotel_image(
             amenities=amenities_list,
             destination="Destino principal",  # Default value, should be updated via admin
             days=1,  # Default value
+            allow_user_days=False,  # Default value
+            allow_multiple_per_destination=False,  # Default value
             order_index=order_index,
             order_in_destination=0  # Default value
         )

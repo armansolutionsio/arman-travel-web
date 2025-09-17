@@ -85,6 +85,8 @@ class PackageHotel(Base):
     amenities = Column(JSON, nullable=False, default=list)  # Lista de amenities del hotel
     destination = Column(String(255), nullable=False, default='Destino principal')  # Ciudad/destino
     days = Column(Integer, default=1, nullable=False)  # Días en este hotel
+    allow_user_days = Column(Boolean, default=False, nullable=False)  # Permitir al usuario cambiar días
+    allow_multiple_per_destination = Column(Boolean, default=False, nullable=False)  # Permitir múltiples hoteles por destino
     order_index = Column(Integer, default=0)  # Orden general en el paquete
     order_in_destination = Column(Integer, default=0)  # Orden dentro del destino
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -102,6 +104,8 @@ class PackageHotel(Base):
             "amenities": self.amenities if isinstance(self.amenities, list) else json.loads(self.amenities) if self.amenities else [],
             "destination": self.destination,
             "days": self.days,
+            "allow_user_days": self.allow_user_days,
+            "allow_multiple_per_destination": self.allow_multiple_per_destination,
             "order_index": self.order_index,
             "order_in_destination": self.order_in_destination,
             "created_at": self.created_at.isoformat() if self.created_at else None,
