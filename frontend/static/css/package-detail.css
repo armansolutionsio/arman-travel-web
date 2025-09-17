@@ -732,8 +732,8 @@
     }
     
     .hotels-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.8rem;
+        grid-template-columns: 1fr;
+        gap: 1rem;
     }
 }
 
@@ -808,7 +808,8 @@
     }
     
     .hotels-grid {
-        gap: 0.8rem;
+        grid-template-columns: 1fr;
+        gap: 1rem;
     }
     
     .hotel-card {
@@ -868,9 +869,10 @@
 
 .hotels-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    margin-top: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    width: 100%;
+    max-width: none;
 }
 
 .hotel-card {
@@ -995,13 +997,13 @@
 @media (max-width: 768px) {
     .hotels-grid {
         grid-template-columns: 1fr;
-        gap: 1.5rem;
+        gap: 1rem;
     }
-    
+
     .hotel-card {
         max-width: none;
     }
-    
+
     .hotel-amenities {
         justify-content: center;
     }

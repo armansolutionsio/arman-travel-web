@@ -167,11 +167,9 @@ function displayPackageDetail(package) {
     // Características/Features - Cargar desde la base de datos
     loadPackageFeatures(package.id);
 
-    // Sidebar precio
+    // Sidebar precio (se actualizará después con los hoteles seleccionados)
     const sidebarPrice = document.getElementById('sidebarPrice');
     if (sidebarPrice) sidebarPrice.textContent = formatPrice(package.price);
-    
-    updateTotalPrice();
 
     // Galería
     displayGallery(package.gallery_images, package.image, package.title);
@@ -975,6 +973,11 @@ function createHotelTabsStructure(destinations) {
         // Solo un destino, no mostrar tabs
         const singleDestination = destinationNames[0];
         hotelsContainer.innerHTML = createDestinationHotelsHTML(singleDestination, destinations[singleDestination]);
+
+        // Seleccionar automáticamente el hotel más barato
+        setTimeout(() => {
+            autoSelectCheapestHotels(destinations);
+        }, 100);
         return;
     }
 
@@ -1000,6 +1003,11 @@ function createHotelTabsStructure(destinations) {
     `;
 
     hotelsContainer.innerHTML = tabsHTML;
+
+    // Seleccionar automáticamente los hoteles más baratos de cada destino
+    setTimeout(() => {
+        autoSelectCheapestHotels(destinations);
+    }, 100);
 }
 
 // Crear HTML para hoteles de un destino específico
@@ -1015,7 +1023,10 @@ function createDestinationHotelsHTML(destination, hotels) {
         <div class="destination-hotels">
             <div class="destination-selection-info">
                 <h4>Selecciona hoteles para ${destination}</h4>
-                <p class="selection-helper">Puedes seleccionar múltiples hoteles y especificar los días en cada uno</p>
+                ${hotels.some(h => h.allow_multiple_per_destination)
+                    ? '<p class="selection-helper"><i class="fas fa-layer-group"></i> Puedes seleccionar múltiples hoteles en este destino</p>'
+                    : '<p class="selection-helper"><i class="fas fa-hand-pointer"></i> Solo puedes seleccionar un hotel en este destino</p>'
+                }
             </div>
             <div class="hotels-grid">
                 ${hotels.map(hotel => `
@@ -1043,9 +1054,12 @@ function createDestinationHotelsHTML(destination, hotels) {
                                     </label>
                                     <div class="days-input" style="display: none;">
                                         <label>Días:</label>
-                                        <input type="number" min="1" max="30" value="${hotel.days || 1}"
-                                               class="days-count"
-                                               onchange="updateHotelDays('${hotel.id}', '${destination}', this.value)">
+                                        ${hotel.allow_user_days
+                                            ? `<input type="number" min="1" max="30" value="${hotel.days || 1}"
+                                                     class="days-count"
+                                                     onchange="updateHotelDays('${hotel.id}', '${destination}', this.value)">`
+                                            : `<span class="days-fixed">${hotel.days || 1} día${(hotel.days || 1) > 1 ? 's' : ''} (fijo)</span>`
+                                        }
                                     </div>
                                 </div>
                             </div>
@@ -1095,8 +1109,30 @@ function toggleHotelSelection(hotelId, destination, hotelPrice) {
     const checkbox = event.target;
     const hotelCard = checkbox.closest('.hotel-card');
     const daysInput = hotelCard.querySelector('.days-input');
+    const hotelData = findHotelInDestinations(hotelId, destination);
 
     if (checkbox.checked) {
+        // Verificar si permite múltiples selecciones
+        if (!hotelData || !hotelData.allow_multiple_per_destination) {
+            // Solo una selección permitida: desmarcar otros hoteles del mismo destino
+            const destinationPanel = hotelCard.closest('.destination-hotels') || hotelCard.closest('.tab-panel') || document;
+            const otherCheckboxes = destinationPanel.querySelectorAll('.hotel-checkbox');
+
+            otherCheckboxes.forEach(otherCheckbox => {
+                if (otherCheckbox !== checkbox && otherCheckbox.checked) {
+                    // Desmarcar otros hoteles
+                    otherCheckbox.checked = false;
+                    const otherCard = otherCheckbox.closest('.hotel-card');
+                    const otherDaysInput = otherCard.querySelector('.days-input');
+                    otherDaysInput.style.display = 'none';
+                    otherCard.classList.remove('selected');
+                }
+            });
+
+            // Limpiar selecciones previas de este destino
+            hotelSelections[destination] = [];
+        }
+
         // Seleccionar hotel
         daysInput.style.display = 'block';
         hotelCard.classList.add('selected');
@@ -1107,7 +1143,16 @@ function toggleHotelSelection(hotelId, destination, hotelPrice) {
         }
 
         // Agregar hotel a la selección
-        const days = parseInt(daysInput.querySelector('.days-count').value) || 1;
+        let days = hotelData ? hotelData.days : 1;
+
+        // Solo usar el input del usuario si el hotel lo permite
+        if (hotelData && hotelData.allow_user_days) {
+            const daysCountInput = daysInput.querySelector('.days-count');
+            if (daysCountInput) {
+                days = parseInt(daysCountInput.value) || days;
+            }
+        }
+
         hotelSelections[destination].push({
             hotelId: hotelId,
             days: days,
@@ -1136,11 +1181,23 @@ function updateHotelDays(hotelId, destination, days) {
     if (hotelSelections[destination]) {
         const selection = hotelSelections[destination].find(s => s.hotelId === hotelId);
         if (selection) {
-            selection.days = parseInt(days);
-            updateDestinationSummary(destination);
-            updateTotalPackagePrice();
+            // Solo actualizar si el hotel permite cambios de días
+            const hotelData = findHotelInDestinations(hotelId, destination);
+            if (hotelData && hotelData.allow_user_days) {
+                selection.days = parseInt(days);
+                updateDestinationSummary(destination);
+                updateTotalPackagePrice();
+            }
         }
     }
+}
+
+// Función auxiliar para encontrar datos del hotel
+function findHotelInDestinations(hotelId, destination) {
+    if (destinationsData[destination]) {
+        return destinationsData[destination].find(hotel => hotel.id == hotelId);
+    }
+    return null;
 }
 
 // Actualizar resumen de destino
@@ -1172,6 +1229,51 @@ function updateDestinationSummary(destination) {
     summary.querySelector('.selected-hotels-list').innerHTML = hotelsListHTML;
     summary.querySelector('.destination-price').textContent = formatPrice(totalDestinationPrice.toString());
     summary.style.display = 'block';
+}
+
+// Seleccionar automáticamente los hoteles más baratos de cada destino
+function autoSelectCheapestHotels(destinations) {
+    Object.keys(destinations).forEach(destination => {
+        const hotels = destinations[destination];
+
+        if (hotels.length > 0) {
+            // Ordenar por precio para encontrar el más barato
+            const sortedHotels = [...hotels].sort((a, b) => {
+                const priceA = extractNumericPrice(a.price);
+                const priceB = extractNumericPrice(b.price);
+                return priceA - priceB;
+            });
+
+            const cheapestHotel = sortedHotels[0];
+
+            // Para destinos que no permiten múltiples selecciones, seleccionar solo el más barato
+            // Para destinos que sí permiten múltiples, también seleccionar solo el más barato por defecto
+            const hotelCard = document.querySelector(`[data-hotel-id="${cheapestHotel.id}"][data-destination="${destination}"]`);
+
+            if (hotelCard) {
+                const checkbox = hotelCard.querySelector('.hotel-checkbox');
+                if (checkbox && !checkbox.checked) {
+                    // Simular click en el checkbox para seleccionarlo
+                    checkbox.checked = true;
+
+                    // Disparar el evento change manualmente
+                    const event = new Event('change', { bubbles: true });
+                    Object.defineProperty(event, 'target', {
+                        writable: false,
+                        value: checkbox
+                    });
+
+                    checkbox.dispatchEvent(event);
+                }
+            }
+        }
+    });
+
+    // Esperar un momento para que se procesen todas las selecciones y luego actualizar precios
+    setTimeout(() => {
+        updateTotalPrice();
+        console.log('🎯 Hoteles más baratos seleccionados automáticamente y precios actualizados');
+    }, 200);
 }
 
 // Actualizar precio total del paquete
@@ -1218,28 +1320,10 @@ style.textContent = `
         to { transform: translateX(100%); opacity: 0; }
     }
 
-    /* Expandir sección de hoteles a ancho completo */
-    .hotels-section {
-        width: 100vw;
-        margin-left: calc(-50vw + 50%);
-        padding: 2rem calc(50vw - 50%);
-        background: var(--white);
-        border-radius: 15px;
-        box-shadow: var(--shadow-light);
-    }
-
-    .hotels-section h2 {
-        text-align: center;
-        max-width: 1200px;
-        margin: 0 auto 2rem auto;
-    }
-
     /* Estilos para tabs de hoteles */
     .hotel-tabs {
         margin-top: 1rem;
-        max-width: 1200px;
-        margin-left: auto;
-        margin-right: auto;
+        width: 100%;
     }
 
     .tab-buttons {
@@ -1282,53 +1366,150 @@ style.textContent = `
         display: block;
     }
 
-    /* Estilos para selección de hoteles */
-    .destination-hotels {
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-
+    /* Estilos para información de selección */
     .destination-selection-info {
         background: #f8f9fa;
-        padding: 1rem;
-        border-radius: 8px;
-        margin-bottom: 1.5rem;
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
         border-left: 4px solid #007bff;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
 
     .destination-selection-info h4 {
-        margin: 0 0 0.5rem 0;
+        margin: 0 0 0.8rem 0;
         color: #007bff;
+        font-size: 1.2rem;
+        font-weight: 600;
     }
 
     .selection-helper {
         margin: 0;
         color: #666;
-        font-size: 14px;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
 
+    .selection-helper i {
+        color: #007bff;
+        font-size: 1rem;
+    }
+
+    /* Grid de hoteles - copiando estrategia del index */
     .hotels-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 1.5rem;
-        margin-bottom: 2rem;
+        width: 100%;
+        max-width: none;
     }
 
     .hotel-card {
-        position: relative;
+        background: var(--white);
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: var(--shadow-light);
+        transition: var(--transition);
+        width: 100%;
+        height: auto;
         border: 2px solid transparent;
-        transition: all 0.3s ease;
+    }
+
+    .hotel-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-medium);
     }
 
     .hotel-card.selected {
         border-color: #007bff;
         box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        transform: translateY(-3px);
+    }
+
+    .hotel-card.selected::before {
+        content: "✓ SELECCIONADO";
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #28a745;
+        color: white;
+        padding: 0.3rem 0.6rem;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        z-index: 3;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .hotel-image {
+        position: relative;
+        height: 150px;
+        overflow: hidden;
+    }
+
+    .hotel-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .hotel-price {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #007bff;
+        color: white;
+        padding: 0.3rem 0.6rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .hotel-info {
+        padding: 1rem;
+    }
+
+    .hotel-info h3 {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+        color: #333;
+    }
+
+    .hotel-description {
+        font-size: 0.85rem;
+        color: #666;
+        margin-bottom: 0.8rem;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .hotel-amenities {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.3rem;
+        margin-bottom: 1rem;
+    }
+
+    .amenity {
+        background: #f0f0f0;
+        color: #666;
+        padding: 0.2rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.7rem;
     }
 
     .hotel-selection {
         padding: 1rem;
-        border-top: 1px solid #e1e5e9;
-        background: #fafbfc;
+        border-top: 1px solid #e9ecef;
+        background: #f8f9fa;
+        border-radius: 0 0 15px 15px;
     }
 
     .selection-controls {
@@ -1344,12 +1525,15 @@ style.textContent = `
         gap: 0.5rem;
         cursor: pointer;
         font-weight: 500;
+        color: #495057;
+        font-size: 0.9rem;
     }
 
     .hotel-checkbox {
         width: 18px;
         height: 18px;
         accent-color: #007bff;
+        cursor: pointer;
     }
 
     .days-input {
@@ -1358,112 +1542,141 @@ style.textContent = `
         gap: 0.5rem;
         background: white;
         padding: 0.5rem;
-        border-radius: 4px;
-        border: 1px solid #ddd;
+        border-radius: 6px;
+        border: 1px solid #dee2e6;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .days-input label {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin: 0;
     }
 
     .days-count {
-        width: 60px;
-        padding: 0.25rem 0.5rem;
-        border: 1px solid #ccc;
+        width: 55px;
+        padding: 0.4rem 0.6rem;
+        border: 1px solid #ced4da;
         border-radius: 4px;
         text-align: center;
+        font-size: 0.9rem;
+        background: white;
     }
 
-    /* Resumen de destino */
+    .days-fixed {
+        padding: 0.4rem 0.6rem;
+        background: #e9ecef;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        color: #6c757d;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    /* Estilos para resumen de hoteles seleccionados */
     .destination-summary {
-        margin-top: 1.5rem;
+        margin-top: 2rem;
         background: #e8f4f8;
-        padding: 1rem;
-        border-radius: 8px;
+        padding: 1.5rem;
+        border-radius: 10px;
         border: 1px solid #bee5eb;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
 
     .destination-summary h5 {
         margin: 0 0 1rem 0;
         color: #0c5460;
+        font-size: 1.1rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .destination-summary h5 i {
+        color: #17a2b8;
+    }
+
+    .selected-hotels-list {
+        margin-bottom: 1rem;
     }
 
     .selected-hotel-item {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0.5rem 0;
+        padding: 0.8rem 0;
         border-bottom: 1px solid #bee5eb;
+        background: rgba(255,255,255,0.5);
+        margin-bottom: 0.5rem;
+        border-radius: 6px;
+        padding-left: 1rem;
+        padding-right: 1rem;
     }
 
     .selected-hotel-item:last-child {
         border-bottom: none;
+        margin-bottom: 0;
     }
 
     .hotel-name {
         font-weight: 500;
-        color: #333;
+        color: #2c3e50;
+        flex: 1;
     }
 
     .hotel-duration {
-        color: #666;
-        font-size: 14px;
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin: 0 1rem;
     }
 
     .hotel-subtotal {
         font-weight: 600;
         color: #0c5460;
+        font-size: 1rem;
     }
 
     .destination-total {
-        margin-top: 1rem;
         text-align: right;
-        font-size: 18px;
-        font-weight: 600;
+        font-size: 1.2rem;
+        font-weight: 700;
         color: #0c5460;
-        border-top: 2px solid #bee5eb;
+        border-top: 2px solid #17a2b8;
         padding-top: 1rem;
+        margin-top: 1rem;
     }
 
     .destination-price {
         color: #007bff;
+        font-size: 1.3rem;
     }
 
-    /* Responsive para hoteles con ancho completo */
-    @media (max-width: 1024px) {
-        .hotels-section {
-            width: 100%;
-            margin-left: 0;
-            padding: 2rem 1rem;
-        }
-
-        .hotels-grid {
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1rem;
-        }
-    }
-
+    /* Responsive - copiando estrategia del index */
     @media (max-width: 768px) {
-        .tab-buttons {
-            justify-content: flex-start;
-            padding-bottom: 0.5rem;
-        }
-
         .hotels-grid {
             grid-template-columns: 1fr;
             gap: 1rem;
         }
 
-        .hotel-card {
-            margin: 0 auto;
-            max-width: 400px;
+        .tab-buttons {
+            justify-content: flex-start;
         }
     }
 
     @media (max-width: 480px) {
-        .hotels-section {
-            padding: 1.5rem 0.5rem;
+        .hotels-grid {
+            grid-template-columns: 1fr;
+            gap: 0.8rem;
+            padding: 0 0.5rem;
         }
 
-        .tab-button {
-            padding: 10px 16px;
-            font-size: 14px;
+        .hotel-card {
+            margin: 0;
+        }
+
+        .hotel-info {
+            padding: 1rem;
         }
     }
 `;
