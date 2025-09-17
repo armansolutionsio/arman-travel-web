@@ -579,7 +579,8 @@ function openPackageModal(packageId = null) {
             
             document.getElementById('image').value = package.image;
             document.getElementById('category').value = package.category;
-            document.getElementById('features').value = package.features.join('\n');
+            // Cargar características desde la nueva API
+            loadFeaturesIntoTextarea(packageId);
             
             // Llenar campos adicionales
             document.getElementById('duration').value = package.duration || '';
@@ -2259,7 +2260,7 @@ const HOTEL_AMENITIES = [
 // Inicializar manejadores de hoteles
 function initializeHotelHandlers() {
     const addHotelBtn = document.getElementById('addHotelBtn');
-    const addHotelUrlBtn = document.getElementById('addHotelUrlBtn');
+    // const addHotelUrlBtn = document.getElementById('addHotelUrlBtn'); // Removido
     const addHotelFileBtn = document.getElementById('addHotelFileBtn');
     const cancelAddHotelBtn = document.getElementById('cancelAddHotelBtn');
     const hotelUploadZone = document.getElementById('hotelUploadZone');
@@ -2280,10 +2281,7 @@ function initializeHotelHandlers() {
         document.getElementById('cancelAddHotelBtn').addEventListener('click', hideHotelAddOptions);
     }
     
-    if (addHotelUrlBtn) {
-        addHotelUrlBtn.replaceWith(addHotelUrlBtn.cloneNode(true));
-        document.getElementById('addHotelUrlBtn').addEventListener('click', showHotelUrlInput);
-    }
+    // Botón de URL removido - solo mantenemos subida de archivos
     
     if (addHotelFileBtn) {
         addHotelFileBtn.replaceWith(addHotelFileBtn.cloneNode(true));
@@ -2311,6 +2309,9 @@ function initializeHotelHandlers() {
             newHotelUploadZone.classList.remove('dragover');
             const files = e.dataTransfer.files;
             if (files.length > 0) {
+                // Auto-subir la imagen cuando se arrastra
+                uploadHotelImage(files[0]);
+                // También actualizar el input para mantener consistencia
                 document.getElementById('hotelFileInput').files = files;
             }
         });
@@ -2319,6 +2320,14 @@ function initializeHotelHandlers() {
     // File input
     if (hotelFileInput) {
         hotelFileInput.replaceWith(hotelFileInput.cloneNode(true));
+
+        // Agregar event listener para carga automática
+        document.getElementById('hotelFileInput').addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                // Auto-subir la imagen cuando se selecciona
+                uploadHotelImage(e.target.files[0]);
+            }
+        });
     }
 
     // Botones
@@ -2463,6 +2472,16 @@ function showHotelFileUpload() {
 // Ocultar área de subida de archivos para hotel
 function hideHotelUploadArea() {
     document.getElementById('hotelUploadArea').style.display = 'none';
+
+    // Limpiar preview si existe
+    const previewContainer = document.getElementById('hotelImagePreview');
+    if (previewContainer) {
+        previewContainer.style.display = 'none';
+    }
+
+    // Limpiar variables temporales
+    window.tempHotelImageUrl = null;
+
     clearHotelUploadForm();
 }
 
@@ -2515,104 +2534,161 @@ function addHotelFromUrl() {
     displayTempHotels();
 }
 
+
+// Mostrar preview de imagen de hotel cargada
+function showHotelImagePreview(imageUrl) {
+    const uploadZone = document.getElementById('hotelUploadZone');
+    const progressContainer = document.getElementById('hotelUploadProgress');
+
+    // Ocultar zona de upload y progreso
+    uploadZone.style.display = 'none';
+    progressContainer.style.display = 'none';
+
+    // Crear o actualizar el preview
+    let previewContainer = document.getElementById('hotelImagePreview');
+    if (!previewContainer) {
+        previewContainer = document.createElement('div');
+        previewContainer.id = 'hotelImagePreview';
+        previewContainer.className = 'hotel-image-preview';
+        uploadZone.parentNode.insertBefore(previewContainer, uploadZone.nextSibling);
+    }
+
+    previewContainer.innerHTML = `
+        <div class="image-preview-content">
+            <img src="${imageUrl}" alt="Vista previa del hotel" class="preview-image">
+            <button type="button" class="btn-remove-hotel-image" onclick="removeHotelImagePreview()" title="Eliminar imagen">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+    previewContainer.style.display = 'block';
+}
+
+// Eliminar preview de imagen de hotel
+function removeHotelImagePreview() {
+    const previewContainer = document.getElementById('hotelImagePreview');
+    const uploadZone = document.getElementById('hotelUploadZone');
+    const fileInput = document.getElementById('hotelFileInput');
+
+    if (previewContainer) {
+        previewContainer.style.display = 'none';
+    }
+
+    // Mostrar zona de upload nuevamente
+    uploadZone.style.display = 'block';
+
+    // Limpiar variables y input
+    window.tempHotelImageUrl = null;
+    fileInput.value = '';
+
+    showGalleryNotification('Imagen eliminada', 'success');
+}
+
+// Subir imagen de hotel automáticamente
+async function uploadHotelImage(file) {
+    if (!file.type.startsWith('image/')) {
+        showGalleryNotification('El archivo debe ser una imagen', 'error');
+        return;
+    }
+
+    try {
+        // Mostrar barra de progreso
+        const progressContainer = document.getElementById('hotelUploadProgress');
+        const progressFill = document.getElementById('hotelProgressFill');
+        const progressText = document.getElementById('hotelProgressText');
+
+        progressContainer.style.display = 'block';
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const xhr = new XMLHttpRequest();
+
+        // Manejar progreso de carga
+        xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+                const percentage = Math.round((e.loaded / e.total) * 100);
+                progressFill.style.width = percentage + '%';
+                progressText.textContent = percentage + '%';
+            }
+        });
+
+        // Manejar respuesta
+        xhr.addEventListener('load', () => {
+            if (xhr.status === 200) {
+                const response = JSON.parse(xhr.responseText);
+                // Guardar la URL en una variable temporal para el hotel
+                window.tempHotelImageUrl = response.image_url || response.url;
+                showHotelImagePreview(window.tempHotelImageUrl);
+                showGalleryNotification('Imagen cargada exitosamente', 'success');
+            } else {
+                showGalleryNotification('Error al cargar imagen', 'error');
+            }
+            progressContainer.style.display = 'none';
+        });
+
+        xhr.addEventListener('error', () => {
+            showGalleryNotification('Error al cargar imagen', 'error');
+            progressContainer.style.display = 'none';
+        });
+
+        // Enviar archivo
+        const token = localStorage.getItem('admin_token');
+        xhr.open('POST', `${API_BASE_URL}/admin/upload-cover-image`);
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+        xhr.send(formData);
+
+    } catch (error) {
+        console.error('Error subiendo imagen:', error);
+        showGalleryNotification('Error al cargar imagen: ' + error.message, 'error');
+    }
+}
+
 // Agregar hotel desde upload al array temporal
 async function addHotelFromUpload() {
     const name = document.getElementById('hotelName').value.trim();
     const description = document.getElementById('hotelDescription').value.trim();
     const amount = document.getElementById('hotelPrice').value.trim();
     const currency = document.getElementById('hotelPriceCurrency').value;
-    const fileInput = document.getElementById('hotelFileInput');
-    const file = fileInput.files[0];
 
-    if (!name || !amount || !file) {
+    if (!name || !amount) {
         showGalleryNotification('Por favor completa todos los campos requeridos', 'error');
         return;
     }
 
-    // Validar archivo
-    if (!file.type.startsWith('image/')) {
-        showGalleryNotification('El archivo debe ser una imagen', 'error');
+    // Verificar que se haya cargado una imagen
+    if (!window.tempHotelImageUrl) {
+        showGalleryNotification('Por favor sube una imagen primero', 'error');
         return;
     }
-
-    if (file.size > 5 * 1024 * 1024) { // 5MB
-        showGalleryNotification('El archivo es muy grande (máximo 5MB)', 'error');
-        return;
-    }
-
-    const token = localStorage.getItem('admin_token');
-    const hotelUploadProgress = document.getElementById('hotelUploadProgress');
-    const hotelProgressFill = document.getElementById('hotelProgressFill');
-    const hotelProgressText = document.getElementById('hotelProgressText');
 
     try {
-        // Mostrar progreso
-        hotelUploadProgress.style.display = 'block';
-        
-        const formData = new FormData();
-        formData.append('file', file);
+        const price = formatHotelPrice(currency, amount);
 
-        // Simular progreso
-        let progress = 0;
-        const progressInterval = setInterval(() => {
-            progress += 10;
-            if (progress <= 90) {
-                hotelProgressFill.style.width = progress + '%';
-                hotelProgressText.textContent = progress + '%';
-            }
-        }, 100);
-
-        // Subir imagen a Cloudinary
-        const response = await fetch(`${API_BASE_URL}/admin/upload-cover-image`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
-            body: formData
-        });
-
-        clearInterval(progressInterval);
-
-        if (response.ok) {
-            const result = await response.json();
-            
-            // Completar progreso
-            hotelProgressFill.style.width = '100%';
-            hotelProgressText.textContent = '100%';
-            
-            const price = formatHotelPrice(currency, amount);
-            
-            // Agregar al array temporal con amenities
-            tempHotels.push({
+        // Agregar al array temporal con amenities usando la imagen ya cargada
+        tempHotels.push({
                 name: name,
                 description: description || null,
                 price: price,
-                image_url: result.image_url,
+                image_url: window.tempHotelImageUrl,
                 amenities: [...selectedAmenities], // Copia de las amenities seleccionadas
                 isExisting: false
             });
-            
-            setTimeout(() => {
-                hotelUploadProgress.style.display = 'none';
-                hotelProgressFill.style.width = '0%';
-                hotelProgressText.textContent = '0%';
-                hideHotelUploadArea();
-                clearSelectedAmenities('upload'); // Limpiar amenities después de agregar
-                displayTempHotels();
-            }, 1000);
-            
-            showGalleryNotification('Hotel agregado a la lista', 'success');
-        } else {
-            throw new Error('Error al subir imagen');
+
+        // Limpiar variables temporales y preview
+        window.tempHotelImageUrl = null;
+        const previewContainer = document.getElementById('hotelImagePreview');
+        if (previewContainer) {
+            previewContainer.style.display = 'none';
         }
+        hideHotelUploadArea();
+        clearSelectedAmenities('upload'); // Limpiar amenities después de agregar
+        displayTempHotels();
+        showGalleryNotification('Hotel agregado a la lista', 'success');
+
     } catch (error) {
         console.error('Error:', error);
-        showGalleryNotification('Error al subir imagen', 'error');
-        
-        // Ocultar progreso
-        hotelUploadProgress.style.display = 'none';
-        hotelProgressFill.style.width = '0%';
-        hotelProgressText.textContent = '0%';
+        showGalleryNotification('Error al agregar hotel', 'error');
     }
 }
 
@@ -2650,12 +2726,82 @@ function editTempHotel(index) {
 }
 
 // Eliminar hotel temporal
-function removeTempHotel(index) {
-    if (!confirm('¿Eliminar este hotel de la lista?')) return;
-    
+async function removeTempHotel(index) {
+    const hotel = tempHotels[index];
+    if (!hotel) return;
+
+    if (!confirm('¿Eliminar este hotel permanentemente?')) return;
+
+    // Si es un hotel existente, eliminarlo de la base de datos inmediatamente
+    if (hotel.isExisting && hotel.id) {
+        try {
+            // Obtener el ID del paquete de las variables globales
+            const packageId = window.currentPackageId || document.getElementById('packageForm')?.dataset?.packageId;
+            console.log('Package ID encontrado:', packageId);
+            console.log('Hotel a eliminar:', hotel);
+
+            if (!packageId) {
+                console.error('No se pudo obtener el packageId. window.currentPackageId:', window.currentPackageId);
+                console.error('Dataset del form:', document.getElementById('packageForm')?.dataset);
+                showGalleryNotification('Error: No se puede identificar el paquete', 'error');
+                return;
+            }
+
+            const token = localStorage.getItem('admin_token');
+            console.log('Eliminando hotel con URL:', `${API_BASE_URL}/admin/packages/${packageId}/hotels/${hotel.id}`);
+
+            const response = await fetch(`${API_BASE_URL}/admin/packages/${packageId}/hotels/${hotel.id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            console.log('Respuesta del servidor:', response.status, response.statusText);
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    // Token expirado, intentar renovar y reintentar
+                    console.log('Token expirado, intentando renovar...');
+                    await renewToken();
+
+                    // Reintentar la eliminación con el nuevo token
+                    const newToken = localStorage.getItem('admin_token');
+                    if (newToken) {
+                        const retryResponse = await fetch(`${API_BASE_URL}/admin/packages/${packageId}/hotels/${hotel.id}`, {
+                            method: 'DELETE',
+                            headers: { 'Authorization': `Bearer ${newToken}` }
+                        });
+
+                        if (!retryResponse.ok) {
+                            const errorText = await retryResponse.text();
+                            console.error('Error del servidor después de renovar token:', errorText);
+                            throw new Error(`Error al eliminar hotel del servidor: ${retryResponse.status} - ${errorText}`);
+                        }
+                    } else {
+                        throw new Error('No se pudo renovar el token. Por favor, vuelve a hacer login.');
+                    }
+                } else {
+                    const errorText = await response.text();
+                    console.error('Error del servidor:', errorText);
+                    throw new Error(`Error al eliminar hotel del servidor: ${response.status} - ${errorText}`);
+                }
+            }
+
+            showGalleryNotification('Hotel eliminado permanentemente', 'success');
+
+            // Actualizar la lista de paquetes para reflejar el nuevo precio
+            await loadPackages();
+        } catch (error) {
+            console.error('Error eliminando hotel:', error);
+            showGalleryNotification('Error al eliminar hotel: ' + error.message, 'error');
+            return; // No continuar si hay error
+        }
+    } else {
+        showGalleryNotification('Hotel eliminado de la lista', 'success');
+    }
+
+    // Eliminar del array temporal
     tempHotels.splice(index, 1);
     displayTempHotels();
-    showGalleryNotification('Hotel eliminado de la lista', 'success');
 }
 
 // Guardar hoteles al confirmar el paquete
@@ -3158,6 +3304,227 @@ function logout() {
     localStorage.removeItem('admin_token');
     clearSessionTimer();
     window.location.reload();
+}
+
+// ========================================
+// GESTIÓN DE CARACTERÍSTICAS
+// ========================================
+
+// Event listener para el botón de actualizar características
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, configurando event listener para updateFeaturesBtn');
+
+    // Usar delegación de eventos para asegurar que funcione
+    document.addEventListener('click', function(e) {
+        console.log('Click detectado en:', e.target.id, e.target.tagName);
+        if (e.target && e.target.id === 'updateFeaturesBtn') {
+            console.log('Botón actualizar características clickeado');
+            e.preventDefault();
+            updatePackageFeatures();
+        }
+    });
+});
+
+// Función para actualizar características desde el textarea a la sección "¿Qué Incluye?"
+async function updatePackageFeatures() {
+    console.log('=== updatePackageFeatures iniciado ===');
+
+    const featuresTextarea = document.getElementById('features');
+    const packageId = window.currentPackageId;
+
+    console.log('Textarea encontrado:', !!featuresTextarea);
+    console.log('Package ID:', packageId);
+    console.log('Valor del textarea:', featuresTextarea?.value);
+
+    if (!packageId) {
+        console.error('No package ID found');
+        showNotification('Error: No se puede identificar el paquete actual', 'error');
+        return;
+    }
+
+    if (!featuresTextarea.value.trim()) {
+        console.log('Textarea vacío');
+        try {
+            showNotification('Por favor, escribe algunas características primero', 'warning');
+        } catch (e) {
+            console.error('Error en showNotification:', e);
+            alert('Por favor, escribe algunas características primero');
+        }
+        return;
+    }
+
+    const newFeatures = featuresTextarea.value
+        .split('\n')
+        .map(f => f.trim())
+        .filter(f => f.length > 0);
+
+    if (newFeatures.length === 0) {
+        showNotification('No hay características válidas para sincronizar', 'warning');
+        return;
+    }
+
+    try {
+        const token = localStorage.getItem('admin_token');
+
+        // PASO 1: Obtener características existentes
+        const existingResponse = await fetch(`${API_BASE_URL}/packages/${packageId}/features`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        let existingFeatures = [];
+        if (existingResponse.ok) {
+            existingFeatures = await existingResponse.json();
+        }
+
+        // PASO 2: Eliminar todas las características existentes
+        console.log('Eliminando características existentes:', existingFeatures.length);
+        for (const feature of existingFeatures) {
+            await fetch(`${API_BASE_URL}/admin/packages/${packageId}/features/${feature.id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+        }
+
+        // PASO 3: Agregar todas las características del textarea
+        console.log('Agregando nuevas características:', newFeatures.length);
+        let addedCount = 0;
+        for (const feature of newFeatures) {
+            const response = await fetch(`${API_BASE_URL}/admin/packages/${packageId}/features`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text: feature })
+            });
+
+            if (response.ok) {
+                addedCount++;
+            } else {
+                console.error(`Error al agregar característica "${feature}":`, response.statusText);
+            }
+        }
+
+        if (addedCount > 0) {
+            showNotification(`Características sincronizadas exitosamente (${addedCount} características)`, 'success');
+
+            // NO limpiar el textarea - mantener el contenido
+            // featuresTextarea.value = '';
+
+            // Recargar las características en la sección "¿Qué Incluye?"
+            loadPackageFeatures(packageId);
+        } else {
+            showNotification('No se pudieron sincronizar las características', 'error');
+        }
+
+    } catch (error) {
+        console.error('Error al actualizar características:', error);
+        showNotification('Error al actualizar características', 'error');
+    }
+}
+
+// Función para cargar características en el textarea
+async function loadFeaturesIntoTextarea(packageId) {
+    try {
+        const token = localStorage.getItem('admin_token');
+        const response = await fetch(`${API_BASE_URL}/packages/${packageId}/features`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+            const features = await response.json();
+            const featuresText = features.map(f => f.text).join('\n');
+            const featuresTextarea = document.getElementById('features');
+            if (featuresTextarea) {
+                featuresTextarea.value = featuresText;
+            }
+        } else {
+            console.error('Error al cargar características para textarea:', response.statusText);
+        }
+    } catch (error) {
+        console.error('Error al cargar características para textarea:', error);
+    }
+}
+
+// Función para cargar características del paquete
+async function loadPackageFeatures(packageId) {
+    try {
+        const token = localStorage.getItem('admin_token');
+        const response = await fetch(`${API_BASE_URL}/packages/${packageId}/features`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            const features = await response.json();
+            displayPackageFeatures(features);
+        } else {
+            console.error('Error al cargar características:', response.statusText);
+        }
+    } catch (error) {
+        console.error('Error al cargar características:', error);
+    }
+}
+
+// Función para mostrar características en la interfaz
+function displayPackageFeatures(features) {
+    const managementDiv = document.getElementById('packageFeaturesManagement');
+    if (!managementDiv) return;
+
+    if (features.length === 0) {
+        managementDiv.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-check-circle"></i>
+                <p>No hay características agregadas. Usa la sección "Características" arriba para agregar algunas.</p>
+            </div>
+        `;
+        return;
+    }
+
+    managementDiv.innerHTML = features.map(feature => `
+        <div class="package-feature-item" data-feature-id="${feature.id}">
+            <div class="feature-content">
+                <i class="fas fa-check"></i>
+                <span class="feature-text">${feature.text}</span>
+            </div>
+            <div class="feature-actions">
+                <button type="button" class="btn-edit-feature" onclick="editPackageFeature(${feature.id}, '${feature.text.replace(/'/g, "\\'")}')">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button type="button" class="btn-delete-feature" onclick="deletePackageFeature(${feature.id})">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Función para eliminar una característica
+async function deletePackageFeature(featureId) {
+    if (!confirm('¿Eliminar esta característica?')) return;
+
+    try {
+        const token = localStorage.getItem('admin_token');
+        const packageId = window.currentPackageId;
+
+        const response = await fetch(`${API_BASE_URL}/admin/packages/${packageId}/features/${featureId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            showNotification('Característica eliminada exitosamente', 'success');
+            loadPackageFeatures(packageId);
+        } else {
+            showNotification('Error al eliminar característica', 'error');
+        }
+    } catch (error) {
+        console.error('Error al eliminar característica:', error);
+        showNotification('Error al eliminar característica', 'error');
+    }
 }
 
 // ========================================
