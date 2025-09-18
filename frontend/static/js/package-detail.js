@@ -572,7 +572,6 @@ function displayRelatedPackages() {
 function initReservationForm() {
     const form = document.getElementById('reservationForm');
     const travelersSelect = document.getElementById('travelers');
-    const dateInput = document.getElementById('departure');
 
     if (form) {
         // Manejar envío del formulario
@@ -584,10 +583,34 @@ function initReservationForm() {
         travelersSelect.addEventListener('change', updateTotalPrice);
     }
 
-    if (dateInput) {
-        // Establecer fecha mínima como hoy
-        const today = new Date().toISOString().split('T')[0];
-        dateInput.min = today;
+    // Inicializar detección de scroll en price card
+    initPriceCardScroll();
+}
+
+// Detectar si el price card necesita scroll y agregar indicador
+function initPriceCardScroll() {
+    const priceCard = document.querySelector('.price-card');
+
+    if (priceCard) {
+        function checkScrollable() {
+            const isScrollable = priceCard.scrollHeight > priceCard.clientHeight;
+            priceCard.classList.toggle('scrollable', isScrollable);
+        }
+
+        // Verificar al cargar y cuando cambie el contenido
+        checkScrollable();
+
+        // Observar cambios en el contenido del price card
+        const observer = new MutationObserver(checkScrollable);
+        observer.observe(priceCard, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['style']
+        });
+
+        // También verificar al cambiar el tamaño de la ventana
+        window.addEventListener('resize', checkScrollable);
     }
 }
 
@@ -630,13 +653,11 @@ async function handleReservationSubmit(e) {
     const reservationData = {
         name: formData.get('fullName'),
         email: formData.get('email'),
-        phone: formData.get('phone'),
         message: `Consulta por el paquete: ${currentPackage.title}
 
 Detalles de la consulta:
 - Paquete: ${currentPackage.title}
 - Cantidad de viajeros: ${formData.get('travelers')} personas
-- Fecha preferida: ${formData.get('departure')}
 - Comentarios adicionales: ${formData.get('comments') || 'Ninguno'}
 
 Por favor contactarme para coordinar la reserva.`
