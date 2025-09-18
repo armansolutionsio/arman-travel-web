@@ -583,35 +583,6 @@ function initReservationForm() {
         travelersSelect.addEventListener('change', updateTotalPrice);
     }
 
-    // Inicializar detección de scroll en price card
-    initPriceCardScroll();
-}
-
-// Detectar si el price card necesita scroll y agregar indicador
-function initPriceCardScroll() {
-    const priceCard = document.querySelector('.price-card');
-
-    if (priceCard) {
-        function checkScrollable() {
-            const isScrollable = priceCard.scrollHeight > priceCard.clientHeight;
-            priceCard.classList.toggle('scrollable', isScrollable);
-        }
-
-        // Verificar al cargar y cuando cambie el contenido
-        checkScrollable();
-
-        // Observar cambios en el contenido del price card
-        const observer = new MutationObserver(checkScrollable);
-        observer.observe(priceCard, {
-            childList: true,
-            subtree: true,
-            attributes: true,
-            attributeFilter: ['style']
-        });
-
-        // También verificar al cambiar el tamaño de la ventana
-        window.addEventListener('resize', checkScrollable);
-    }
 }
 
 // Actualizar precio total
