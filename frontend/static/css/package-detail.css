@@ -124,11 +124,12 @@
 
 .details-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 1fr 370px;
     gap: 2rem;
     max-width: none;
     width: 100%;
     min-height: 100vh;
+    align-items: start;
 }
 
 .main-content {
@@ -453,6 +454,9 @@
     display: flex;
     flex-direction: column;
     gap: 2rem;
+    height: fit-content;
+    position: relative;
+    visibility: hidden;
 }
 
 /* Hero Sidebar */
@@ -465,24 +469,37 @@
 /* Price Card */
 .price-card {
     background: var(--white);
-    border-radius: 15px;
-    box-shadow: var(--shadow-light);
-    overflow: hidden;
-    position: sticky;
-    top: 100px;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1), 0 8px 25px rgba(0, 0, 0, 0.05);
+    overflow: visible;
+    position: fixed;
+    top: 120px;
+    right: 2rem;
+    width: 360px;
+    z-index: 1000;
+    visibility: visible;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    backdrop-filter: blur(10px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.price-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.12), 0 10px 30px rgba(0, 0, 0, 0.08);
 }
 
 .price-header {
     background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
     color: var(--white);
-    padding: 2rem;
+    padding: 1.5rem;
     text-align: center;
+    border-radius: 20px 20px 0 0;
 }
 
 .current-price {
-    font-size: 2.5rem;
+    font-size: 2.2rem;
     font-weight: 700;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.3rem;
 }
 
 .price-label {
@@ -492,33 +509,34 @@
 
 /* Reservation Form */
 .reservation-form {
-    padding: 2rem;
+    padding: 1.2rem;
 }
 
 .reservation-form h3 {
     color: var(--dark-gray);
-    margin-bottom: 1.5rem;
-    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
     font-weight: 600;
     text-align: center;
 }
 
 .form-group {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
     font-weight: 500;
     color: var(--dark-gray);
+    font-size: 0.9rem;
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.6rem;
     border: 2px solid var(--border-color);
     border-radius: 8px;
     font-family: inherit;
@@ -545,22 +563,22 @@
 
 .btn-reserve {
     width: 100%;
-    padding: 1rem;
-    font-size: 1.1rem;
+    padding: 0.8rem;
+    font-size: 1rem;
     font-weight: 600;
-    margin-bottom: 1rem;
+    margin-bottom: 0.8rem;
 }
 
 .contact-alternatives {
     text-align: center;
-    padding-top: 1rem;
+    padding-top: 0.8rem;
     border-top: 1px solid var(--border-color);
 }
 
 .contact-alternatives p {
     color: var(--gray);
-    margin-bottom: 1rem;
-    font-size: 0.9rem;
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
 }
 
 .btn-whatsapp {
@@ -658,9 +676,17 @@
         min-height: 500px;
     }
     
+    .sidebar {
+        visibility: visible;
+    }
+
     .price-card {
-        position: sticky;
-        top: 120px;
+        position: static;
+        width: auto;
+        right: auto;
+        top: auto;
+        max-height: none;
+        visibility: visible;
     }
     
     .hero-content h1 {
@@ -780,9 +806,19 @@
         margin: 0.5rem 0;
     }
     
+    .sidebar {
+        visibility: visible;
+    }
+
     .price-card {
         margin: 0 -1rem;
         border-radius: 0;
+        position: static;
+        width: auto;
+        right: auto;
+        top: auto;
+        max-height: none;
+        visibility: visible;
     }
     
     .reservation-form {

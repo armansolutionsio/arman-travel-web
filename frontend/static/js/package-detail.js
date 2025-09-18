@@ -1113,11 +1113,25 @@ function toggleHotelSelection(hotelId, destination, hotelPrice) {
     const daysInput = hotelCard.querySelector('.days-input');
     const hotelData = findHotelInDestinations(hotelId, destination);
 
+    // Verificar si este es el único hotel seleccionado en el destino
+    const destinationPanel = hotelCard.closest('.destination-hotels') || hotelCard.closest('.tab-panel') || document;
+    const allCheckboxes = destinationPanel.querySelectorAll('.hotel-checkbox');
+    const selectedCheckboxes = Array.from(allCheckboxes).filter(cb => cb.checked);
+
+    // Si está tratando de deseleccionar y es el único seleccionado, no permitirlo
+    if (!checkbox.checked && selectedCheckboxes.length === 1 && selectedCheckboxes[0] === checkbox) {
+        // Revertir el cambio
+        checkbox.checked = true;
+
+        // Mostrar notificación
+        showNotification('Debes mantener al menos un hotel seleccionado en cada destino', 'warning');
+        return;
+    }
+
     if (checkbox.checked) {
         // Verificar si permite múltiples selecciones
         if (!hotelData || !hotelData.allow_multiple_per_destination) {
             // Solo una selección permitida: desmarcar otros hoteles del mismo destino
-            const destinationPanel = hotelCard.closest('.destination-hotels') || hotelCard.closest('.tab-panel') || document;
             const otherCheckboxes = destinationPanel.querySelectorAll('.hotel-checkbox');
 
             otherCheckboxes.forEach(otherCheckbox => {
@@ -1162,7 +1176,7 @@ function toggleHotelSelection(hotelId, destination, hotelPrice) {
             name: hotelCard.querySelector('h3').textContent
         });
     } else {
-        // Deseleccionar hotel
+        // Deseleccionar hotel (solo si no es el único)
         daysInput.style.display = 'none';
         hotelCard.classList.remove('selected');
 
@@ -1322,6 +1336,19 @@ function selectHotelCard(hotelId, destination, hotelPrice, event) {
     const checkbox = hotelCard.querySelector('.hotel-checkbox');
 
     if (checkbox) {
+        // Verificar si es el único seleccionado antes de deseleccionar
+        if (checkbox.checked) {
+            const destinationPanel = hotelCard.closest('.destination-hotels') || hotelCard.closest('.tab-panel') || document;
+            const allCheckboxes = destinationPanel.querySelectorAll('.hotel-checkbox');
+            const selectedCheckboxes = Array.from(allCheckboxes).filter(cb => cb.checked);
+
+            // Si es el único seleccionado, no permitir deseleccionar
+            if (selectedCheckboxes.length === 1 && selectedCheckboxes[0] === checkbox) {
+                showNotification('Debes mantener al menos un hotel seleccionado en cada destino', 'warning');
+                return;
+            }
+        }
+
         // Alternar el estado del checkbox
         checkbox.checked = !checkbox.checked;
 
