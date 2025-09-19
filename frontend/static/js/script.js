@@ -4,7 +4,7 @@ let currentFilter = 'all';
 let config = { whatsapp_number: '1132551565', recipient_email: 'info.armansolutions@gmail.com' };
 let contactConfig = {};
 
-// Función para formatear precios con puntos como separadores de miles
+// Función para formatear precios con puntos como separadores de miles y símbolo de moneda
 function formatPrice(priceString) {
     if (!priceString) return priceString;
 
@@ -22,7 +22,23 @@ function formatPrice(priceString) {
     // Formatear con puntos como separadores de miles
     const formattedNumber = number.toLocaleString('es-AR');
 
-    return prefix + formattedNumber + suffix;
+    // Asegurar que siempre hay un símbolo de moneda
+    let currencySymbol = prefix.trim();
+    if (!currencySymbol || (!currencySymbol.includes('USD') && !currencySymbol.includes('$'))) {
+        // Si no hay símbolo de moneda o no es reconocido, usar $ por defecto
+        currencySymbol = '$';
+    }
+
+    // Asegurar que el símbolo tenga el formato correcto
+    if (currencySymbol === 'USD') {
+        currencySymbol = 'USD ';
+    } else if (currencySymbol === '$') {
+        currencySymbol = '$';
+    } else if (!currencySymbol.endsWith(' ') && currencySymbol.includes('USD')) {
+        currencySymbol = currencySymbol.replace('USD', 'USD ');
+    }
+
+    return currencySymbol + formattedNumber + suffix;
 }
 
 // Detección de dispositivos móviles
@@ -319,8 +335,15 @@ function displayPackages(packagesToShow) {
     
     if (!packagesGrid) return;
     
-    packagesGrid.innerHTML = packagesToShow.map(pkg => `
-        <div class="package-card" data-category="${pkg.category}">
+    packagesGrid.innerHTML = '';
+
+    packagesToShow.forEach(pkg => {
+        const packageCard = document.createElement('div');
+        packageCard.className = 'package-card';
+        packageCard.dataset.category = pkg.category;
+        packageCard.style.cursor = 'pointer';
+
+        packageCard.innerHTML = `
             <img src="${pkg.image}" alt="${pkg.title}" class="package-image">
             <div class="package-content">
                 <h3 class="package-title">${pkg.title}</h3>
@@ -329,12 +352,22 @@ function displayPackages(packagesToShow) {
                 <ul class="package-features">
                     ${pkg.features.map(feature => `<li>${feature}</li>`).join('')}
                 </ul>
-                <a href="/package-detail/${pkg.id}" class="btn btn-primary">
+                <a href="/package-detail/${pkg.id}" class="btn btn-primary" onclick="event.stopPropagation()">
                     <i class="fas fa-eye"></i> Ver Detalles
                 </a>
             </div>
-        </div>
-    `).join('');
+        `;
+
+        // Agregar click handler para toda la tarjeta
+        packageCard.addEventListener('click', function(e) {
+            // Solo redirigir si no se hizo click en el botón "Ver detalles"
+            if (!e.target.closest('.btn')) {
+                window.location.href = `/package-detail/${pkg.id}`;
+            }
+        });
+
+        packagesGrid.appendChild(packageCard);
+    });
 }
 
 // Filtros de paquetes

@@ -125,7 +125,12 @@ class HotelCreate(BaseModel):
     image_url: str
     price: str
     amenities: Optional[List[dict]] = None
+    destination: str = "Destino principal"
+    days: int = 1
+    allow_user_days: bool = False
+    allow_multiple_per_destination: bool = False
     order_index: Optional[int] = 0
+    order_in_destination: Optional[int] = 0
 
 class HotelUpdate(BaseModel):
     name: Optional[str] = None
@@ -133,7 +138,12 @@ class HotelUpdate(BaseModel):
     image_url: Optional[str] = None
     price: Optional[str] = None
     amenities: Optional[List[dict]] = None
+    destination: Optional[str] = None
+    days: Optional[int] = None
+    allow_user_days: Optional[bool] = None
+    allow_multiple_per_destination: Optional[bool] = None
     order_index: Optional[int] = None
+    order_in_destination: Optional[int] = None
 
 # Eventos de inicio y cierre
 @app.on_event("startup")
@@ -1080,19 +1090,31 @@ async def reorder_carousel_packages(
 
 @app.get("/packages/{package_id}/hotels")
 async def get_package_hotels(package_id: int, db: Session = Depends(get_db)):
-    """Obtener hoteles de un paquete"""
+    """Obtener hoteles de un paquete agrupados por destino"""
     try:
         # Verificar que el paquete existe
         package = db.query(Package).filter(Package.id == package_id).first()
         if not package:
             raise HTTPException(status_code=404, detail="Paquete no encontrado")
-        
-        # Obtener hoteles del paquete
+
+        # Obtener hoteles del paquete ordenados por destino y orden
         hotels = db.query(PackageHotel).filter(
             PackageHotel.package_id == package_id
-        ).order_by(PackageHotel.order_index, PackageHotel.id).all()
-        
-        return [hotel.to_dict() for hotel in hotels]
+        ).order_by(
+            PackageHotel.destination,
+            PackageHotel.order_in_destination,
+            PackageHotel.order_index
+        ).all()
+
+        # Agrupar hoteles por destino
+        destinations = {}
+        for hotel in hotels:
+            destination = hotel.destination
+            if destination not in destinations:
+                destinations[destination] = []
+            destinations[destination].append(hotel.to_dict())
+
+        return destinations
         
     except HTTPException:
         raise
@@ -1128,7 +1150,12 @@ async def create_package_hotel(
             image_url=hotel_data.image_url,
             price=hotel_data.price,
             amenities=amenities_list,
-            order_index=hotel_data.order_index or 0
+            destination=hotel_data.destination,
+            days=hotel_data.days,
+            allow_user_days=hotel_data.allow_user_days,
+            allow_multiple_per_destination=hotel_data.allow_multiple_per_destination,
+            order_index=hotel_data.order_index or 0,
+            order_in_destination=hotel_data.order_in_destination or 0
         )
         print(f"Hotel creado en memoria: {hotel.name}")
         
@@ -1215,7 +1242,12 @@ async def upload_hotel_image(
             image_url=image_url,
             price=price,
             amenities=amenities_list,
-            order_index=order_index
+            destination="Destino principal",  # Default value, should be updated via admin
+            days=1,  # Default value
+            allow_user_days=False,  # Default value
+            allow_multiple_per_destination=False,  # Default value
+            order_index=order_index,
+            order_in_destination=0  # Default value
         )
         
         db.add(hotel)
