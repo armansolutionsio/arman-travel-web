@@ -483,7 +483,7 @@ function displayPackages() {
             <td>
                 <span class="package-category category-${package.category}">${package.category}</span>
             </td>
-            <td><strong>${package.price}</strong></td>
+            <td><strong>${formatDisplayPrice(package.price)}</strong></td>
             <td class="actions-cell">
                 <button class="btn btn-sm btn-secondary" onclick="editPackage(${package.id}); event.stopPropagation();">
                     <i class="fas fa-edit"></i> Editar
@@ -1583,7 +1583,7 @@ function createCarouselPackageCard(pkg, isPromoted, order = null) {
             <div class="carousel-package-header">
                 <div class="carousel-package-info">
                     <h4>${pkg.title}</h4>
-                    <p>${pkg.category} - ${pkg.price}</p>
+                    <p>${pkg.category} - ${formatDisplayPrice(pkg.price)}</p>
                 </div>
 
                 <div class="carousel-package-controls" onclick="event.stopPropagation();">
@@ -2409,6 +2409,43 @@ function formatHotelPrice(currency, amount) {
     return `${currency} ${amount}`;
 }
 
+// Función para formatear precios para mostrar en la interfaz del admin
+function formatDisplayPrice(priceString) {
+    if (!priceString) return priceString;
+
+    // Extraer la parte numérica y la moneda
+    const match = priceString.match(/^(.*?)(\d+(?:,\d+)*)(.*?)$/);
+    if (!match) return priceString;
+
+    const prefix = match[1]; // Ejemplo: "USD ", "$", etc.
+    const numberPart = match[2]; // Ejemplo: "1500", "1,500"
+    const suffix = match[3]; // Ejemplo: " por persona", etc.
+
+    // Remover comas existentes y convertir a número
+    const number = parseInt(numberPart.replace(/,/g, ''));
+
+    // Formatear con puntos como separadores de miles
+    const formattedNumber = number.toLocaleString('es-AR');
+
+    // Asegurar que siempre hay un símbolo de moneda
+    let currencySymbol = prefix.trim();
+    if (!currencySymbol || (!currencySymbol.includes('USD') && !currencySymbol.includes('$'))) {
+        // Si no hay símbolo de moneda o no es reconocido, usar $ por defecto
+        currencySymbol = '$';
+    }
+
+    // Asegurar que el símbolo tenga el formato correcto
+    if (currencySymbol === 'USD') {
+        currencySymbol = 'USD ';
+    } else if (currencySymbol === '$') {
+        currencySymbol = '$';
+    } else if (!currencySymbol.endsWith(' ') && currencySymbol.includes('USD')) {
+        currencySymbol = currencySymbol.replace('USD', 'USD ');
+    }
+
+    return currencySymbol + formattedNumber + suffix;
+}
+
 // Extraer precio y moneda de un string formateado
 function parseHotelPrice(priceString) {
     const parts = priceString.split(' ');
@@ -2482,7 +2519,7 @@ function displayTempHotels() {
                 <h4>${hotel.name}</h4>
                 <p class="hotel-description">${hotel.description || 'Sin descripción'}</p>
                 <div class="hotel-details">
-                    <div class="hotel-price">${hotel.price}/noche</div>
+                    <div class="hotel-price">${formatDisplayPrice(hotel.price)}/noche</div>
                     <div class="hotel-destination"><i class="fas fa-map-marker-alt"></i> ${hotel.destination}</div>
                     <div class="hotel-days"><i class="fas fa-calendar-alt"></i> ${hotel.days} día${hotel.days > 1 ? 's' : ''}</div>
                     <div class="hotel-user-days">

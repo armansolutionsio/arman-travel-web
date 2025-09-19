@@ -4,7 +4,7 @@ let currentFilter = 'all';
 let config = { whatsapp_number: '1132551565', recipient_email: 'info.armansolutions@gmail.com' };
 let contactConfig = {};
 
-// Función para formatear precios con puntos como separadores de miles
+// Función para formatear precios con puntos como separadores de miles y símbolo de moneda
 function formatPrice(priceString) {
     if (!priceString) return priceString;
 
@@ -22,7 +22,23 @@ function formatPrice(priceString) {
     // Formatear con puntos como separadores de miles
     const formattedNumber = number.toLocaleString('es-AR');
 
-    return prefix + formattedNumber + suffix;
+    // Asegurar que siempre hay un símbolo de moneda
+    let currencySymbol = prefix.trim();
+    if (!currencySymbol || (!currencySymbol.includes('USD') && !currencySymbol.includes('$'))) {
+        // Si no hay símbolo de moneda o no es reconocido, usar $ por defecto
+        currencySymbol = '$';
+    }
+
+    // Asegurar que el símbolo tenga el formato correcto
+    if (currencySymbol === 'USD') {
+        currencySymbol = 'USD ';
+    } else if (currencySymbol === '$') {
+        currencySymbol = '$';
+    } else if (!currencySymbol.endsWith(' ') && currencySymbol.includes('USD')) {
+        currencySymbol = currencySymbol.replace('USD', 'USD ');
+    }
+
+    return currencySymbol + formattedNumber + suffix;
 }
 
 // Detección de dispositivos móviles

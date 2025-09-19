@@ -5,7 +5,7 @@ let allPackages = [];
 let config = { whatsapp_number: '1132551565', recipient_email: 'info.armansolutions@gmail.com' };
 let contactConfig = {};
 
-// Función para formatear precios con puntos como separadores de miles
+// Función para formatear precios con puntos como separadores de miles y símbolo de moneda
 function formatPrice(priceString) {
     if (!priceString) return priceString;
 
@@ -23,7 +23,23 @@ function formatPrice(priceString) {
     // Formatear con puntos como separadores de miles
     const formattedNumber = number.toLocaleString('es-AR');
 
-    return prefix + formattedNumber + suffix;
+    // Asegurar que siempre hay un símbolo de moneda
+    let currencySymbol = prefix.trim();
+    if (!currencySymbol || (!currencySymbol.includes('USD') && !currencySymbol.includes('$'))) {
+        // Si no hay símbolo de moneda o no es reconocido, usar $ por defecto
+        currencySymbol = '$';
+    }
+
+    // Asegurar que el símbolo tenga el formato correcto
+    if (currencySymbol === 'USD') {
+        currencySymbol = 'USD ';
+    } else if (currencySymbol === '$') {
+        currencySymbol = '$';
+    } else if (!currencySymbol.endsWith(' ') && currencySymbol.includes('USD')) {
+        currencySymbol = currencySymbol.replace('USD', 'USD ');
+    }
+
+    return currencySymbol + formattedNumber + suffix;
 }
 
 
@@ -597,15 +613,34 @@ function updateTotalPrice() {
         return;
     }
 
-    // Extraer número del precio (simplificado)
+    // Extraer número y moneda del precio usando la misma lógica que formatPrice
     const priceText = currentPackage.price;
-    const priceMatch = priceText.match(/[\d,]+/);
-    
-    if (priceMatch && totalPriceElement) {
-        const basePrice = parseInt(priceMatch[0].replace(/,/g, ''));
+    const match = priceText.match(/^(.*?)(\d+(?:,\d+)*)(.*?)$/);
+
+    if (match && totalPriceElement) {
+        const prefix = match[1].trim(); // Ejemplo: "USD", "$", etc.
+        const numberPart = match[2]; // Ejemplo: "1500", "1,500"
+        const suffix = match[3]; // Ejemplo: " por persona", etc.
+
+        const basePrice = parseInt(numberPart.replace(/,/g, ''));
         const total = basePrice * parseInt(travelers);
-        const currency = priceText.includes('USD') ? 'USD' : '$';
-        totalPriceElement.innerHTML = `<strong>Total: ${currency} ${total.toLocaleString('es-AR')}</strong>`;
+
+        // Usar el mismo símbolo de moneda que viene en el precio original
+        let currencySymbol = prefix;
+        if (!currencySymbol || (!currencySymbol.includes('USD') && !currencySymbol.includes('$'))) {
+            currencySymbol = '$';
+        }
+
+        // Formatear el símbolo correctamente
+        if (currencySymbol === 'USD') {
+            currencySymbol = 'USD ';
+        } else if (currencySymbol === '$') {
+            currencySymbol = '$';
+        } else if (!currencySymbol.endsWith(' ') && currencySymbol.includes('USD')) {
+            currencySymbol = currencySymbol.replace('USD', 'USD ');
+        }
+
+        totalPriceElement.innerHTML = `<strong>Total: ${currencySymbol}${total.toLocaleString('es-AR')}</strong>`;
     } else if (totalPriceElement) {
         totalPriceElement.innerHTML = `<strong>Total: ${priceText} x ${travelers}</strong>`;
     }
@@ -1221,21 +1256,49 @@ function updateDestinationSummary(destination) {
     const selectedHotels = hotelSelections[destination];
     let totalDestinationPrice = 0;
 
+    // Obtener la moneda del primer hotel para mantener consistencia
+    let currencySymbol = '$'; // Default fallback
+    if (selectedHotels.length > 0) {
+        const firstSelection = selectedHotels[0];
+        const match = firstSelection.price.match(/^(.*?)(\d+(?:,\d+)*)(.*?)$/);
+        if (match) {
+            const prefix = match[1].trim();
+            if (prefix && (prefix.includes('USD') || prefix.includes('$'))) {
+                currencySymbol = prefix;
+            }
+        }
+    }
+
+    // Formatear el símbolo correctamente
+    if (currencySymbol === 'USD') {
+        currencySymbol = 'USD ';
+    } else if (currencySymbol === '$') {
+        currencySymbol = '$';
+    } else if (!currencySymbol.endsWith(' ') && currencySymbol.includes('USD')) {
+        currencySymbol = currencySymbol.replace('USD', 'USD ');
+    }
+
     const hotelsListHTML = selectedHotels.map(selection => {
         const hotelTotal = extractNumericPrice(selection.price) * selection.days;
         totalDestinationPrice += hotelTotal;
+
+        // Formatear precio individual con la moneda correcta
+        const formattedHotelTotal = currencySymbol + hotelTotal.toLocaleString('es-AR');
 
         return `
             <div class="selected-hotel-item">
                 <span class="hotel-name">${selection.name}</span>
                 <span class="hotel-duration">${selection.days} día${selection.days > 1 ? 's' : ''}</span>
-                <span class="hotel-subtotal">${formatPrice(hotelTotal.toString())}</span>
+                <span class="hotel-subtotal">${formattedHotelTotal}</span>
             </div>
         `;
     }).join('');
 
+    // Formatear precio total del destino con la moneda correcta
+    const formattedDestinationTotal = currencySymbol + totalDestinationPrice.toLocaleString('es-AR');
+
     summary.querySelector('.selected-hotels-list').innerHTML = hotelsListHTML;
-    summary.querySelector('.destination-price').textContent = formatPrice(totalDestinationPrice.toString());
+    summary.querySelector('.destination-price').textContent = formattedDestinationTotal;
     summary.style.display = 'block';
 }
 
@@ -1300,15 +1363,45 @@ function updateTotalPackagePrice() {
     });
 
     if (hasSelections) {
+        // Obtener la moneda del primer hotel seleccionado para mantener consistencia
+        let currencySymbol = '$'; // Default fallback
+
+        // Buscar el primer hotel seleccionado para obtener su moneda
+        for (const destinationSelections of Object.values(hotelSelections)) {
+            if (destinationSelections.length > 0) {
+                const firstSelection = destinationSelections[0];
+                const match = firstSelection.price.match(/^(.*?)(\d+(?:,\d+)*)(.*?)$/);
+                if (match) {
+                    const prefix = match[1].trim();
+                    if (prefix && (prefix.includes('USD') || prefix.includes('$'))) {
+                        currencySymbol = prefix;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Formatear el símbolo correctamente
+        if (currencySymbol === 'USD') {
+            currencySymbol = 'USD ';
+        } else if (currencySymbol === '$') {
+            currencySymbol = '$';
+        } else if (!currencySymbol.endsWith(' ') && currencySymbol.includes('USD')) {
+            currencySymbol = currencySymbol.replace('USD', 'USD ');
+        }
+
+        // Crear el precio formateado con la moneda correcta
+        const formattedTotalPrice = currencySymbol + totalPrice.toLocaleString('es-AR');
+
         // Actualizar precio en la interfaz
         const heroPrice = document.getElementById('heroPrice');
         const sidebarPrice = document.getElementById('sidebarPrice');
 
-        if (heroPrice) heroPrice.textContent = formatPrice(totalPrice.toString());
-        if (sidebarPrice) sidebarPrice.textContent = formatPrice(totalPrice.toString());
+        if (heroPrice) heroPrice.textContent = formattedTotalPrice;
+        if (sidebarPrice) sidebarPrice.textContent = formattedTotalPrice;
 
-        // Actualizar precio base para cálculos de viajeros
-        currentPackage.price = totalPrice.toString();
+        // Actualizar precio base para cálculos de viajeros manteniendo la moneda
+        currentPackage.price = formattedTotalPrice;
     }
 
     // Recalcular el precio total con cantidad de viajeros
