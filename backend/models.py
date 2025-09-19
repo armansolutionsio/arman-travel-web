@@ -75,15 +75,20 @@ class PackageGalleryImage(Base):
 
 class PackageHotel(Base):
     __tablename__ = "package_hotels"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     package_id = Column(Integer, ForeignKey('packages.id'), nullable=False)
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     image_url = Column(String(500), nullable=False)
-    price = Column(String(100), nullable=False)  # Precio por noche o total
+    price = Column(String(100), nullable=False)  # Precio por noche
     amenities = Column(JSON, nullable=False, default=list)  # Lista de amenities del hotel
-    order_index = Column(Integer, default=0)
+    destination = Column(String(255), nullable=False, default='Destino principal')  # Ciudad/destino
+    days = Column(Integer, default=1, nullable=False)  # Días en este hotel
+    allow_user_days = Column(Boolean, default=False, nullable=False)  # Permitir al usuario cambiar días
+    allow_multiple_per_destination = Column(Boolean, default=False, nullable=False)  # Permitir múltiples hoteles por destino
+    order_index = Column(Integer, default=0)  # Orden general en el paquete
+    order_in_destination = Column(Integer, default=0)  # Orden dentro del destino
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
@@ -97,7 +102,12 @@ class PackageHotel(Base):
             "image_url": self.image_url,
             "price": self.price,
             "amenities": self.amenities if isinstance(self.amenities, list) else json.loads(self.amenities) if self.amenities else [],
+            "destination": self.destination,
+            "days": self.days,
+            "allow_user_days": self.allow_user_days,
+            "allow_multiple_per_destination": self.allow_multiple_per_destination,
             "order_index": self.order_index,
+            "order_in_destination": self.order_in_destination,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }
