@@ -1047,14 +1047,19 @@ section {
 
 .footer-content {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 2rem;
     margin-bottom: 2rem;
+    align-items: start;
 }
 
 .footer-brand h3 {
     color: var(--primary-light);
     margin: 1rem 0;
+}
+
+.footer-brand .social-links {
+    margin-top: 1rem;
 }
 
 .footer-logo {
@@ -1114,6 +1119,24 @@ section {
 .social-link:hover {
     background: var(--primary-light);
     transform: translateY(-2px);
+}
+
+.footer-qr {
+    text-align: center;
+}
+
+.footer-qr h4 {
+    color: var(--primary-light);
+    margin-bottom: 1rem;
+}
+
+.qr-image {
+    width: 150px;
+    height: 150px;
+    border-radius: 12px;
+    background: var(--white);
+    padding: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .footer-bottom {
