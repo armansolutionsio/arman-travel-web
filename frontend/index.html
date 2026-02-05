@@ -56,20 +56,36 @@
         </div>
     </section>
 
+    <!-- WhatsApp Banner -->
+    <a href="https://wa.me/" class="whatsapp-banner" target="_blank">
+        <div class="whatsapp-banner-icon">
+            <i class="fab fa-whatsapp"></i>
+        </div>
+        <div class="whatsapp-banner-content">
+            <span class="whatsapp-banner-status"><span class="status-dot"></span> DISPONIBLE AHORA</span>
+            <h3>¿Necesitás ayuda con tu viaje?</h3>
+            <p>Hablá con un agente experto</p>
+        </div>
+        <div class="whatsapp-banner-arrow">
+            <i class="fas fa-arrow-right"></i>
+        </div>
+    </a>
+
     <!-- Hero Section -->
     <section id="home" class="hero">
+        <div class="hero-image">
+            <img src="static/images/clientes-contentos.png" alt="Clientes contentos" class="hero-img">
+        </div>
         <div class="hero-content">
             <h1 class="hero-title">Viajes únicos & experiencias personalizadas</h1>
-            <p class="hero-subtitle">Descubre el mundo con ARMAN TRAVEL. Creamos experiencias de viaje únicas y memorables adaptadas especialmente para ti.</p>
+            <p class="hero-subtitle">Descubre el mundo con ARMAN TRAVEL. Creamos experiencias de viaje únicas y memorables, adaptadas especialmente para vos. Te acompañamos en cada paso para que disfrutes al máximo.</p>
+            <p class="hero-tagline"><strong>Porque cada viaje tiene que ser tan único como vos.</strong></p>
             <div class="hero-buttons">
                 <a href="#packages" class="btn btn-primary">Ver Paquetes</a>
-                <a href="https://wa.me/5491134115485" class="btn btn-whatsapp" target="_blank">
+                <a href="https://wa.me/" class="btn btn-whatsapp" target="_blank">
                     <i class="fab fa-whatsapp"></i> WhatsApp
                 </a>
             </div>
-        </div>
-        <div class="hero-image">
-            <img src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Destinos increíbles" class="hero-img">
         </div>
     </section>
 
@@ -131,29 +147,100 @@
     <section class="testimonials">
         <div class="container">
             <h2 class="section-title">Experiencias de nuestros clientes</h2>
-            <div class="testimonials-slider">
-                <div class="testimonial active">
-                    <div class="testimonial-content">
-                        <p>"Increíble experiencia con ARMAN TRAVEL. El servicio personalizado y la atención al detalle superaron todas mis expectativas."</p>
-                        <div class="testimonial-author">
-                            <div class="author-info">
-                                <h4>María González</h4>
-                                <span>Cliente satisfecha</span>
+            <div class="testimonials-wrapper">
+                <button class="testimonial-nav testimonial-prev" id="testimonialPrev">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="testimonials-grid" id="testimonialsGrid">
+                    <div class="testimonial-card">
+                        <div class="testimonial-header">
+                            <img src="static/images/cara1.png" alt="María González" class="testimonial-avatar">
+                            <div class="testimonial-stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
                             </div>
+                        </div>
+                        <p class="testimonial-text">"Increíble experiencia con ARMAN TRAVEL. El servicio personalizado y la atención al detalle superaron todas mis expectativas."</p>
+                        <div class="testimonial-author">
+                            <h4>Bianca Roldan</h4>
+                            <span>Cliente satisfecha</span>
+                        </div>
+                    </div>
+                    <div class="testimonial-card">
+                        <div class="testimonial-header">
+                            <img src="static/images/cara2.png" alt="Mariano Fernandez" class="testimonial-avatar">
+                            <div class="testimonial-stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                        <p class="testimonial-text">"El viaje de nuestros sueños se hizo realidad gracias al equipo profesional de ARMAN TRAVEL. ¡Recomendado al 100%!"</p>
+                        <div class="testimonial-author">
+                            <h4>Mariano Fernandez</h4>
+                            <span>Cliente satisfecho</span>
+                        </div>
+                    </div>
+                    <div class="testimonial-card">
+                        <div class="testimonial-header">
+                            <img src="static/images/cara3.png" alt="Laura Gomez" class="testimonial-avatar">
+                            <div class="testimonial-stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                        <p class="testimonial-text">"Excelente atención desde el primer contacto. Nos armaron un viaje a medida y todo salió perfecto. ¡Volveremos a viajar con ellos!"</p>
+                        <div class="testimonial-author">
+                            <h4>Laura Gomez</h4>
+                            <span>Cliente satisfecha</span>
+                        </div>
+                    </div>
+                    <div class="testimonial-card">
+                        <div class="testimonial-header">
+                            <img src="static/images/cara4.png" alt="Federico T." class="testimonial-avatar">
+                            <div class="testimonial-stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                        <p class="testimonial-text">"Viajamos en familia a Brasil y todo fue espectacular. La organización impecable y los hoteles hermosos. ¡Gracias ARMAN TRAVEL!"</p>
+                        <div class="testimonial-author">
+                            <h4>Federico T.</h4>
+                            <span>Cliente satisfecho</span>
+                        </div>
+                    </div>
+                    <div class="testimonial-card">
+                        <div class="testimonial-header">
+                            <img src="static/images/cara5.png" alt="Andrés y Lucía" class="testimonial-avatar">
+                            <div class="testimonial-stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                        <p class="testimonial-text">"Nuestra luna de miel fue perfecta gracias a ARMAN TRAVEL. Cada detalle estuvo cuidado, desde los vuelos hasta las excursiones."</p>
+                        <div class="testimonial-author">
+                            <h4>Andrés y Lucía</h4>
+                            <span>Clientes satisfechos</span>
                         </div>
                     </div>
                 </div>
-                <div class="testimonial">
-                    <div class="testimonial-content">
-                        <p>"El viaje de nuestros sueños se hizo realidad gracias al equipo profesional de ARMAN TRAVEL. ¡Recomendado al 100%!"</p>
-                        <div class="testimonial-author">
-                            <div class="author-info">
-                                <h4>Carlos Rodríguez</h4>
-                                <span>Cliente satisfecho</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <button class="testimonial-nav testimonial-next" id="testimonialNext">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
             </div>
         </div>
     </section>
@@ -190,6 +277,33 @@
                         <p>Cada paquete incluye diferentes servicios. Todos los detalles están especificados en la descripción de cada viaje.</p>
                     </div>
                 </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>¿Con cuánta anticipación debo reservar?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>El ideal es reservar con 30 días de anticipación para garantizar disponibilidad y mejores precios. Pero igual podés hablar con nuestros expertos para cotizar fechas más próximas sin problema.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>¿Qué documentación necesito para viajar?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Dependiendo del destino, necesitarás pasaporte vigente y en algunos casos visa. Te asesoramos sobre los requisitos específicos de cada país, incluyendo vacunas obligatorias si las hubiera.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>¿Puedo modificar o cancelar mi reserva?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Sí, las reservas pueden modificarse o cancelarse según las políticas de cada proveedor. Te informamos las condiciones antes de confirmar y te ayudamos con cualquier cambio que necesites.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -198,13 +312,30 @@
     <section id="contact" class="contact">
         <div class="container">
             <h2 class="section-title">Contactanos</h2>
-            <div class="contact-content">
-                <div class="contact-info">
+            <div class="contact-box">
+                <div class="contact-form-side">
+                    <form class="contact-form" id="contactForm">
+                        <div class="form-group">
+                            <input type="text" name="name" placeholder="Tu nombre" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" name="email" placeholder="Tu email" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="tel" name="phone" placeholder="Tu teléfono">
+                        </div>
+                        <div class="form-group">
+                            <textarea name="message" placeholder="Tu mensaje" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Enviar Mensaje</button>
+                    </form>
+                </div>
+                <div class="contact-info-side">
                     <div class="contact-item">
                         <i class="fas fa-phone"></i>
                         <div>
                             <h3>Teléfono</h3>
-                            <p><a href="tel:+5491134115485" class="phone-number">+54 11 3411-5485</a></p>
+                            <p><a href="tel:+5491134115485">+54 11 3411-5485</a></p>
                         </div>
                     </div>
                     <div class="contact-item">
@@ -222,21 +353,6 @@
                         </div>
                     </div>
                 </div>
-                <form class="contact-form" id="contactForm">
-                    <div class="form-group">
-                        <input type="text" name="name" placeholder="Tu nombre" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="email" name="email" placeholder="Tu email" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="tel" name="phone" placeholder="Tu teléfono">
-                    </div>
-                    <div class="form-group">
-                        <textarea name="message" placeholder="Tu mensaje" required></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Enviar Mensaje</button>
-                </form>
             </div>
         </div>
     </section>
@@ -272,7 +388,9 @@
                 </div>
                 <div class="footer-qr">
                     <h4>Escaneá el QR</h4>
-                    <img src="static/images/qr-agencia.png" alt="QR Arman Travel" class="qr-image">
+                    <a href="https://www.agenciasdeviajes.ar/agencias/tgh6fi-p" target="_blank">
+                        <img src="static/images/qr-agencia.png" alt="QR Arman Travel" class="qr-image">
+                    </a>
                 </div>
             </div>
             <div class="footer-bottom">
