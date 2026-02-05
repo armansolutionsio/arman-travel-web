@@ -420,6 +420,10 @@ async def read_index():
     return get_html_file("index.html", "<h1>ARMAN TRAVEL</h1><p>Página principal no disponible</p>")
 
 @app.get("/admin.html", response_class=HTMLResponse)
+async def read_admin_html():
+    return get_html_file("admin.html", "<h1>Panel de Administración</h1><p>Panel no disponible</p>")
+
+@app.get("/admin", response_class=HTMLResponse)
 async def read_admin():
     return get_html_file("admin.html", "<h1>Panel de Administración</h1><p>Panel no disponible</p>")
 
