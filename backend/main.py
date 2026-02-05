@@ -51,7 +51,7 @@ SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USER = os.getenv("SMTP_USER", "info.armansolutions@gmail.com")  
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")  # Se configura en variables de entorno
 
-RECIPIENT_EMAIL = os.getenv("RECIPIENT_EMAIL", "info.armansolutions@gmail.com")
+RECIPIENT_EMAIL = os.getenv("RECIPIENT_EMAIL", "travel@armansolutions.io")
 
 # Configuración de Cloudinary
 cloudinary.config(
@@ -65,8 +65,8 @@ MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".jfif", ".bmp"}
 
 # Configuración de contacto
-CONTACT_EMAIL = os.getenv("CONTACT_EMAIL", "info.armansolutions@gmail.com")
-WHATSAPP_NUMBER = os.getenv("WHATSAPP_NUMBER", "5491132551565")
+CONTACT_EMAIL = os.getenv("CONTACT_EMAIL", "travel@armansolutions.io")
+WHATSAPP_NUMBER = os.getenv("WHATSAPP_NUMBER", "5491134115485")
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
