@@ -651,7 +651,13 @@ async def delete_package(package_id: int, username: str = Depends(verify_token),
             if hotel.image_url:
                 delete_cloudinary_image(hotel.image_url)
 
-        # Eliminar el paquete (las relaciones se eliminarán por CASCADE)
+        # Eliminar registros relacionados de la base de datos
+        db.query(PackageGalleryImage).filter(PackageGalleryImage.package_id == package_id).delete()
+        db.query(PackageHotel).filter(PackageHotel.package_id == package_id).delete()
+        db.query(PackageInfo).filter(PackageInfo.package_id == package_id).delete()
+        db.query(PackageFeature).filter(PackageFeature.package_id == package_id).delete()
+
+        # Eliminar el paquete
         db.delete(db_package)
         db.commit()
 
