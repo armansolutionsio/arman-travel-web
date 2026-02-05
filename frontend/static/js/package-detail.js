@@ -2,7 +2,7 @@
 const API_BASE_URL = window.location.protocol + '//' + window.location.host;
 let currentPackage = null;
 let allPackages = [];
-let config = { whatsapp_number: '1132551565', recipient_email: 'info.armansolutions@gmail.com' };
+let config = { whatsapp_number: '5491134115485', recipient_email: 'travel@armansolutions.io' };
 let contactConfig = {};
 
 // Función para formatear precios con puntos como separadores de miles y símbolo de moneda
@@ -47,6 +47,7 @@ function formatPrice(priceString) {
 document.addEventListener('DOMContentLoaded', function() {
     loadConfig();
     initNavigation();
+    initScrollButton();
     loadContactConfig();
     loadPackageDetail();
     loadAllPackages();
@@ -103,6 +104,43 @@ function initNavigation() {
             if (navMenu) navMenu.classList.remove('active');
         });
     });
+}
+
+// Botón de scroll arriba/abajo
+function initScrollButton() {
+    const scrollBtn = document.getElementById('scrollBtn');
+    if (!scrollBtn) return;
+
+    const icon = scrollBtn.querySelector('i');
+
+    function updateScrollButton() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const scrollHeight = document.documentElement.scrollHeight;
+        const clientHeight = document.documentElement.clientHeight;
+        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
+
+        if (isNearBottom) {
+            icon.className = 'fas fa-chevron-up';
+        } else {
+            icon.className = 'fas fa-chevron-down';
+        }
+    }
+
+    scrollBtn.addEventListener('click', () => {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const scrollHeight = document.documentElement.scrollHeight;
+        const clientHeight = document.documentElement.clientHeight;
+        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
+
+        if (isNearBottom) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            window.scrollTo({ top: scrollHeight, behavior: 'smooth' });
+        }
+    });
+
+    window.addEventListener('scroll', updateScrollButton);
+    updateScrollButton();
 }
 
 // Obtener ID del paquete desde URL

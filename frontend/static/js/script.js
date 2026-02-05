@@ -1,7 +1,7 @@
 // Variables globales
 let packages = [];
 let currentFilter = 'all';
-let config = { whatsapp_number: '1132551565', recipient_email: 'info.armansolutions@gmail.com' };
+let config = { whatsapp_number: '5491134115485', recipient_email: 'travel@armansolutions.io' };
 let contactConfig = {};
 
 // Función para formatear precios con puntos como separadores de miles y símbolo de moneda
@@ -58,6 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initTestimonials();
     initContactForm();
     initAdminModal();
+    initScrollButton();
     loadContactConfig();
     loadPackages();
     initPackageFilters();
@@ -214,10 +215,48 @@ function initContactForm() {
 // Modal de administrador - ahora redirige directamente
 function initAdminModal() {
     const adminBtn = document.getElementById('adminLoginBtn');
-    
+    if (!adminBtn) return;
+
     adminBtn.addEventListener('click', () => {
         window.location.href = 'admin.html';
     });
+}
+
+// Botón de scroll arriba/abajo
+function initScrollButton() {
+    const scrollBtn = document.getElementById('scrollBtn');
+    if (!scrollBtn) return;
+
+    const icon = scrollBtn.querySelector('i');
+
+    function updateScrollButton() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const scrollHeight = document.documentElement.scrollHeight;
+        const clientHeight = document.documentElement.clientHeight;
+        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
+
+        if (isNearBottom) {
+            icon.className = 'fas fa-chevron-up';
+        } else {
+            icon.className = 'fas fa-chevron-down';
+        }
+    }
+
+    scrollBtn.addEventListener('click', () => {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const scrollHeight = document.documentElement.scrollHeight;
+        const clientHeight = document.documentElement.clientHeight;
+        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
+
+        if (isNearBottom) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            window.scrollTo({ top: scrollHeight, behavior: 'smooth' });
+        }
+    });
+
+    window.addEventListener('scroll', updateScrollButton);
+    updateScrollButton();
 }
 
 // Cargar configuración desde el backend
