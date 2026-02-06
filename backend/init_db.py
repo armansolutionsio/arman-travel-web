@@ -3,19 +3,34 @@ Script para inicializar la base de datos con datos de ejemplo
 """
 from database import engine, SessionLocal
 from models import Base, Package
+from sqlalchemy import text, inspect
 import json
+
+def run_migrations(db):
+    """Ejecutar migraciones pendientes para columnas nuevas"""
+    inspector = inspect(engine)
+    columns = [col['name'] for col in inspector.get_columns('packages')]
+
+    # Migración: agregar price_tag si no existe
+    if 'price_tag' not in columns:
+        db.execute(text("ALTER TABLE packages ADD COLUMN price_tag VARCHAR(50) NOT NULL DEFAULT 'DESDE'"))
+        db.commit()
+        print("✅ Migración: columna price_tag agregada")
 
 def init_database():
     """Inicializa la base de datos con las tablas y datos de ejemplo"""
-    
+
     # Crear todas las tablas
     Base.metadata.create_all(bind=engine)
     print("✅ Tablas creadas exitosamente")
     
     # Crear sesión
     db = SessionLocal()
-    
+
     try:
+        # Ejecutar migraciones pendientes
+        run_migrations(db)
+
         # Verificar si ya hay paquetes
         existing_packages = db.query(Package).count()
         if existing_packages > 0:

@@ -22,6 +22,7 @@ class Package(Base):
     ideal_for = Column(String(255), nullable=True)
     gallery_images = Column(JSON, nullable=False, default=list)
     itinerary = Column(JSON, nullable=False, default=list)
+    price_tag = Column(String(50), default="DESDE", nullable=False)
     promoted = Column(Boolean, default=False, nullable=False)
     carousel_order = Column(Integer, default=0, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -34,6 +35,7 @@ class Package(Base):
             "title": self.title,
             "description": self.description,
             "price": self.price,
+            "price_tag": self.price_tag or "DESDE",
             "image": self.image,
             "category": self.category,
             "features": self.features if isinstance(self.features, list) else json.loads(self.features) if self.features else [],

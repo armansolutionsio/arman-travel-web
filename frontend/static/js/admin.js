@@ -593,6 +593,7 @@ function openPackageModal(packageId = null) {
             document.getElementById('priceCurrency').value = parsedPrice.currency;
             document.getElementById('price').value = parsedPrice.amount;
             
+            document.getElementById('priceTag').value = package.price_tag || 'DESDE';
             document.getElementById('image').value = package.image;
             document.getElementById('category').value = package.category;
             // Cargar características desde la nueva API
@@ -736,15 +737,24 @@ async function handlePackageSubmit(e) {
     const priceCurrency = document.getElementById('priceCurrency').value;
     const priceAmount = formData.get('price');
     const formattedPrice = formatHotelPrice(priceCurrency, priceAmount);
-    console.log('Precio formateado:', formattedPrice);
-    
+    console.log('=== DEBUG PRECIO ===');
+    console.log('currentPackageId:', currentPackageId);
+    console.log('priceCurrency:', priceCurrency);
+    console.log('priceAmount:', priceAmount);
+    console.log('formattedPrice:', formattedPrice);
+
+    // Manejar features - puede estar vacío
+    const featuresText = formData.get('features') || '';
+    const featuresArray = featuresText.split('\n').filter(f => f.trim());
+
     const packageData = {
         title: formData.get('title'),
         description: formData.get('description'),
         price: formattedPrice,
+        price_tag: document.getElementById('priceTag').value,
         image: formData.get('image'),
         category: formData.get('category'),
-        features: formData.get('features').split('\n').filter(f => f.trim()),
+        features: featuresArray,
         duration: formData.get('duration') || null,
         destination: formData.get('destination') || null,
         ideal_for: formData.get('idealFor') || null,
