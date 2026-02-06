@@ -231,9 +231,13 @@ function displayPackageDetail(package) {
     // Hoteles
     displayHotels(package.id);
 
-    // Itinerario
+    // Itinerario - solo mostrar si hay datos
+    const itinerarySection = document.getElementById('itinerarySection');
     if (package.itinerary && package.itinerary.length > 0) {
+        if (itinerarySection) itinerarySection.style.display = '';
         displayItinerary(package.itinerary);
+    } else {
+        if (itinerarySection) itinerarySection.style.display = 'none';
     }
 }
 
@@ -272,12 +276,15 @@ function formatDescription(description) {
 // Mostrar características
 function displayFeatures(features) {
     const featuresContainer = document.getElementById('packageFeatures');
-    
+    const featuresSection = document.querySelector('.features-section');
+
     if (!features || features.length === 0) {
-        featuresContainer.innerHTML = '<p>Información de características no disponible</p>';
+        // No hay features, ocultar la sección
+        if (featuresSection) featuresSection.style.display = 'none';
         return;
     }
 
+    if (featuresSection) featuresSection.style.display = '';
     featuresContainer.innerHTML = features.map(feature => `
         <div class="feature-item">
             <i class="fas fa-check"></i>
@@ -293,6 +300,8 @@ let currentGallerySlide = 0;
 let galleryCarouselInterval;
 
 async function displayGallery(galleryImagesParam, mainImage, title) {
+    const gallerySection = document.querySelector('.gallery-section');
+
     // Intentar cargar galería real desde la base de datos
     let realGalleryImages = [];
     if (currentPackage && currentPackage.id) {
@@ -305,9 +314,9 @@ async function displayGallery(galleryImagesParam, mainImage, title) {
             console.log('No se pudo cargar galería desde BD:', error);
         }
     }
-    
+
     let images = [];
-    
+
     if (realGalleryImages.length > 0) {
         // Usar imágenes reales de la galería
         images = realGalleryImages.map(img => ({
@@ -315,7 +324,7 @@ async function displayGallery(galleryImagesParam, mainImage, title) {
             caption: img.caption || `${title} - Imagen`,
             isCover: img.is_cover
         }));
-        
+
         // Ordenar por cover primero, luego por orden
         images.sort((a, b) => {
             if (a.isCover && !b.isCover) return -1;
@@ -329,24 +338,15 @@ async function displayGallery(galleryImagesParam, mainImage, title) {
             caption: `${title} - Imagen ${index + 1}`,
             isCover: false
         }));
-    } else {
-        // Solo imagen principal disponible
-        images = [{
-            url: mainImage,
-            caption: `${title} - Imagen principal`,
-            isCover: true
-        }];
     }
 
-    // Asegurar que siempre tenemos al menos la imagen principal
-    if (images.length === 0 || !images.find(img => img.url === mainImage)) {
-        images.unshift({
-            url: mainImage,
-            caption: `${title} - Imagen principal`,
-            isCover: true
-        });
+    // Si no hay imágenes de galería, ocultar la sección
+    if (images.length === 0) {
+        if (gallerySection) gallerySection.style.display = 'none';
+        return;
     }
 
+    if (gallerySection) gallerySection.style.display = '';
     galleryImages = images;
     createGalleryCarousel();
     initGalleryCarouselControls();
@@ -887,13 +887,11 @@ async function loadPackageInfo(packageId) {
 
 // Mostrar información del paquete
 function displayPackageInfo(infoItems) {
-    const container = document.getElementById('packageFeatures');
-    
     if (!infoItems || infoItems.length === 0) {
         displayDefaultPackageInfo();
         return;
     }
-    
+
     // Limpiar el contenido actual
     const infoGrid = document.querySelector('.info-grid');
     if (infoGrid) {
@@ -906,42 +904,38 @@ function displayPackageInfo(infoItems) {
             </div>
         `).join('');
     }
+    // Mostrar la sección
+    const quickInfo = document.querySelector('.quick-info');
+    if (quickInfo) quickInfo.style.display = '';
 }
 
-// Mostrar información por defecto si no hay datos
+// Mostrar información por defecto solo con campos que realmente tengan datos
 function displayDefaultPackageInfo() {
+    const quickInfo = document.querySelector('.quick-info');
     const infoGrid = document.querySelector('.info-grid');
-    if (infoGrid && currentPackage) {
-        infoGrid.innerHTML = `
-            <div class="info-item">
-                <i class="fas fa-calendar-alt"></i>
-                <div>
-                    <strong>Duración</strong>
-                    <span>${currentPackage.duration || 'Consultar'}</span>
-                </div>
-            </div>
-            <div class="info-item">
-                <i class="fas fa-users"></i>
-                <div>
-                    <strong>Ideal para</strong>
-                    <span>${currentPackage.ideal_for || 'Todos los públicos'}</span>
-                </div>
-            </div>
-            <div class="info-item">
-                <i class="fas fa-map-marker-alt"></i>
-                <div>
-                    <strong>Destino</strong>
-                    <span>${currentPackage.destination || getDestinationFromTitle(currentPackage.title)}</span>
-                </div>
-            </div>
-            <div class="info-item">
-                <i class="fas fa-star"></i>
-                <div>
-                    <strong>Categoría</strong>
-                    <span>${getCategoryName(currentPackage.category)}</span>
-                </div>
-            </div>
-        `;
+    if (!infoGrid || !currentPackage) return;
+
+    const items = [];
+
+    if (currentPackage.duration) {
+        items.push(`<div class="info-item"><i class="fas fa-calendar-alt"></i><div><strong>Duración</strong><span>${currentPackage.duration}</span></div></div>`);
+    }
+    if (currentPackage.ideal_for) {
+        items.push(`<div class="info-item"><i class="fas fa-users"></i><div><strong>Ideal para</strong><span>${currentPackage.ideal_for}</span></div></div>`);
+    }
+    if (currentPackage.destination) {
+        items.push(`<div class="info-item"><i class="fas fa-map-marker-alt"></i><div><strong>Destino</strong><span>${currentPackage.destination}</span></div></div>`);
+    }
+    if (currentPackage.category) {
+        items.push(`<div class="info-item"><i class="fas fa-star"></i><div><strong>Categoría</strong><span>${getCategoryName(currentPackage.category)}</span></div></div>`);
+    }
+
+    if (items.length === 0) {
+        // No hay datos, ocultar la sección entera
+        if (quickInfo) quickInfo.style.display = 'none';
+    } else {
+        infoGrid.innerHTML = items.join('');
+        if (quickInfo) quickInfo.style.display = '';
     }
 }
 
@@ -965,12 +959,15 @@ async function loadPackageFeatures(packageId) {
 // Mostrar características del paquete
 function displayPackageFeatures(features) {
     const featuresContainer = document.getElementById('packageFeatures');
-    
+    const featuresSection = document.querySelector('.features-section');
+
     if (!features || features.length === 0) {
+        // Intentar con features del JSON legacy
         displayFeatures(currentPackage.features);
         return;
     }
-    
+
+    if (featuresSection) featuresSection.style.display = '';
     featuresContainer.innerHTML = features.map(feature => `
         <div class="feature-item">
             <i class="fas fa-check"></i>

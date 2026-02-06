@@ -425,6 +425,7 @@ function displayPackages(packagesToShow) {
             <div class="package-content">
                 <h3 class="package-title">${pkg.title}</h3>
                 <p class="package-description">${pkg.description}</p>
+                <span class="package-price-label">${pkg.price_tag || 'DESDE'}</span>
                 <div class="package-price">${formatPrice(pkg.price)}</div>
                 <ul class="package-features">
                     ${pkg.features.map(feature => `<li>${feature}</li>`).join('')}

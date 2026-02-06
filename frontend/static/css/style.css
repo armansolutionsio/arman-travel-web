@@ -928,7 +928,7 @@ section {
     box-shadow: var(--shadow-light);
     transition: var(--transition);
     width: 100%;
-    height: 520px;
+    height: 545px;
     border-bottom: 4px solid var(--primary-color);
     display: flex;
     flex-direction: column;
@@ -976,6 +976,16 @@ section {
     overflow: hidden;
     text-overflow: ellipsis;
     height: 3em;
+}
+
+.package-price-label {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.1rem;
+    display: block;
 }
 
 .package-price {
@@ -1713,7 +1723,7 @@ section {
 
     .package-card {
         margin: 0;
-        height: 480px;
+        height: 505px;
     }
 
     .package-content {

@@ -87,6 +87,7 @@ class PackageCreate(BaseModel):
     title: str
     description: str
     price: str
+    price_tag: Optional[str] = "DESDE"
     image: str
     category: str
     features: List[str]
@@ -102,6 +103,7 @@ class PackageUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     price: Optional[str] = None
+    price_tag: Optional[str] = None
     image: Optional[str] = None
     category: Optional[str] = None
     features: Optional[List[str]] = None
@@ -537,19 +539,6 @@ def get_package_with_features(package, db):
     if db_features:
         package_dict['features'] = [feature.text for feature in db_features]
     
-    # Obtener hoteles y calcular precio más bajo
-    hotels = db.query(PackageHotel).filter(
-        PackageHotel.package_id == package.id
-    ).all()
-    
-    if hotels:
-        # Encontrar el precio más bajo entre los hoteles
-        lowest_price = min(extract_price_value(hotel.price) for hotel in hotels)
-        if lowest_price != float('inf'):
-            # Encontrar el hotel con el precio más bajo para usar su formato
-            cheapest_hotel = min(hotels, key=lambda h: extract_price_value(h.price))
-            package_dict['price'] = cheapest_hotel.price
-    
     return package_dict
 
 @app.get("/packages")
@@ -584,6 +573,7 @@ async def create_package(package: PackageCreate, username: str = Depends(verify_
             title=package.title,
             description=package.description,
             price=package.price,
+            price_tag=package.price_tag or "DESDE",
             image=package.image,
             category=package.category,
             features=package.features,
@@ -607,15 +597,28 @@ async def update_package(package_id: int, package: PackageUpdate, username: str 
         db_package = db.query(Package).filter(Package.id == package_id).first()
         if not db_package:
             raise HTTPException(status_code=404, detail="Paquete no encontrado")
-        
+
+        # DEBUG: Log de datos recibidos
+        print(f"=== UPDATE PACKAGE {package_id} ===")
+        print(f"Precio recibido: {package.price}")
+        print(f"Precio actual en DB: {db_package.price}")
+
         # Actualizar campos proporcionados
         update_data = package.dict(exclude_unset=True)
+        print(f"Datos a actualizar: {update_data}")
+
         for field, value in update_data.items():
             setattr(db_package, field, value)
-        
+
+        db.flush()
         db.commit()
-        db.refresh(db_package)
-        
+
+        # Re-query to verify the change persisted
+        db.expire_all()
+        db_package = db.query(Package).filter(Package.id == package_id).first()
+
+        print(f"Precio después de actualizar: {db_package.price}")
+
         return db_package.to_dict()
             
     except HTTPException:
