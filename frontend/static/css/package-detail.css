@@ -867,12 +867,11 @@
     }
     
     .hotels-grid {
-        grid-template-columns: 1fr;
         gap: 1rem;
     }
-    
+
     .hotel-card {
-        max-width: none;
+        width: 100%;
     }
 }
 
@@ -927,11 +926,11 @@
 }
 
 .hotels-grid {
+.hotels-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 350px));
     gap: 1.5rem;
     width: 100%;
-    max-width: none;
 }
 
 .hotel-card {
@@ -941,6 +940,8 @@
     box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
     transition: var(--transition);
     cursor: pointer;
+    max-width: 350px;
+    width: 100%;
 }
 
 .hotel-card:hover {
@@ -1055,12 +1056,11 @@
 /* Responsive para hoteles */
 @media (max-width: 768px) {
     .hotels-grid {
-        grid-template-columns: 1fr;
         gap: 1rem;
     }
 
     .hotel-card {
-        max-width: none;
+        width: 100%;
     }
 
     .hotel-amenities {

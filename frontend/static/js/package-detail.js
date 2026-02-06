@@ -1604,7 +1604,7 @@ style.textContent = `
         content: "✓ SELECCIONADO";
         position: absolute;
         top: 10px;
-        right: 10px;
+        left: 10px;
         background: #28a745;
         color: white;
         padding: 0.3rem 0.6rem;

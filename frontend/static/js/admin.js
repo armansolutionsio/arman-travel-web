@@ -711,11 +711,43 @@ async function deletePackage(id) {
 }
 
 // Manejar envío del formulario de paquete
+// Capturar hotel pendiente en formulario sin agregar a la lista
+function collectPendingHotel() {
+    // Chequear formulario de URL
+    const urlInput = document.getElementById('hotelUrlInput');
+    if (urlInput && urlInput.style.display !== 'none') {
+        const name = document.getElementById('hotelUrlName').value.trim();
+        const amount = document.getElementById('hotelUrlPrice').value.trim();
+        const imageUrl = document.getElementById('hotelImageUrl').value.trim();
+        const destination = document.getElementById('hotelUrlDestination').value.trim();
+        if (name && amount && imageUrl && destination) {
+            addHotelFromUrl();
+            return true;
+        }
+    }
+    // Chequear formulario de upload
+    const uploadArea = document.getElementById('hotelUploadArea');
+    if (uploadArea && uploadArea.style.display !== 'none') {
+        const name = document.getElementById('hotelName').value.trim();
+        const amount = document.getElementById('hotelPrice').value.trim();
+        const destination = document.getElementById('hotelDestination').value.trim();
+        if (name && amount && destination && window.tempHotelImageUrl) {
+            addHotelFromUpload();
+            return true;
+        }
+    }
+    return false;
+}
+
 async function handlePackageSubmit(e) {
     e.preventDefault();
+
+    // Auto-agregar hotel pendiente si hay datos completos en el formulario
+    collectPendingHotel();
+
     console.log('=== INICIANDO GUARDADO DE PAQUETE ===');
     console.log('Hoteles temporales antes del guardado:', tempHotels);
-    
+
     // Verificar validez del formulario
     const form = e.target;
     if (!form.checkValidity()) {
@@ -2568,6 +2600,10 @@ function showHotelUrlInput() {
 // Ocultar input de URL para hotel
 function hideHotelUrlInput() {
     document.getElementById('hotelUrlInput').style.display = 'none';
+    editingHotelIndex = null;
+    // Restaurar botón a modo agregar
+    const addBtn = document.getElementById('addHotelUrlToListBtn');
+    if (addBtn) addBtn.innerHTML = '<i class="fas fa-plus"></i> Agregar a la Lista';
     clearHotelUrlForm();
 }
 
@@ -2672,8 +2708,7 @@ function addHotelFromUrl() {
 
     const price = formatHotelPrice(currency, amount);
 
-    // Agregar al array temporal con amenities
-    tempHotels.push({
+    const hotelData = {
         name: name,
         description: description || null,
         price: price,
@@ -2682,13 +2717,30 @@ function addHotelFromUrl() {
         days: days,
         allow_user_days: allowUserDays,
         allow_multiple_per_destination: allowMultiple,
-        amenities: [...selectedUrlAmenities], // Copia de las amenities seleccionadas
-        isExisting: false
-    });
+        amenities: [...selectedUrlAmenities]
+    };
 
-    showGalleryNotification('Hotel agregado a la lista', 'success');
+    if (editingHotelIndex !== null) {
+        // Modo edición: actualizar hotel existente
+        tempHotels[editingHotelIndex] = {
+            ...tempHotels[editingHotelIndex],
+            ...hotelData
+        };
+        editingHotelIndex = null;
+        showGalleryNotification('Hotel actualizado', 'success');
+    } else {
+        // Modo agregar: nuevo hotel
+        hotelData.isExisting = false;
+        tempHotels.push(hotelData);
+        showGalleryNotification('Hotel agregado a la lista', 'success');
+    }
+
+    // Restaurar botón a modo agregar
+    const addBtn = document.getElementById('addHotelUrlToListBtn');
+    addBtn.innerHTML = '<i class="fas fa-plus"></i> Agregar a la Lista';
+
     hideHotelUrlInput();
-    clearSelectedAmenities('url'); // Limpiar amenities después de agregar
+    clearSelectedAmenities('url');
     displayTempHotels();
 }
 
@@ -2858,51 +2910,41 @@ async function addHotelFromUpload() {
     }
 }
 
-// Editar hotel temporal
+// Editar hotel temporal - abre el formulario de URL pre-llenado
+let editingHotelIndex = null;
+
 function editTempHotel(index) {
     const hotel = tempHotels[index];
     const parsedPrice = parseHotelPrice(hotel.price);
+    editingHotelIndex = index;
 
-    const name = prompt('Nombre del hotel:', hotel.name);
-    if (name === null) return;
+    // Pre-llenar el formulario de URL con los datos del hotel
+    document.getElementById('hotelUrlName').value = hotel.name || '';
+    document.getElementById('hotelUrlDescription').value = hotel.description || '';
+    document.getElementById('hotelUrlPriceCurrency').value = parsedPrice.currency;
+    document.getElementById('hotelUrlPrice').value = parsedPrice.amount;
+    document.getElementById('hotelImageUrl').value = hotel.image_url || '';
+    document.getElementById('hotelUrlDestination').value = hotel.destination || '';
+    document.getElementById('hotelUrlDays').value = hotel.days || 1;
+    document.getElementById('hotelUrlAllowUserDays').checked = !!hotel.allow_user_days;
+    document.getElementById('hotelUrlAllowMultiple').checked = !!hotel.allow_multiple_per_destination;
 
-    const description = prompt('Descripción del hotel:', hotel.description || '');
-    if (description === null) return;
+    // Cargar amenities del hotel
+    selectedUrlAmenities = hotel.amenities ? [...hotel.amenities] : [];
+    displaySelectedAmenities('url');
 
-    const destination = prompt('Destino/Ciudad:', hotel.destination || 'Destino principal');
-    if (destination === null) return;
+    // Cambiar el botón a "Guardar cambios"
+    const addBtn = document.getElementById('addHotelUrlToListBtn');
+    addBtn.innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
 
-    const days = prompt('Días en el hotel:', hotel.days || 1);
-    if (days === null) return;
+    // Mostrar formulario
+    document.getElementById('hotelAddOptions').style.display = 'none';
+    document.getElementById('hotelUrlInput').style.display = 'block';
+    document.getElementById('hotelUploadArea').style.display = 'none';
+    document.getElementById('hotelUrlName').focus();
 
-    const allowUserDaysText = hotel.allow_user_days ? 'sí' : 'no';
-    const allowUserDaysPrompt = prompt('¿Permitir al usuario cambiar días? (sí/no):', allowUserDaysText);
-    if (allowUserDaysPrompt === null) return;
-    const allowUserDays = allowUserDaysPrompt.toLowerCase().includes('sí') || allowUserDaysPrompt.toLowerCase().includes('si');
-
-    const amount = prompt('Precio (solo número):', parsedPrice.amount);
-    if (amount === null) return;
-
-    const currency = prompt('Moneda ($ o USD):', parsedPrice.currency);
-    if (currency === null) return;
-
-    const imageUrl = prompt('URL de imagen:', hotel.image_url);
-    if (imageUrl === null) return;
-
-    // Actualizar hotel temporal
-    tempHotels[index] = {
-        ...hotel,
-        name: name.trim(),
-        description: description.trim() || null,
-        destination: destination.trim(),
-        days: parseInt(days) || 1,
-        allow_user_days: allowUserDays,
-        price: formatHotelPrice(currency.trim(), amount.trim()),
-        image_url: imageUrl.trim()
-    };
-
-    displayTempHotels();
-    showGalleryNotification('Hotel actualizado en la lista', 'success');
+    // Scroll al formulario
+    document.getElementById('hotelUrlInput').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 // Eliminar hotel temporal
