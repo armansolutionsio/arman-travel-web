@@ -264,7 +264,10 @@ function initializeAdmin() {
     document.getElementById('addPackageBtn').addEventListener('click', () => openPackageModal());
     document.getElementById('refreshMessagesBtn').addEventListener('click', loadMessages);
     document.getElementById('packageForm').addEventListener('submit', handlePackageSubmit);
-    
+
+    // Validación del textarea de características
+    initFeaturesTextareaValidation();
+
     // Inicializar timer de renovación de sesión
     initializeSessionTimer();
 }
@@ -3817,6 +3820,60 @@ async function updatePackageFeatures() {
     }
 }
 
+// Sanitizar texto de características: quitar especiales/emojis, limitar largo y líneas
+function sanitizeFeatures(text) {
+    const MAX_LINES = 8;
+    const MAX_CHARS_PER_LINE = 20;
+
+    let lines = text.split('\n');
+    // Limitar a 6 líneas
+    lines = lines.slice(0, MAX_LINES);
+    // Limpiar cada línea
+    lines = lines.map(line => {
+        // Quitar emojis (todos los bloques unicode de emojis + variation selectors + ZWJ)
+        line = line.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu, '');
+        // Quitar caracteres especiales de viñetas/listas y símbolos
+        line = line.replace(/[-*•●○◆◇▪▸►→↔➤✓✔✗✘✦★☆·∙⁃–—⭐↩️]/g, '');
+        // Quitar espacios extra al inicio y espacios dobles
+        line = line.replace(/\s{2,}/g, ' ').trim();
+        // Cortar a 10 caracteres
+        return line.slice(0, MAX_CHARS_PER_LINE);
+    });
+    return lines.join('\n');
+}
+
+function initFeaturesTextareaValidation() {
+    const textarea = document.getElementById('features');
+    if (!textarea) return;
+
+    textarea.addEventListener('input', function () {
+        const cursorPos = this.selectionStart;
+        const sanitized = sanitizeFeatures(this.value);
+        if (this.value !== sanitized) {
+            this.value = sanitized;
+            // Intentar mantener cursor en posición razonable
+            this.selectionStart = this.selectionEnd = Math.min(cursorPos, sanitized.length);
+        }
+    });
+
+    // También sanitizar al pegar
+    textarea.addEventListener('paste', function () {
+        setTimeout(() => {
+            this.value = sanitizeFeatures(this.value);
+        }, 0);
+    });
+
+    // Bloquear Enter si ya hay 6 líneas
+    textarea.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            const lineCount = this.value.split('\n').length;
+            if (lineCount >= 8) {
+                e.preventDefault();
+            }
+        }
+    });
+}
+
 // Función para cargar características en el textarea
 async function loadFeaturesIntoTextarea(packageId) {
     try {
@@ -3827,10 +3884,20 @@ async function loadFeaturesIntoTextarea(packageId) {
 
         if (response.ok) {
             const features = await response.json();
-            const featuresText = features.map(f => f.text).join('\n');
             const featuresTextarea = document.getElementById('features');
             if (featuresTextarea) {
-                featuresTextarea.value = featuresText;
+                let text = '';
+                if (features.length > 0) {
+                    // Usar features de la tabla PackageFeature
+                    text = features.map(f => f.text).join('\n');
+                } else {
+                    // Fallback: usar el array features del paquete (columna JSON)
+                    const pkg = packages.find(p => p.id === packageId);
+                    if (pkg && pkg.features && pkg.features.length > 0) {
+                        text = pkg.features.join('\n');
+                    }
+                }
+                featuresTextarea.value = sanitizeFeatures(text);
             }
         } else {
             console.error('Error al cargar características para textarea:', response.statusText);
