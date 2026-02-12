@@ -273,7 +273,7 @@ function initializeAdmin() {
 function initSidebar() {
     const sidebarToggle = document.getElementById('sidebarToggle');
     const sidebar = document.querySelector('.sidebar');
-    const menuLinks = document.querySelectorAll('.menu-link:not(.logout)');
+    const menuLinks = document.querySelectorAll('.menu-link:not(.logout):not(.external-link)');
 
     sidebarToggle.addEventListener('click', () => {
         sidebar.classList.toggle('active');
