@@ -577,6 +577,10 @@ async def create_package(package: PackageCreate, username: str = Depends(verify_
             image=package.image,
             category=package.category,
             features=package.features,
+            duration=package.duration,
+            destination=package.destination,
+            ideal_for=package.ideal_for,
+            itinerary=package.itinerary,
             promoted=package.promoted,
             carousel_order=package.carousel_order
         )
