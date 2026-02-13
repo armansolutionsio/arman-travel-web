@@ -1500,17 +1500,35 @@ async def get_package_features(package_id: int, db: Session = Depends(get_db)):
         package = db.query(Package).filter(Package.id == package_id).first()
         if not package:
             raise HTTPException(status_code=404, detail="Paquete no encontrado")
-        
+
         features = db.query(PackageFeature).filter(
             PackageFeature.package_id == package_id
         ).order_by(PackageFeature.order_index).all()
-        
+
+        # Auto-migrar: si la tabla está vacía pero el JSON del paquete tiene features
+        if not features:
+            json_features = package.features if isinstance(package.features, list) else (json.loads(package.features) if package.features else [])
+            if json_features:
+                for i, text in enumerate(json_features):
+                    if text and str(text).strip():
+                        new_feature = PackageFeature(
+                            package_id=package_id,
+                            text=str(text).strip(),
+                            order_index=i + 1
+                        )
+                        db.add(new_feature)
+                db.commit()
+                features = db.query(PackageFeature).filter(
+                    PackageFeature.package_id == package_id
+                ).order_by(PackageFeature.order_index).all()
+
         return [feature.to_dict() for feature in features]
-        
+
     except HTTPException:
         raise
     except Exception as e:
         print(f"Error al obtener features del paquete: {e}")
+        db.rollback()
         raise HTTPException(status_code=500, detail="Error al obtener características")
 
 @app.post("/admin/packages/{package_id}/features")

@@ -833,6 +833,17 @@ async function handlePackageSubmit(e) {
                 console.error('Error al guardar hoteles:', hotelError);
                 showNotification('Paquete guardado, pero hubo errores con los hoteles: ' + hotelError.message, 'warning');
             }
+
+            // Sincronizar características del textarea a la tabla PackageFeature
+            try {
+                if (featuresArray.length > 0) {
+                    console.log('Sincronizando características a PackageFeature...');
+                    await syncFeaturesToPackageFeatureTable(packageId, featuresArray);
+                    console.log('Características sincronizadas exitosamente');
+                }
+            } catch (featError) {
+                console.error('Error al sincronizar características:', featError);
+            }
             
             const action = currentPackageId ? 'actualizado' : 'creado';
             showNotification(`Paquete ${action} correctamente`, 'success');
@@ -3820,10 +3831,47 @@ async function updatePackageFeatures() {
     }
 }
 
+// Sincronizar un array de features al PackageFeature table (reemplaza todas las existentes)
+async function syncFeaturesToPackageFeatureTable(packageId, featuresArray) {
+    const token = localStorage.getItem('admin_token');
+
+    // PASO 1: Obtener características existentes
+    const existingResponse = await fetch(`${API_BASE_URL}/packages/${packageId}/features`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    let existingFeatures = [];
+    if (existingResponse.ok) {
+        existingFeatures = await existingResponse.json();
+    }
+
+    // PASO 2: Eliminar todas las características existentes
+    for (const feature of existingFeatures) {
+        await fetch(`${API_BASE_URL}/admin/packages/${packageId}/features/${feature.id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+    }
+
+    // PASO 3: Agregar todas las nuevas características
+    for (const featureText of featuresArray) {
+        const trimmed = featureText.trim();
+        if (trimmed.length === 0) continue;
+        await fetch(`${API_BASE_URL}/admin/packages/${packageId}/features`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ text: trimmed })
+        });
+    }
+}
+
 // Sanitizar texto de características: quitar especiales/emojis, limitar largo y líneas
 function sanitizeFeatures(text) {
-    const MAX_LINES = 8;
-    const MAX_CHARS_PER_LINE = 20;
+    const MAX_LINES = 15;
+    const MAX_CHARS_PER_LINE = 30;
 
     let lines = text.split('\n');
     // Limitar a 6 líneas
@@ -3867,7 +3915,7 @@ function initFeaturesTextareaValidation() {
     textarea.addEventListener('keydown', function (e) {
         if (e.key === 'Enter') {
             const lineCount = this.value.split('\n').length;
-            if (lineCount >= 8) {
+            if (lineCount >= 15) {
                 e.preventDefault();
             }
         }
@@ -3979,12 +4027,168 @@ async function deletePackageFeature(featureId) {
         if (response.ok) {
             showNotification('Característica eliminada exitosamente', 'success');
             loadPackageFeatures(packageId);
+            syncFeaturesTextarea(packageId);
         } else {
             showNotification('Error al eliminar característica', 'error');
         }
     } catch (error) {
         console.error('Error al eliminar característica:', error);
         showNotification('Error al eliminar característica', 'error');
+    }
+}
+
+// ========================================
+// CRUD INDIVIDUAL DE CARACTERÍSTICAS (sección "¿Qué Incluye?")
+// ========================================
+
+// Sanitizar un texto de característica individual (misma lógica que sanitizeFeatures pero para una línea)
+function sanitizeSingleFeature(text) {
+    const MAX_CHARS = 30;
+    // Quitar emojis
+    text = text.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu, '');
+    // Quitar caracteres especiales de viñetas/listas y símbolos
+    text = text.replace(/[-*•●○◆◇▪▸►→↔➤✓✔✗✘✦★☆·∙⁃–—⭐↩️]/g, '');
+    // Quitar espacios extra
+    text = text.replace(/\s{2,}/g, ' ').trim();
+    // Cortar a MAX_CHARS
+    return text.slice(0, MAX_CHARS);
+}
+
+// Sincronizar el textarea de arriba con las features actuales de la API
+async function syncFeaturesTextarea(packageId) {
+    try {
+        const token = localStorage.getItem('admin_token');
+        const response = await fetch(`${API_BASE_URL}/packages/${packageId}/features`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+            const features = await response.json();
+            const textarea = document.getElementById('features');
+            if (textarea) {
+                textarea.value = features.map(f => f.text).join('\n');
+            }
+        }
+    } catch (error) {
+        console.error('Error al sincronizar textarea:', error);
+    }
+}
+
+// Variable para tracking de edición
+let editingFeatureId = null;
+
+// Event listeners para botones de la sección "¿Qué Incluye?"
+document.addEventListener('DOMContentLoaded', function() {
+    // Botón Agregar Característica
+    document.addEventListener('click', function(e) {
+        if (e.target && (e.target.id === 'addPackageFeatureBtn' || e.target.closest('#addPackageFeatureBtn'))) {
+            e.preventDefault();
+            // Verificar límite de 15 features
+            const existingItems = document.querySelectorAll('#packageFeaturesManagement .package-feature-item');
+            if (existingItems.length >= 15) {
+                showNotification('Máximo 15 características permitidas', 'warning');
+                return;
+            }
+            editingFeatureId = null;
+            document.getElementById('featureText').value = '';
+            document.getElementById('saveFeatureBtnText').textContent = 'Guardar';
+            document.getElementById('packageFeatureForm').style.display = 'block';
+            document.getElementById('featureText').focus();
+        }
+    });
+
+    // Botón Guardar Característica
+    document.addEventListener('click', function(e) {
+        if (e.target && (e.target.id === 'savePackageFeatureBtn' || e.target.closest('#savePackageFeatureBtn'))) {
+            e.preventDefault();
+            savePackageFeature();
+        }
+    });
+
+    // Botón Cancelar
+    document.addEventListener('click', function(e) {
+        if (e.target && (e.target.id === 'cancelPackageFeatureBtn' || e.target.closest('#cancelPackageFeatureBtn'))) {
+            e.preventDefault();
+            editingFeatureId = null;
+            document.getElementById('packageFeatureForm').style.display = 'none';
+        }
+    });
+
+    // Sanitizar input en tiempo real
+    document.addEventListener('input', function(e) {
+        if (e.target && e.target.id === 'featureText') {
+            const cursorPos = e.target.selectionStart;
+            const sanitized = sanitizeSingleFeature(e.target.value);
+            if (e.target.value !== sanitized) {
+                e.target.value = sanitized;
+                e.target.selectionStart = e.target.selectionEnd = Math.min(cursorPos, sanitized.length);
+            }
+        }
+    });
+});
+
+// Función para editar una característica existente
+function editPackageFeature(featureId, featureText) {
+    editingFeatureId = featureId;
+    document.getElementById('featureText').value = featureText;
+    document.getElementById('saveFeatureBtnText').textContent = 'Actualizar';
+    document.getElementById('packageFeatureForm').style.display = 'block';
+    document.getElementById('featureText').focus();
+}
+
+// Función para guardar (crear o actualizar) una característica
+async function savePackageFeature() {
+    const featureText = sanitizeSingleFeature(document.getElementById('featureText').value);
+    if (!featureText) {
+        showNotification('Escribe una característica', 'warning');
+        return;
+    }
+
+    const packageId = window.currentPackageId;
+    if (!packageId) {
+        showNotification('No hay paquete seleccionado', 'error');
+        return;
+    }
+
+    const token = localStorage.getItem('admin_token');
+
+    try {
+        let response;
+        if (editingFeatureId) {
+            // Actualizar existente (PUT)
+            response = await fetch(`${API_BASE_URL}/admin/packages/${packageId}/features/${editingFeatureId}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text: featureText })
+            });
+        } else {
+            // Crear nueva (POST)
+            response = await fetch(`${API_BASE_URL}/admin/packages/${packageId}/features`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text: featureText })
+            });
+        }
+
+        if (response.ok) {
+            const action = editingFeatureId ? 'actualizada' : 'agregada';
+            showNotification(`Característica ${action} exitosamente`, 'success');
+            editingFeatureId = null;
+            document.getElementById('packageFeatureForm').style.display = 'none';
+            document.getElementById('featureText').value = '';
+            loadPackageFeatures(packageId);
+            syncFeaturesTextarea(packageId);
+        } else {
+            showNotification('Error al guardar característica', 'error');
+        }
+    } catch (error) {
+        console.error('Error al guardar característica:', error);
+        showNotification('Error al guardar característica', 'error');
     }
 }
 
