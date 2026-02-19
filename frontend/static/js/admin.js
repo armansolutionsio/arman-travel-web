@@ -3871,7 +3871,7 @@ async function syncFeaturesToPackageFeatureTable(packageId, featuresArray) {
 // Sanitizar texto de características: quitar especiales/emojis, limitar largo y líneas
 function sanitizeFeatures(text) {
     const MAX_LINES = 15;
-    const MAX_CHARS_PER_LINE = 30;
+    const MAX_CHARS_PER_LINE = Infinity;
 
     let lines = text.split('\n');
     // Limitar a 6 líneas
@@ -4043,7 +4043,7 @@ async function deletePackageFeature(featureId) {
 
 // Sanitizar un texto de característica individual (misma lógica que sanitizeFeatures pero para una línea)
 function sanitizeSingleFeature(text) {
-    const MAX_CHARS = 30;
+    const MAX_CHARS = Infinity;
     // Quitar emojis
     text = text.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu, '');
     // Quitar caracteres especiales de viñetas/listas y símbolos
