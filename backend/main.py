@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Depends, status, UploadFile, File, F
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 from pydantic import BaseModel
 from typing import Optional, List
 import os
@@ -428,6 +428,16 @@ async def read_admin_html():
 @app.get("/admin", response_class=HTMLResponse)
 async def read_admin():
     return get_html_file("admin.html", "<h1>Panel de Administración</h1><p>Panel no disponible</p>")
+
+@app.get("/paquete-f1")
+async def paquete_f1():
+    if os.path.exists(frontend_dir):
+        pdf_path = os.path.join(os.path.dirname(frontend_dir), "archivos", "BROCHURE-F1-SAO-PAULO-ARMAN-TRAVEL.pdf")
+    else:
+        pdf_path = os.path.join("..", "archivos", "BROCHURE-F1-SAO-PAULO-ARMAN-TRAVEL.pdf")
+    if not os.path.exists(pdf_path):
+        raise HTTPException(status_code=404, detail="PDF no encontrado")
+    return FileResponse(pdf_path, media_type="application/pdf", filename="BROCHURE-F1-SAO-PAULO-ARMAN-TRAVEL.pdf")
 
 @app.get("/package-detail/{package_id}", response_class=HTMLResponse)
 async def read_package_detail(package_id: int):
