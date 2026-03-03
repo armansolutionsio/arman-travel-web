@@ -429,9 +429,8 @@ async def read_admin_html():
 async def read_admin():
     return get_html_file("admin.html", "<h1>Panel de Administración</h1><p>Panel no disponible</p>")
 
-@app.get("/paquete-f1")
-async def paquete_f1():
-    # Buscar el PDF en varias ubicaciones posibles
+@app.get("/paquete-f1/pdf")
+async def paquete_f1_pdf():
     possible_paths = [
         os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "archivos", "BROCHURE-F1-SAO-PAULO-ARMAN-TRAVEL.pdf"),
         os.path.join("..", "archivos", "BROCHURE-F1-SAO-PAULO-ARMAN-TRAVEL.pdf"),
@@ -441,6 +440,26 @@ async def paquete_f1():
         if os.path.exists(pdf_path):
             return FileResponse(pdf_path, media_type="application/pdf")
     raise HTTPException(status_code=404, detail="PDF no encontrado")
+
+@app.get("/paquete-f1", response_class=HTMLResponse)
+async def paquete_f1():
+    return HTMLResponse(content="""<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paquete F1 - ARMAN TRAVEL</title>
+    <link rel="icon" type="image/png" href="/static/images/logo_arman.PNG">
+    <style>
+        * { margin: 0; padding: 0; }
+        html, body { width: 100%; height: 100%; overflow: hidden; }
+        iframe { width: 100%; height: 100%; border: none; }
+    </style>
+</head>
+<body>
+    <iframe src="/paquete-f1/pdf"></iframe>
+</body>
+</html>""")
 
 @app.get("/package-detail/{package_id}", response_class=HTMLResponse)
 async def read_package_detail(package_id: int):
