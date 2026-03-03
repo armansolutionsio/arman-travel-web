@@ -43,6 +43,7 @@ services:
     volumes:
       - ./backend:/app
       - ./frontend:/app/frontend
+      - ./archivos:/app/archivos
     depends_on:
       db:
         condition: service_healthy

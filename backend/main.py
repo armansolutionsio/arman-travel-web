@@ -431,13 +431,16 @@ async def read_admin():
 
 @app.get("/paquete-f1")
 async def paquete_f1():
-    if os.path.exists(frontend_dir):
-        pdf_path = os.path.join(os.path.dirname(frontend_dir), "archivos", "BROCHURE-F1-SAO-PAULO-ARMAN-TRAVEL.pdf")
-    else:
-        pdf_path = os.path.join("..", "archivos", "BROCHURE-F1-SAO-PAULO-ARMAN-TRAVEL.pdf")
-    if not os.path.exists(pdf_path):
-        raise HTTPException(status_code=404, detail="PDF no encontrado")
-    return FileResponse(pdf_path, media_type="application/pdf", filename="BROCHURE-F1-SAO-PAULO-ARMAN-TRAVEL.pdf")
+    # Buscar el PDF en varias ubicaciones posibles
+    possible_paths = [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "archivos", "BROCHURE-F1-SAO-PAULO-ARMAN-TRAVEL.pdf"),
+        os.path.join("..", "archivos", "BROCHURE-F1-SAO-PAULO-ARMAN-TRAVEL.pdf"),
+        os.path.join("archivos", "BROCHURE-F1-SAO-PAULO-ARMAN-TRAVEL.pdf"),
+    ]
+    for pdf_path in possible_paths:
+        if os.path.exists(pdf_path):
+            return FileResponse(pdf_path, media_type="application/pdf")
+    raise HTTPException(status_code=404, detail="PDF no encontrado")
 
 @app.get("/package-detail/{package_id}", response_class=HTMLResponse)
 async def read_package_detail(package_id: int):
