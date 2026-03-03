@@ -461,6 +461,38 @@ async def paquete_f1():
 </body>
 </html>""")
 
+@app.get("/paquete-mundial/pdf")
+async def paquete_mundial_pdf():
+    possible_paths = [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "archivos", "BROCHURE-MUNDIAL-ARMAN-TRAVEL.pdf"),
+        os.path.join("..", "archivos", "BROCHURE-MUNDIAL-ARMAN-TRAVEL.pdf"),
+        os.path.join("archivos", "BROCHURE-MUNDIAL-ARMAN-TRAVEL.pdf"),
+    ]
+    for pdf_path in possible_paths:
+        if os.path.exists(pdf_path):
+            return FileResponse(pdf_path, media_type="application/pdf")
+    raise HTTPException(status_code=404, detail="PDF no encontrado")
+
+@app.get("/paquete-mundial", response_class=HTMLResponse)
+async def paquete_mundial():
+    return HTMLResponse(content="""<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paquete Mundial - ARMAN TRAVEL</title>
+    <link rel="icon" type="image/png" href="/static/images/logo_arman.PNG">
+    <style>
+        * { margin: 0; padding: 0; }
+        html, body { width: 100%; height: 100%; overflow: hidden; }
+        iframe { width: 100%; height: 100%; border: none; }
+    </style>
+</head>
+<body>
+    <iframe src="/paquete-mundial/pdf"></iframe>
+</body>
+</html>""")
+
 @app.get("/package-detail/{package_id}", response_class=HTMLResponse)
 async def read_package_detail(package_id: int):
     return get_html_file("package-detail.html", "<h1>Detalle del Paquete</h1><p>Página no disponible</p>")
