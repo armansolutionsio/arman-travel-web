@@ -1,2 +1,4 @@
+videos/*.mp4 filter=lfs diff=lfs merge=lfs -text
+public/videos/*.mp4 filter=lfs diff=lfs merge=lfs -text
 videos/portada.mp4 filter=lfs diff=lfs merge=lfs -text
 public/videos/portada.mp4 filter=lfs diff=lfs merge=lfs -text
