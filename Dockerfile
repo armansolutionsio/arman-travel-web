@@ -1,34 +1,42 @@
-# Dockerfile para producción en Render.com
-FROM python:3.11-slim
+FROM node:20-alpine AS base
 
-# Variables de entorno
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PORT=8000
+# --- Dependencies ---
+FROM base AS deps
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm ci || npm install
 
-# Directorio de trabajo
+# --- Builder ---
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Copy assets into public for the build
+RUN mkdir -p public/videos public/images
+RUN cp videos/portada.mp4 public/videos/portada.mp4 2>/dev/null || true
+RUN cp "imagenes/logo arman.png" public/images/logo-arman.png 2>/dev/null || true
+
+RUN npm run build
+
+# --- Runner ---
+FROM base AS runner
 WORKDIR /app
 
-# Instalar dependencias del sistema
-RUN apt-get update && apt-get install -y \
-    gcc \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+ENV NODE_ENV=production
 
-# Copiar requirements y instalar dependencias Python
-COPY backend/requirements.txt ./backend/
-RUN pip install --no-cache-dir -r backend/requirements.txt
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
 
-# Copiar todo el código
-COPY backend/ ./backend/
-COPY frontend/ ./frontend/
-COPY archivos/ ./archivos/
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Cambiar al directorio del backend
-WORKDIR /app/backend
+USER nextjs
 
-# Exponer puerto (Render lo asigna dinámicamente)
-EXPOSE $PORT
+EXPOSE 3000
 
-# Comando de inicio flexible para Render
-CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+CMD ["node", "server.js"]
