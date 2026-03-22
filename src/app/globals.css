@@ -102,6 +102,13 @@ body {
 :is([data-theme="light"]) .prose-editorial p { color: rgba(30,25,20,0.5) !important; }
 :is([data-theme="light"]) .prose-editorial strong { color: rgba(30,25,20,0.7) !important; }
 
+/* Promo badges: siempre iguales en ambos modos */
+[data-theme="light"] .promo-badge,
+[data-theme="light"] .promo-badge * {
+  color: white !important;
+  background-color: inherit;
+}
+
 /* Offer cards en light mode: fondo crema fuerte + letras oscuras */
 [data-theme="light"] .offer-card {
   background-color: #e2dbd2 !important;
