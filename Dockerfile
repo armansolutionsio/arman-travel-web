@@ -12,6 +12,12 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Environment variables for build
+ARG NEXT_PUBLIC_URL_INSTAGRAM=https://www.instagram.com/armantravel.arg
+ARG NEXT_PUBLIC_URL_WHATSAPP=https://wa.me/5491156989263
+ENV NEXT_PUBLIC_URL_INSTAGRAM=$NEXT_PUBLIC_URL_INSTAGRAM
+ENV NEXT_PUBLIC_URL_WHATSAPP=$NEXT_PUBLIC_URL_WHATSAPP
+
 # Copy assets into public for the build
 RUN mkdir -p public/videos public/images
 RUN cp videos/portada.mp4 public/videos/portada.mp4 2>/dev/null || true

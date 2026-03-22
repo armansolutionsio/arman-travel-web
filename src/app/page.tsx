@@ -2,6 +2,11 @@ import Navbar from '@/components/Navbar'
 import Hero from '@/components/Hero'
 import About from '@/components/About'
 import HotelCarousel from '@/components/HotelCarousel'
+import TravelStyle from '@/components/TravelStyle'
+import DiscoverDestination from '@/components/DiscoverDestination'
+import Community from '@/components/Community'
+import Inspiration from '@/components/Inspiration'
+import Footer from '@/components/Footer'
 
 export default function Home() {
   return (
@@ -10,12 +15,11 @@ export default function Home() {
       <Hero />
       <About />
       <HotelCarousel />
-      {/* Placeholder para futuras secciones */}
-      <section className="h-[50vh] bg-[#0a0a0a] flex items-center justify-center">
-        <p className="text-white/20 text-xs tracking-[0.3em] uppercase">
-          Proximamente
-        </p>
-      </section>
+      <TravelStyle />
+      <DiscoverDestination />
+      <Community />
+      <Inspiration />
+      <Footer />
     </main>
   )
 }

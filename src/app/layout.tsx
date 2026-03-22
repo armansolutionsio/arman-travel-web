@@ -1,12 +1,13 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import WhatsAppButton from '@/components/WhatsAppButton'
 
 export const metadata: Metadata = {
   title: 'Arman Travel | Experiencias de Viaje Exclusivas',
   description:
     'Descubrí experiencias de viaje únicas y exclusivas con Arman Travel. Destinos extraordinarios, servicio personalizado.',
   icons: {
-    icon: '/images/logo-arman.png',
+    icon: '/images/logo_letra.png',
   },
 }
 
@@ -29,7 +30,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="bg-black text-white antialiased">{children}</body>
+      <body className="bg-black text-white antialiased">
+        {children}
+        <WhatsAppButton />
+      </body>
     </html>
   )
 }
