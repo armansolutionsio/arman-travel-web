@@ -102,6 +102,18 @@ body {
 :is([data-theme="light"]) .prose-editorial p { color: rgba(30,25,20,0.5) !important; }
 :is([data-theme="light"]) .prose-editorial strong { color: rgba(30,25,20,0.7) !important; }
 
+/* Offer cards en light mode: fondo crema fuerte + letras oscuras */
+[data-theme="light"] .offer-card {
+  background-color: #e2dbd2 !important;
+  border-color: rgba(124, 58, 237, 0.25) !important;
+}
+[data-theme="light"] .offer-card h3 {
+  color: rgba(30, 25, 20, 0.9) !important;
+}
+[data-theme="light"] .offer-card p {
+  color: rgba(30, 25, 20, 0.5) !important;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 5px;
