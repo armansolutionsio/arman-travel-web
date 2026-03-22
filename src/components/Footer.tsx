@@ -7,7 +7,7 @@ export default function Footer() {
   const whatsappUrl = process.env.NEXT_PUBLIC_URL_WHATSAPP || '#'
 
   return (
-    <footer className="bg-[#111111] border-t border-white/5">
+    <footer id="footer" className="bg-[#111111] border-t border-white/5">
       <div className="max-w-6xl mx-auto px-6 md:px-8 py-14 md:py-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_0.8fr_auto] gap-10 lg:gap-12 items-center">
           {/* Column 1 - Logo + Slogan + Social */}

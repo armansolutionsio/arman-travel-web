@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import Navbar from './Navbar'
 import Footer from './Footer'
+import CallToActionCompact from './CallToActionCompact'
 
 interface EditorialLayoutProps {
   title: string
@@ -24,7 +25,7 @@ export default function EditorialLayout({
       <Navbar />
 
       {/* Hero */}
-      <section className="relative h-[60vh] md:h-[70vh] w-full overflow-hidden">
+      <section id="editorial-hero" className="relative h-[60vh] md:h-[70vh] w-full overflow-hidden">
         <Image
           src={image}
           alt={title}
@@ -63,7 +64,8 @@ export default function EditorialLayout({
       </section>
 
       {/* Article Content */}
-      <section className="max-w-3xl mx-auto px-6 md:px-8 py-16 md:py-24">
+      <section className="w-full">
+        <div className="max-w-3xl mx-auto px-6 md:px-8 py-16 md:py-24">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -112,6 +114,8 @@ export default function EditorialLayout({
           </div>
         </div>
 
+        <CallToActionCompact />
+
         {/* Back link */}
         <div className="mt-10 group/back">
           <div className="w-10 group-hover/back:w-full h-px bg-purple-500/40 transition-all duration-700 mb-5" />
@@ -122,6 +126,7 @@ export default function EditorialLayout({
             <span>&#8592;</span>
             Volver a editoriales
           </Link>
+        </div>
         </div>
       </section>
 

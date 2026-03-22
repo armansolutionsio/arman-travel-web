@@ -3,13 +3,14 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
+import ThemeToggle from './ThemeToggle'
 
 const navLinks = [
-  { name: 'Inicio', href: '#inicio' },
-  { name: 'Destinos', href: '#destinos' },
-  { name: 'Experiencias', href: '#experiencias' },
-  { name: 'Nosotros', href: '#nosotros' },
-  { name: 'Contacto', href: '#contacto' },
+  { name: 'Inicio', href: '/#inicio' },
+  { name: 'Destinos', href: '/destinos' },
+  { name: 'Experiencias', href: '/#inspiracion' },
+  { name: 'Nosotros', href: '/#nosotros' },
+  { name: 'Contacto', href: '/#footer' },
 ]
 
 export default function Navbar() {
@@ -43,7 +44,7 @@ export default function Navbar() {
     >
       <div className="max-w-7xl mx-auto px-5 md:px-8 flex items-center justify-between">
         {/* Logo */}
-        <a href="#inicio" className="relative z-[60]">
+        <a href="/#inicio" className="relative z-[60]">
           <Image
             src="/images/logo-arman.png"
             alt="Arman Travel"
@@ -70,19 +71,24 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* CTA Desktop */}
-        <a
-          href="#contacto"
-          className="hidden lg:block border border-purple-500/30 text-white text-[10px] tracking-[0.25em] uppercase px-6 py-2.5 hover:bg-purple-600 hover:border-purple-600 hover:text-white transition-all duration-500"
-        >
-          Reservar
-        </a>
+        {/* CTA Desktop + Theme Toggle */}
+        <div className="hidden lg:flex items-center gap-3">
+          <a
+            href="/#footer"
+            className="border border-purple-500/30 text-white text-[10px] tracking-[0.25em] uppercase px-6 py-2.5 hover:bg-purple-600 hover:border-purple-600 hover:text-white transition-all duration-500"
+          >
+            Reservar
+          </a>
+          <ThemeToggle />
+        </div>
 
-        {/* Mobile Hamburger */}
-        <button
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className="lg:hidden relative z-[60] w-8 h-8 flex flex-col justify-center items-center gap-[5px]"
-          aria-label="Menu"
+        {/* Mobile: Theme Toggle + Hamburger */}
+        <div className="lg:hidden flex items-center gap-2 relative z-[60]">
+          <ThemeToggle />
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="w-8 h-8 flex flex-col justify-center items-center gap-[5px]"
+            aria-label="Menu"
         >
           <span
             className={`block w-6 h-[1px] bg-white transition-all duration-300 origin-center ${
@@ -99,7 +105,8 @@ export default function Navbar() {
               mobileOpen ? '-rotate-45 -translate-y-[3px]' : ''
             }`}
           />
-        </button>
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu Fullscreen */}
@@ -128,7 +135,7 @@ export default function Navbar() {
                 </motion.a>
               ))}
               <motion.a
-                href="#contacto"
+                href="/#footer"
                 initial={{ opacity: 0, y: 25 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}

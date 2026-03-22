@@ -2,6 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #111111;
+  --bg-elevated: #151520;
+  --bg-body: #000000;
+  --bg-tooltip: #1a1a1a;
+  --text-primary: 255, 255, 255;
+  --border-subtle: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="light"] {
+  --bg-primary: #f5f0ea;
+  --bg-secondary: #ece6de;
+  --bg-elevated: #e4ddd4;
+  --bg-body: #f5f0ea;
+  --bg-tooltip: #ffffff;
+  --text-primary: 35, 30, 25;
+  --border-subtle: rgba(0, 0, 0, 0.08);
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -10,7 +30,77 @@ body {
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-body);
+  transition: background-color 0.5s ease;
 }
+
+/* =============================================
+   LIGHT MODE - REGLAS SIMPLES
+   nav, footer, #inicio, #editorial-hero, carousel = INTOCABLES
+   El resto = fondo crema + letras oscuras
+   ============================================= */
+
+/* Selector para las secciones que SÍ cambian */
+/* "cs" = content section */
+:is([data-theme="light"]) main > section:not(#inicio):not(#editorial-hero):not(#destinos-hero):not(:has(.animate-scroll)) {
+  background-color: #f5f0ea !important;
+}
+
+/* Body background */
+:is([data-theme="light"]) body.bg-black {
+  background-color: #f5f0ea !important;
+}
+
+/* CTA box: crema más oscuro para diferenciar del fondo - alta especificidad para ganar */
+:is([data-theme="light"]) main > section:not(#inicio):not(#editorial-hero):not(#destinos-hero):not(:has(.animate-scroll)).cta-box {
+  background-color: #ddd6cc !important;
+}
+:is([data-theme="light"]) main > section:not(#inicio):not(#editorial-hero):not(#destinos-hero):not(:has(.animate-scroll)) .cta-box {
+  background-color: #ddd6cc !important;
+}
+
+/* Carousel fade gradients: se mantienen oscuros */
+:is([data-theme="light"]) .from-\[\#0a0a0a\] {
+  --tw-gradient-from: #0a0a0a !important;
+}
+
+/* ---- TEXTO OSCURO en secciones de contenido ---- */
+:is([data-theme="light"]) main > section:not(#inicio):not(#editorial-hero):not(#destinos-hero):not(:has(.animate-scroll)) .text-white { color: rgba(30,25,20,0.9) !important; }
+:is([data-theme="light"]) main > section:not(#inicio):not(#editorial-hero):not(#destinos-hero):not(:has(.animate-scroll)) .text-white\/90 { color: rgba(30,25,20,0.85) !important; }
+:is([data-theme="light"]) main > section:not(#inicio):not(#editorial-hero):not(#destinos-hero):not(:has(.animate-scroll)) .text-white\/80,
+:is([data-theme="light"]) main > section:not(#inicio):not(#editorial-hero):not(#destinos-hero):not(:has(.animate-scroll)) .text-white\/70 { color: rgba(30,25,20,0.65) !important; }
+:is([data-theme="light"]) main > section:not(#inicio):not(#editorial-hero):not(#destinos-hero):not(:has(.animate-scroll)) .text-white\/60,
+:is([data-theme="light"]) main > section:not(#inicio):not(#editorial-hero):not(#destinos-hero):not(:has(.animate-scroll)) .text-white\/50,
+:is([data-theme="light"]) main > section:not(#inicio):not(#editorial-hero):not(#destinos-hero):not(:has(.animate-scroll)) .text-white\/45 { color: rgba(30,25,20,0.55) !important; }
+:is([data-theme="light"]) main > section:not(#inicio):not(#editorial-hero):not(#destinos-hero):not(:has(.animate-scroll)) .text-white\/40,
+:is([data-theme="light"]) main > section:not(#inicio):not(#editorial-hero):not(#destinos-hero):not(:has(.animate-scroll)) .text-white\/35 { color: rgba(30,25,20,0.45) !important; }
+:is([data-theme="light"]) main > section:not(#inicio):not(#editorial-hero):not(#destinos-hero):not(:has(.animate-scroll)) .text-white\/30,
+:is([data-theme="light"]) main > section:not(#inicio):not(#editorial-hero):not(#destinos-hero):not(:has(.animate-scroll)) .text-white\/25,
+:is([data-theme="light"]) main > section:not(#inicio):not(#editorial-hero):not(#destinos-hero):not(:has(.animate-scroll)) .text-white\/20 { color: rgba(30,25,20,0.3) !important; }
+
+/* Botón "Contactanos": letra SIEMPRE blanca - alta especificidad */
+:is([data-theme="light"]) main > section:not(#inicio):not(#editorial-hero):not(#destinos-hero):not(:has(.animate-scroll)) .cta-btn {
+  color: white !important;
+}
+:is([data-theme="light"]) main > section:not(#inicio):not(#editorial-hero):not(#destinos-hero):not(:has(.animate-scroll)) .cta-btn.text-white {
+  color: white !important;
+}
+
+/* Borders en secciones de contenido */
+:is([data-theme="light"]) main > section:not(#inicio):not(#editorial-hero):not(#destinos-hero):not(:has(.animate-scroll)) .border-white\/5,
+:is([data-theme="light"]) main > section:not(#inicio):not(#editorial-hero):not(#destinos-hero):not(:has(.animate-scroll)) .border-white\/10,
+:is([data-theme="light"]) main > section:not(#inicio):not(#editorial-hero):not(#destinos-hero):not(:has(.animate-scroll)) .border-white\/20,
+:is([data-theme="light"]) main > section:not(#inicio):not(#editorial-hero):not(#destinos-hero):not(:has(.animate-scroll)) .border-white\/25 { border-color: rgba(30,25,20,0.1) !important; }
+
+/* Labels púrpura más fuertes en light */
+:is([data-theme="light"]) main > section:not(#inicio):not(:has(.animate-scroll)) .text-purple-300\/50 { color: #7c3aed !important; }
+:is([data-theme="light"]) main > section:not(#inicio):not(:has(.animate-scroll)) .text-purple-400\/60 { color: #7c3aed !important; }
+
+/* Editorial prose: letras oscuras en light mode */
+:is([data-theme="light"]) .prose-editorial h2 { color: rgba(30,25,20,0.9) !important; }
+:is([data-theme="light"]) .prose-editorial h3 { color: rgba(30,25,20,0.75) !important; }
+:is([data-theme="light"]) .prose-editorial p { color: rgba(30,25,20,0.5) !important; }
+:is([data-theme="light"]) .prose-editorial strong { color: rgba(30,25,20,0.7) !important; }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {

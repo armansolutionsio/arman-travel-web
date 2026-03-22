@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import WhatsAppButton from '@/components/WhatsAppButton'
+import ThemeProvider from '@/components/ThemeProvider'
 
 export const metadata: Metadata = {
   title: 'Arman Travel | Experiencias de Viaje Exclusivas',
@@ -31,8 +32,10 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-black text-white antialiased">
-        {children}
-        <WhatsAppButton />
+        <ThemeProvider>
+          {children}
+          <WhatsAppButton />
+        </ThemeProvider>
       </body>
     </html>
   )

@@ -5,7 +5,7 @@ import Image from 'next/image'
 
 export default function Community() {
   return (
-    <section className="relative bg-[#0a0a0a] py-24 md:py-32 lg:py-40 overflow-hidden">
+    <section id="nosotros" className="relative bg-[#0a0a0a] py-24 md:py-32 lg:py-40 overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 md:px-8">
         <div className="group grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Image - left */}
