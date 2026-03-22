@@ -74,7 +74,9 @@ export default function Navbar() {
         {/* CTA Desktop + Theme Toggle */}
         <div className="hidden lg:flex items-center gap-3">
           <a
-            href="/#footer"
+            href={process.env.NEXT_PUBLIC_URL_WHATSAPP || '#'}
+            target="_blank"
+            rel="noopener noreferrer"
             className="border border-purple-500/30 text-white text-[10px] tracking-[0.25em] uppercase px-6 py-2.5 hover:bg-purple-600 hover:border-purple-600 hover:text-white transition-all duration-500"
           >
             Reservar
@@ -135,7 +137,9 @@ export default function Navbar() {
                 </motion.a>
               ))}
               <motion.a
-                href="/#footer"
+                href={process.env.NEXT_PUBLIC_URL_WHATSAPP || '#'}
+                target="_blank"
+                rel="noopener noreferrer"
                 initial={{ opacity: 0, y: 25 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}

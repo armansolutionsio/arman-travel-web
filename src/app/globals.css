@@ -102,13 +102,6 @@ body {
 :is([data-theme="light"]) .prose-editorial p { color: rgba(30,25,20,0.5) !important; }
 :is([data-theme="light"]) .prose-editorial strong { color: rgba(30,25,20,0.7) !important; }
 
-/* Promo badges: siempre iguales en ambos modos */
-[data-theme="light"] .promo-badge,
-[data-theme="light"] .promo-badge * {
-  color: white !important;
-  background-color: inherit;
-}
-
 /* Offer cards en light mode: fondo crema fuerte + letras oscuras */
 [data-theme="light"] .offer-card {
   background-color: #e2dbd2 !important;
@@ -119,6 +112,20 @@ body {
 }
 [data-theme="light"] .offer-card p {
   color: rgba(30, 25, 20, 0.5) !important;
+}
+
+/* Promo badges: NUNCA CAMBIAR - misma especificidad que las reglas de texto */
+:is([data-theme="light"]) main > section:not(#inicio):not(#editorial-hero):not(#destinos-hero):not(:has(.animate-scroll)) .promo-badge {
+  color: white !important;
+}
+:is([data-theme="light"]) main > section:not(#inicio):not(#editorial-hero):not(#destinos-hero):not(:has(.animate-scroll)) .promo-badge span {
+  color: white !important;
+}
+:is([data-theme="light"]) main > section:not(#inicio):not(#editorial-hero):not(#destinos-hero):not(:has(.animate-scroll)) .promo-badge p {
+  color: white !important;
+}
+:is([data-theme="light"]) main > section:not(#inicio):not(#editorial-hero):not(#destinos-hero):not(:has(.animate-scroll)) .promo-badge svg {
+  color: white !important;
 }
 
 /* Custom scrollbar */

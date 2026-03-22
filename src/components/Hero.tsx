@@ -59,7 +59,7 @@ export default function Hero() {
 
         {/* CTA Button */}
         <motion.a
-          href="#destinos"
+          href="/destinos"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 1.1, ease: 'easeOut' }}

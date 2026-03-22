@@ -158,6 +158,33 @@ function OfferCard({
         <span className="promo-badge absolute top-3 left-3 bg-purple-600/80 text-white text-[10px] font-medium px-2.5 py-1 rounded tracking-wide">
           {lowestNights}
         </span>
+        {/* Icons bar */}
+        <div className="promo-badge absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent pt-8 pb-3 px-4 flex items-center justify-center gap-4 sm:gap-5">
+          <div className="flex items-center gap-1.5">
+            <svg className="w-3.5 h-3.5 white drop-shadow-md" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
+            </svg>
+            <span className="text-white/90 text-[9px] font-light drop-shadow-sm">Aéreos</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <svg className="w-3.5 h-3.5 white drop-shadow-md" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" />
+            </svg>
+            <span className="text-white/90 text-[9px] font-light drop-shadow-sm">Hotel</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <svg className="w-3.5 h-3.5 white drop-shadow-md" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M7 2c-.55 0-1 .45-1 1v5.59c0 .78.47 1.48 1.2 1.78L9 11.12V21c0 .55.45 1 1 1s1-.45 1-1v-9.88l1.8-.75c.73-.3 1.2-1 1.2-1.78V3c0-.55-.45-1-1-1s-1 .45-1 1v4.5h-1V3c0-.55-.45-1-1-1s-1 .45-1 1v4.5H8V3c0-.55-.45-1-1-1zm10 0c-1.68 0-3 1.57-3 3.5V11h1.5v10c0 .55.45 1 1 1h1c.55 0 1-.45 1-1V3c0-.55-.45-1-1-1z" />
+            </svg>
+            <span className="text-white/90 text-[9px] font-light drop-shadow-sm">All Incl.</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <svg className="w-3.5 h-3.5 white drop-shadow-md" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+            </svg>
+            <span className="text-white/90 text-[9px] font-light drop-shadow-sm">Traslados</span>
+          </div>
+        </div>
       </div>
 
       {/* Content */}
