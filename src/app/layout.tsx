@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description:
     'Descubrí experiencias de viaje únicas y exclusivas con Arman Travel. Destinos extraordinarios, servicio personalizado.',
   icons: {
-    icon: '/images/logo_letra.png',
+    icon: 'https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306366/arman-travel/site/logo_letra.png',
   },
 }
 

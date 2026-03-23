@@ -14,7 +14,7 @@ export default function Footer() {
           <div className="flex flex-col items-center lg:items-center">
             <a href="/#inicio">
               <Image
-                src="/images/logo-arman.png"
+                src="https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306360/arman-travel/site/logo-arman.png"
                 alt="Arman Travel"
                 width={200}
                 height={70}
@@ -92,7 +92,7 @@ export default function Footer() {
             <a href="https://www.agenciasdeviajes.ar/agencias/tgh6fi-p" target="_blank" rel="noopener noreferrer" className="relative group/qr block">
               <div className="absolute -inset-[1px] rounded border border-purple-500/20 group-hover/qr:border-purple-500/50 group-hover/qr:-inset-2 transition-all duration-500" />
               <Image
-                src="/images/qr-agencia.png"
+                src="https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306390/arman-travel/site/qr-agencia.png"
                 alt="QR Arman Travel - Registro Nacional de Agencias de Viajes"
                 width={110}
                 height={110}

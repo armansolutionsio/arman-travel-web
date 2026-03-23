@@ -48,7 +48,7 @@ export default function DestinosHero() {
           transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
         >
           <Image
-            src="/images/logo-arman.png"
+            src="https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306360/arman-travel/site/logo-arman.png"
             alt="Arman Travel"
             width={320}
             height={120}

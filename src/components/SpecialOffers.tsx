@@ -48,8 +48,8 @@ const fallbackPromos: Promo[] = Array(11).fill(null).map((_, i) => ({
   id: i,
   title: 'Caribe',
   origin: 'Buenos Aires',
-  cardImage: '/images/miami.jpg',
-  backgroundImage: '/images/destinos.png',
+  cardImage: 'https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306372/arman-travel/site/miami.webp',
+  backgroundImage: 'https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306333/arman-travel/site/destinos.webp',
   active: true,
   order: i,
   includes: ['Aéreos confirmados', 'Alojamiento', 'All Inclusive', 'Traslados'],
@@ -91,7 +91,7 @@ export default function SpecialOffers() {
           onClose={() => setActivePromo(null)}
           title={promos[activePromo].title}
           origin={promos[activePromo].origin}
-          image={promos[activePromo].backgroundImage || '/images/destinos.png'}
+          image={promos[activePromo].backgroundImage || 'https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306333/arman-travel/site/destinos.webp'}
           packages={promos[activePromo].packages}
           includes={promos[activePromo].includes}
           whatsappUrl={whatsappUrl}
@@ -144,7 +144,7 @@ function OfferCard({ promo, index, onClick }: { promo: Promo; index: number; onC
   const firstLocation = promo.packages[0]?.location || ''
 
   const preloadBg = () => {
-    const bgUrl = promo.backgroundImage || '/images/destinos.png'
+    const bgUrl = promo.backgroundImage || 'https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306333/arman-travel/site/destinos.webp'
     if (bgUrl) {
       const img = new window.Image()
       img.src = bgUrl
@@ -164,7 +164,7 @@ function OfferCard({ promo, index, onClick }: { promo: Promo; index: number; onC
     >
       <div className="relative overflow-hidden">
         <Image
-          src={promo.cardImage || '/images/miami.jpg'}
+          src={promo.cardImage || 'https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306372/arman-travel/site/miami.webp'}
           alt={promo.title}
           width={700}
           height={420}

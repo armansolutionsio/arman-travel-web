@@ -10,8 +10,8 @@ export default function Mundial2026() {
     <EditorialLayout
       title="Más que un Mundial: FIFA World Cup 2026"
       subtitle="Cada sede tiene secretos que vale la pena descubrir"
-      image="/images/mundial.png"
-      articleImages={["/images/mexico-city.jpg", "/images/vancouver.jpg", "/images/miami.jpg"]}
+      image="https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306383/arman-travel/site/mundial.webp"
+      articleImages={["https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306369/arman-travel/site/mexico-city.webp", "https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306393/arman-travel/site/vancouver.webp", "https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306372/arman-travel/site/miami.webp"]}
     >
       <p>
         Con el Mundial 2026 cada vez más cerca, es el momento perfecto para
@@ -22,7 +22,7 @@ export default function Mundial2026() {
       </p>
 
       <h2>Ciudad de México</h2>
-      <Image src="/images/mexico-city.jpg" alt="Ciudad de México" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
+      <Image src="https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306369/arman-travel/site/mexico-city.webp" alt="Ciudad de México" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
       <p>
         Ciudad de México vibra con una energía constante y magnética: una ciudad
         donde la pasión por el fútbol y una escena gastronómica de clase mundial
@@ -40,7 +40,7 @@ export default function Mundial2026() {
       </p>
 
       <h2>Vancouver</h2>
-      <Image src="/images/vancouver.jpg" alt="Vancouver" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
+      <Image src="https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306393/arman-travel/site/vancouver.webp" alt="Vancouver" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
       <p>
         Vancouver es un enclave urbano elegante enmarcado por algunos de los
         paisajes más dramáticos de Norteamérica. Un viaje corto te lleva a
@@ -69,7 +69,7 @@ export default function Mundial2026() {
       </p>
 
       <h2>Miami</h2>
-      <Image src="/images/miami.jpg" alt="Miami" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
+      <Image src="https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306372/arman-travel/site/miami.webp" alt="Miami" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
       <p>
         Las raíces latinas de Miami hacen que durante el Mundial la ciudad se
         sienta como una inmensa fan zone bañada por el sol. Esperá

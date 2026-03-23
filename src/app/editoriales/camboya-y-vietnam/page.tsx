@@ -10,8 +10,8 @@ export default function CamboyaVietnam() {
     <EditorialLayout
       title="Camboya y Vietnam: dos destinos, una sola aventura"
       subtitle="El sabor auténtico del sudeste asiático"
-      image="/images/vietnam.jpg"
-      articleImages={["/images/vietnam-1.jpg", "/images/vietnam-2.jpg"]}
+      image="https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306403/arman-travel/site/vietnam.webp"
+      articleImages={["https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306397/arman-travel/site/vietnam-1.webp", "https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306399/arman-travel/site/vietnam-2.webp"]}
     >
       <p>
         Haciendo frontera con Tailandia y Laos, Camboya y Vietnam están
@@ -22,7 +22,7 @@ export default function CamboyaVietnam() {
       </p>
 
       <h2>Camboya</h2>
-      <Image src="/images/vietnam-1.jpg" alt="Templos de Camboya" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
+      <Image src="https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306397/arman-travel/site/vietnam-1.webp" alt="Templos de Camboya" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
       <p>
         La belleza natural de Camboya oculta su complicado pasado: llanuras
         bajas y selvas tropicales contrastan con los históricos templos de
@@ -57,7 +57,7 @@ export default function CamboyaVietnam() {
       </p>
 
       <h2>Vietnam</h2>
-      <Image src="/images/vietnam-2.jpg" alt="Vietnam" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
+      <Image src="https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306399/arman-travel/site/vietnam-2.webp" alt="Vietnam" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
       <p>
         Descubrí aldeas tribales en las colinas, metrópolis vibrantes y
         monumentos de la guerra de Vietnam y la era comunista. Para llegar a

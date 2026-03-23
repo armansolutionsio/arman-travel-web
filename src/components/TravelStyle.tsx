@@ -20,7 +20,7 @@ export default function TravelStyle() {
             <div className="relative group/img">
               <div className="absolute -inset-[1px] rounded-sm border border-purple-500/20 group-hover/img:border-purple-500/50 group-hover/img:-inset-3 transition-all duration-700" />
               <Image
-                src="/images/imagen1.jpg"
+                src="https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306344/arman-travel/site/imagen1.webp"
                 alt="Viajá con estilo"
                 width={700}
                 height={500}

@@ -10,8 +10,8 @@ export default function HollokoHungria() {
     <EditorialLayout
       title="Un pueblo de cuento en el corazón de Hungría: Hollókő"
       subtitle="La vida simple y auténtica de la Europa de antaño, todavía viva"
-      image="/images/hungria.jpg"
-      articleImages={["/images/holloko-1.jpg", "/images/holloko-2.jpg"]}
+      image="https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306340/arman-travel/site/hungria.webp"
+      articleImages={["https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306335/arman-travel/site/holloko-1.webp", "https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306337/arman-travel/site/holloko-2.webp"]}
     >
       <p>
         La frase &quot;viajar en el tiempo&quot; se usa demasiado, pero Hollókő
@@ -23,7 +23,7 @@ export default function HollokoHungria() {
       </p>
 
       <h2>Arquitectura y cultura Palócz</h2>
-      <Image src="/images/holloko-1.jpg" alt="Arquitectura de Hollókő" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
+      <Image src="https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306335/arman-travel/site/holloko-1.webp" alt="Arquitectura de Hollókő" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
       <p>
         Múltiples incendios catastróficos, siendo el último en 1909,
         destruyeron y reconstruyeron el pueblo. Sin embargo, funciona como una
@@ -86,7 +86,7 @@ export default function HollokoHungria() {
         Unicum, una mezcla potente de amargos cargada de hierbas y especias.
       </p>
       <p>
-      <Image src="/images/holloko-2.jpg" alt="Hollókő, Hungría" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
+      <Image src="https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306337/arman-travel/site/holloko-2.webp" alt="Hollókő, Hungría" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
         <strong>Cómo llegar:</strong> Hospedáte en el Ritz-Carlton Budapest y
         contratá transporte a Hollókő (aproximadamente 90 minutos),
         atravesando la pintoresca cordillera de Cserhát.

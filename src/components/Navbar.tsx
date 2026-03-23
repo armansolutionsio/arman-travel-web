@@ -54,7 +54,7 @@ export default function Navbar() {
           {/* Logo */}
           <a href="/#inicio" className="relative z-[80]">
             <Image
-              src="/images/logo-arman.png"
+              src="https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306360/arman-travel/site/logo-arman.png"
               alt="Arman Travel"
               width={300}
               height={100}

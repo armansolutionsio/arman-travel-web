@@ -19,7 +19,7 @@ export default function Community() {
             <div className="relative group/img">
               <div className="absolute -inset-[1px] rounded-sm border border-purple-500/20 group-hover/img:border-purple-500/50 group-hover/img:-inset-3 transition-all duration-700" />
               <Image
-                src="/images/imagen3.jpg"
+                src="https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306350/arman-travel/site/imagen3.webp"
                 alt="Comunidad Arman Travel"
                 width={700}
                 height={500}

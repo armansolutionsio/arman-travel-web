@@ -301,7 +301,7 @@ export default function AdminDashboard() {
       {/* Sidebar */}
       <aside className="w-64 bg-[#111111] border-r border-purple-500/10 flex flex-col flex-shrink-0">
         <div className="p-6 border-b border-purple-500/10">
-          <Image src="/images/logo-arman.png" alt="Arman Travel" width={160} height={50} className="h-10 w-auto" />
+          <Image src="https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306360/arman-travel/site/logo-arman.png" alt="Arman Travel" width={160} height={50} className="h-10 w-auto" />
           <p className="text-white/20 text-[10px] tracking-[0.15em] uppercase mt-2">Admin Panel</p>
         </div>
         <nav className="flex-1 p-4 space-y-1">

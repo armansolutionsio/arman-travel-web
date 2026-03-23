@@ -35,7 +35,7 @@ export default function AdminLogin() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-10">
           <Image
-            src="/images/logo-arman.png"
+            src="https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306360/arman-travel/site/logo-arman.png"
             alt="Arman Travel"
             width={200}
             height={70}

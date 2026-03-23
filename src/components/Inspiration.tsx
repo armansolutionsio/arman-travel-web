@@ -8,37 +8,37 @@ const articles = [
   {
     title: 'Más que un Mundial: FIFA World Cup 2026',
     description: 'Cada sede tiene secretos que vale la pena descubrir',
-    image: '/images/mundial.png',
+    image: 'https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306383/arman-travel/site/mundial.webp',
     href: '/editoriales/mundial-2026',
   },
   {
     title: 'El verano ideal en Praga',
     description: 'La ciudad de las 100 torres te espera con todo su encanto medieval',
-    image: '/images/praga.jpg',
+    image: 'https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306389/arman-travel/site/praga.webp',
     href: '/editoriales/verano-en-praga',
   },
   {
     title: 'Un pueblo de cuento en el corazón de Hungría: Hollókő',
     description: 'La vida simple y auténtica de la Europa de antaño, todavía viva',
-    image: '/images/hungria.jpg',
+    image: 'https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306340/arman-travel/site/hungria.webp',
     href: '/editoriales/holloko-hungria',
   },
   {
     title: 'Los cinco mejores desayunos de Ubud, Bali',
     description: 'Sabores auténticos para arrancar el día con energía',
-    image: '/images/desayunos.png',
+    image: 'https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306330/arman-travel/site/desayunos.webp',
     href: '/editoriales/desayunos-ubud-bali',
   },
   {
     title: 'La herencia artesanal de Japón que sigue viva hoy',
     description: 'Porque en Japón, cada objeto cuenta una historia',
-    image: '/images/japon.jpg',
+    image: 'https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306359/arman-travel/site/japon.webp',
     href: '/editoriales/japon-artesanal',
   },
   {
     title: 'Camboya y Vietnam: dos destinos, una sola aventura',
     description: 'El sabor auténtico del sudeste asiático',
-    image: '/images/vietnam.jpg',
+    image: 'https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306403/arman-travel/site/vietnam.webp',
     href: '/editoriales/camboya-y-vietnam',
   },
 ]

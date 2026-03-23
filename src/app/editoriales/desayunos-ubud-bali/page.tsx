@@ -10,8 +10,8 @@ export default function DesayunosUbud() {
     <EditorialLayout
       title="Los cinco mejores desayunos de Ubud, Bali"
       subtitle="Sabores auténticos para arrancar el día con energía"
-      image="/images/desayunos.png"
-      articleImages={["/images/bali-1.jpg", "/images/bali-2.jpg"]}
+      image="https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306330/arman-travel/site/desayunos.webp"
+      articleImages={["https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306326/arman-travel/site/bali-1.webp", "https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306327/arman-travel/site/bali-2.webp"]}
     >
       <p>
         Rodeada de arrozales, templos intrincados y estudios de yoga, Ubud es
@@ -24,7 +24,7 @@ export default function DesayunosUbud() {
       </p>
 
       <h2>1. Zest Ubud</h2>
-      <Image src="/images/bali-1.jpg" alt="Desayuno en Ubud, Bali" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
+      <Image src="https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306326/arman-travel/site/bali-1.webp" alt="Desayuno en Ubud, Bali" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
       <p>
         Ubicado en lo alto de una colina, el Zest Ubud a base de plantas está
         en una ubicación soñada, dentro de un elegante templo con vistas
@@ -58,7 +58,7 @@ export default function DesayunosUbud() {
       </p>
 
       <h2>3. Clear Café</h2>
-      <Image src="/images/bali-2.jpg" alt="Clear Café, Ubud" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
+      <Image src="https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306327/arman-travel/site/bali-2.webp" alt="Clear Café, Ubud" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
       <p>
         Con un interior que no desentonaría en Pinterest, entrá al Clear Café
         por su decadente puerta tallada y empapáte de las vistas impresionantes.

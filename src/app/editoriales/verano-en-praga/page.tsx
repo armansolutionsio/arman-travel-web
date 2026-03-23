@@ -10,8 +10,8 @@ export default function VeranoPraga() {
     <EditorialLayout
       title="El verano ideal en Praga"
       subtitle="Todo lo que tenés que saber sobre la ciudad de las 100 torres"
-      image="/images/praga.jpg"
-      articleImages={["/images/praga-1.jpg", "/images/praga-2.jpg"]}
+      image="https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306389/arman-travel/site/praga.webp"
+      articleImages={["https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306385/arman-travel/site/praga-1.webp", "https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306386/arman-travel/site/praga-2.webp"]}
     >
       <p>
         Con su historia milenaria, su atmósfera vibrante y una arquitectura que
@@ -23,7 +23,7 @@ export default function VeranoPraga() {
       </p>
 
       <h2>Recorré la Plaza de la Ciudad Vieja</h2>
-      <Image src="/images/praga-1.jpg" alt="Plaza de la Ciudad Vieja, Praga" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
+      <Image src="https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306385/arman-travel/site/praga-1.webp" alt="Plaza de la Ciudad Vieja, Praga" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
       <p>
         Empezá tu aventura de verano en Praga explorando el corazón de la
         ciudad: la Plaza de la Ciudad Vieja. Esta plaza histórica es un tesoro
@@ -40,7 +40,7 @@ export default function VeranoPraga() {
       </p>
 
       <h2>Disfrutá de una cerveza checa en un beer garden</h2>
-      <Image src="/images/praga-2.jpg" alt="Beer garden en Praga" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
+      <Image src="https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306386/arman-travel/site/praga-2.webp" alt="Beer garden en Praga" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
       <p>
         Ningún verano en Praga está completo sin probar la bebida más querida
         de la nación: la cerveza. La ciudad cuenta con muchos beer gardens

@@ -11,17 +11,17 @@ import Footer from '@/components/Footer'
 import Preloader from '@/components/Preloader'
 
 const homeImages = [
-  '/images/imagen1.jpg',
-  '/images/imagen2.jpg',
-  '/images/imagen3.jpg',
-  '/images/mundial.png',
-  '/images/praga.jpg',
-  '/images/hungria.jpg',
-  '/images/desayunos.png',
-  '/images/japon.jpg',
-  '/images/vietnam.jpg',
-  '/images/logo-arman.png',
-  '/images/qr-agencia.png',
+  'https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306344/arman-travel/site/imagen1.webp',
+  'https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306348/arman-travel/site/imagen2.webp',
+  'https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306350/arman-travel/site/imagen3.webp',
+  'https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306383/arman-travel/site/mundial.webp',
+  'https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306389/arman-travel/site/praga.webp',
+  'https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306340/arman-travel/site/hungria.webp',
+  'https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306330/arman-travel/site/desayunos.webp',
+  'https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306359/arman-travel/site/japon.webp',
+  'https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306403/arman-travel/site/vietnam.webp',
+  'https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306360/arman-travel/site/logo-arman.png',
+  'https://res.cloudinary.com/ddu5kh0ov/image/upload/v1774306390/arman-travel/site/qr-agencia.png',
 ]
 
 export default function Home() {
