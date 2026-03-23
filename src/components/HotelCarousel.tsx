@@ -8,6 +8,7 @@ const hotels = [
   { name: 'The Ritz-Carlton', file: 'ritz-carlton.png' },
   { name: 'Marriott', file: 'marriott.png' },
   { name: 'Hilton', file: 'hilton.svg' },
+  { name: 'Iberostar', file: 'iberostar.svg' },
   { name: 'Mandarin Oriental', file: 'mandarin-oriental.svg' },
   { name: 'Park Hyatt', file: 'park-hyatt.png' },
   { name: 'Shangri-La', file: 'shangri-la.svg' },
@@ -17,7 +18,6 @@ const hotels = [
   { name: 'Rosewood', file: 'rosewood.png' },
   { name: 'Belmond', file: 'belmond.png' },
   { name: 'Palladium Hotel Group', file: 'palladium.png' },
-  { name: 'Iberostar', file: 'iberostar.png' },
 ]
 
 export default function HotelCarousel() {

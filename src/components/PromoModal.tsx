@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
+import IncludeIcon from './IncludeIcon'
 
 interface PromoPackage {
   date: string
@@ -21,6 +22,7 @@ interface PromoModalProps {
   origin: string
   image: string
   packages: PromoPackage[]
+  includes?: string[]
   whatsappUrl: string
 }
 
@@ -31,6 +33,7 @@ export default function PromoModal({
   origin,
   image,
   packages,
+  includes = ['Aéreos confirmados', 'Alojamiento', 'All Inclusive', 'Traslados'],
   whatsappUrl,
 }: PromoModalProps) {
   const [mounted, setMounted] = useState(false)
@@ -90,50 +93,28 @@ export default function PromoModal({
             </button>
 
             {/* Content */}
-            <div className="relative z-10 flex-1 overflow-y-auto px-4 py-14 sm:p-6 md:p-10 lg:p-12 flex flex-col items-center justify-center">
-              {/* Header */}
-              <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-light text-white tracking-wide text-center mb-1 sm:mb-2">
-                {title}
-              </h2>
-              <p className="text-purple-300/70 text-xs sm:text-sm tracking-[0.2em] uppercase mb-2 sm:mb-3">
-                Desde {origin}
-              </p>
-              <div className="w-16 sm:w-20 h-[2px] bg-purple-500/50 mb-4 sm:mb-5 md:mb-6" />
+            <div className="relative z-10 flex-1 overflow-y-auto px-4 pt-14 pb-6 sm:px-6 sm:pt-8 sm:pb-6 md:px-10 md:pt-10 lg:px-12 flex flex-col items-center">
+              {/* Header - always visible */}
+              <div className="flex-shrink-0 text-center w-full">
+                <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-light text-white tracking-wide text-center mb-1 sm:mb-2">
+                  {title}
+                </h2>
+                <p className="text-purple-300/70 text-xs sm:text-sm tracking-[0.2em] uppercase mb-2 sm:mb-3">
+                  Desde {origin}
+                </p>
+                <div className="w-16 sm:w-20 h-[2px] bg-purple-500/50 mx-auto mb-4 sm:mb-5 md:mb-6" />
+              </div>
 
-              {/* Incluye icons */}
-              <div className="grid grid-cols-4 gap-3 sm:gap-5 mb-4 sm:mb-6 md:mb-8 w-full max-w-md sm:max-w-3xl">
-                <div className="flex flex-col items-center gap-1.5 sm:gap-2 text-center">
-                  <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-purple-500/15 border border-purple-500/20 flex items-center justify-center">
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-purple-300" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
-                    </svg>
+              {/* Incluye icons - dynamic */}
+              <div className={`grid gap-3 sm:gap-5 mb-4 sm:mb-6 md:mb-8 w-full max-w-md sm:max-w-3xl ${includes.length <= 4 ? 'grid-cols-4' : `grid-cols-${Math.min(includes.length, 6)}`}`} style={{ gridTemplateColumns: `repeat(${Math.min(includes.length, 6)}, minmax(0, 1fr))` }}>
+                {includes.map((inc, i) => (
+                  <div key={i} className="flex flex-col items-center gap-1.5 sm:gap-2 text-center">
+                    <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-purple-500/15 border border-purple-500/20 flex items-center justify-center text-purple-300">
+                      <IncludeIcon name={inc} className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </div>
+                    <p className="text-white/50 text-[8px] sm:text-[10px] font-light tracking-wide leading-tight">{inc}</p>
                   </div>
-                  <p className="text-white/50 text-[8px] sm:text-[10px] font-light tracking-wide leading-tight">Aéreos confirmados</p>
-                </div>
-                <div className="flex flex-col items-center gap-1.5 sm:gap-2 text-center">
-                  <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-purple-500/15 border border-purple-500/20 flex items-center justify-center">
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-purple-300" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" />
-                    </svg>
-                  </div>
-                  <p className="text-white/50 text-[8px] sm:text-[10px] font-light tracking-wide leading-tight">Alojamiento</p>
-                </div>
-                <div className="flex flex-col items-center gap-1.5 sm:gap-2 text-center">
-                  <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-purple-500/15 border border-purple-500/20 flex items-center justify-center">
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-purple-300" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M7 2c-.55 0-1 .45-1 1v5.59c0 .78.47 1.48 1.2 1.78L9 11.12V21c0 .55.45 1 1 1s1-.45 1-1v-9.88l1.8-.75c.73-.3 1.2-1 1.2-1.78V3c0-.55-.45-1-1-1s-1 .45-1 1v4.5h-1V3c0-.55-.45-1-1-1s-1 .45-1 1v4.5H8V3c0-.55-.45-1-1-1zm10 0c-1.68 0-3 1.57-3 3.5V11h1.5v10c0 .55.45 1 1 1h1c.55 0 1-.45 1-1V3c0-.55-.45-1-1-1z" />
-                    </svg>
-                  </div>
-                  <p className="text-white/50 text-[8px] sm:text-[10px] font-light tracking-wide leading-tight">All Inclusive</p>
-                </div>
-                <div className="flex flex-col items-center gap-1.5 sm:gap-2 text-center">
-                  <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-purple-500/15 border border-purple-500/20 flex items-center justify-center">
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-purple-300" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
-                    </svg>
-                  </div>
-                  <p className="text-white/50 text-[8px] sm:text-[10px] font-light tracking-wide leading-tight">Traslados</p>
-                </div>
+                ))}
               </div>
 
               {/* Packages */}
