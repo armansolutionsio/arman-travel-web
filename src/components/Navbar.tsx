@@ -42,7 +42,9 @@ export default function Navbar() {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.8, ease: 'easeOut' }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        className={`fixed top-0 left-0 right-0 transition-all duration-500 ${
+          mobileOpen ? 'z-[70]' : 'z-50'
+        } ${
           scrolled
             ? 'bg-black/90 backdrop-blur-md py-3 shadow-lg shadow-black/20'
             : 'bg-transparent py-5 md:py-6'
