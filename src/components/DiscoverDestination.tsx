@@ -58,6 +58,8 @@ export default function DiscoverDestination() {
                 width={700}
                 height={500}
                 className="w-full h-[350px] sm:h-[420px] md:h-[480px] lg:h-[540px] object-cover rounded-sm"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                quality={85}
               />
             </div>
           </motion.div>

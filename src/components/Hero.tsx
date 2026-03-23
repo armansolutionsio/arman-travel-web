@@ -14,9 +14,10 @@ export default function Hero() {
         muted
         loop
         playsInline
+        preload="auto"
         className="absolute inset-0 w-full h-full object-cover scale-105 hidden md:block"
       >
-        <source src="/videos/portada.mp4" type="video/mp4" />
+        <source src="https://res.cloudinary.com/dxzzdtikq/video/upload/w_1920,h_900,c_fill,g_north/final_portada_mobile_lhoa3d.mp4" type="video/mp4" />
       </video>
 
       {/* Video Mobile */}

@@ -21,7 +21,7 @@ export default function CamboyaVietnam() {
       </p>
 
       <h2>Camboya</h2>
-      <Image src="/images/vietnam-1.jpg" alt="Templos de Camboya" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" />
+      <Image src="/images/vietnam-1.jpg" alt="Templos de Camboya" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
       <p>
         La belleza natural de Camboya oculta su complicado pasado: llanuras
         bajas y selvas tropicales contrastan con los históricos templos de
@@ -56,7 +56,7 @@ export default function CamboyaVietnam() {
       </p>
 
       <h2>Vietnam</h2>
-      <Image src="/images/vietnam-2.jpg" alt="Vietnam" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" />
+      <Image src="/images/vietnam-2.jpg" alt="Vietnam" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
       <p>
         Descubrí aldeas tribales en las colinas, metrópolis vibrantes y
         monumentos de la guerra de Vietnam y la era comunista. Para llegar a

@@ -22,7 +22,7 @@ export default function JaponArtesanal() {
       </p>
 
       <h2>Sur de Japón: cerezos en flor junto al mar</h2>
-      <Image src="/images/japon-1.jpg" alt="Cerezos en flor, Japón" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" />
+      <Image src="/images/japon-1.jpg" alt="Cerezos en flor, Japón" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
       <p>
         El viaje comienza en las regiones más cálidas del sur de Japón, donde
         las flores aparecen primero. Kyushu presenta el Castillo de Kumamoto,
@@ -51,7 +51,7 @@ export default function JaponArtesanal() {
       </p>
 
       <h2>Osaka y Monte Yoshino</h2>
-      <Image src="/images/japon-2.jpg" alt="Osaka, Japón" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" />
+      <Image src="/images/japon-2.jpg" alt="Osaka, Japón" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
       <p>
         El Parque del Castillo de Osaka cuenta con 3.000 cerezos enmarcando
         la fortaleza, accesibles mediante el crucero Gozabune donde los

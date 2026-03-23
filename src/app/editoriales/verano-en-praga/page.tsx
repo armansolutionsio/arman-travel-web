@@ -22,7 +22,7 @@ export default function VeranoPraga() {
       </p>
 
       <h2>Recorré la Plaza de la Ciudad Vieja</h2>
-      <Image src="/images/praga-1.jpg" alt="Plaza de la Ciudad Vieja, Praga" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" />
+      <Image src="/images/praga-1.jpg" alt="Plaza de la Ciudad Vieja, Praga" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
       <p>
         Empezá tu aventura de verano en Praga explorando el corazón de la
         ciudad: la Plaza de la Ciudad Vieja. Esta plaza histórica es un tesoro
@@ -39,7 +39,7 @@ export default function VeranoPraga() {
       </p>
 
       <h2>Disfrutá de una cerveza checa en un beer garden</h2>
-      <Image src="/images/praga-2.jpg" alt="Beer garden en Praga" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" />
+      <Image src="/images/praga-2.jpg" alt="Beer garden en Praga" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
       <p>
         Ningún verano en Praga está completo sin probar la bebida más querida
         de la nación: la cerveza. La ciudad cuenta con muchos beer gardens

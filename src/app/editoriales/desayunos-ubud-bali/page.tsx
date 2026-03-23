@@ -23,7 +23,7 @@ export default function DesayunosUbud() {
       </p>
 
       <h2>1. Zest Ubud</h2>
-      <Image src="/images/bali-1.jpg" alt="Desayuno en Ubud, Bali" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" />
+      <Image src="/images/bali-1.jpg" alt="Desayuno en Ubud, Bali" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
       <p>
         Ubicado en lo alto de una colina, el Zest Ubud a base de plantas está
         en una ubicación soñada, dentro de un elegante templo con vistas
@@ -57,7 +57,7 @@ export default function DesayunosUbud() {
       </p>
 
       <h2>3. Clear Café</h2>
-      <Image src="/images/bali-2.jpg" alt="Clear Café, Ubud" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" />
+      <Image src="/images/bali-2.jpg" alt="Clear Café, Ubud" width={800} height={450} className="w-full h-64 md:h-80 object-cover rounded-sm my-6" sizes="(max-width: 768px) 100vw, 720px" quality={80} />
       <p>
         Con un interior que no desentonaría en Pinterest, entrá al Clear Café
         por su decadente puerta tallada y empapáte de las vistas impresionantes.

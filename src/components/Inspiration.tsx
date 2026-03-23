@@ -96,6 +96,8 @@ export default function Inspiration() {
                   width={600}
                   height={400}
                   className="w-full h-52 sm:h-56 md:h-64 object-cover group-hover/card:scale-105 transition-transform duration-700"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  quality={80}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
               </div>
