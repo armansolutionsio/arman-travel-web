@@ -11,6 +11,7 @@ export default function CamboyaVietnam() {
       title="Camboya y Vietnam: dos destinos, una sola aventura"
       subtitle="El sabor auténtico del sudeste asiático"
       image="/images/vietnam.jpg"
+      articleImages={["/images/vietnam-1.jpg", "/images/vietnam-2.jpg"]}
     >
       <p>
         Haciendo frontera con Tailandia y Laos, Camboya y Vietnam están

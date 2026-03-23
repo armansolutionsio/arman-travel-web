@@ -7,10 +7,13 @@ import Navbar from './Navbar'
 import Footer from './Footer'
 import CallToActionCompact from './CallToActionCompact'
 
+import Preloader from './Preloader'
+
 interface EditorialLayoutProps {
   title: string
   subtitle: string
   image: string
+  articleImages?: string[]
   children: React.ReactNode
 }
 
@@ -18,11 +21,13 @@ export default function EditorialLayout({
   title,
   subtitle,
   image,
+  articleImages = [],
   children,
 }: EditorialLayoutProps) {
   return (
     <main className="bg-[#0a0a0a]">
       <Navbar />
+      <Preloader urls={[image, ...articleImages]} />
 
       {/* Hero */}
       <section id="editorial-hero" className="relative h-[60vh] md:h-[70vh] w-full overflow-hidden">

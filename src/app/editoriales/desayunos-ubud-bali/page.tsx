@@ -11,6 +11,7 @@ export default function DesayunosUbud() {
       title="Los cinco mejores desayunos de Ubud, Bali"
       subtitle="Sabores auténticos para arrancar el día con energía"
       image="/images/desayunos.png"
+      articleImages={["/images/bali-1.jpg", "/images/bali-2.jpg"]}
     >
       <p>
         Rodeada de arrozales, templos intrincados y estudios de yoga, Ubud es

@@ -11,6 +11,7 @@ export default function JaponArtesanal() {
       title="La herencia artesanal de Japón que sigue viva hoy"
       subtitle="Porque en Japón, cada objeto cuenta una historia"
       image="/images/japon.jpg"
+      articleImages={["/images/japon-1.jpg", "/images/japon-2.jpg"]}
     >
       <p>
         Si bien los cerezos en flor florecen en todo el mundo, Japón venera su

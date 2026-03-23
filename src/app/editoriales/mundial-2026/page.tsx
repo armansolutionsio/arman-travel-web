@@ -11,6 +11,7 @@ export default function Mundial2026() {
       title="Más que un Mundial: FIFA World Cup 2026"
       subtitle="Cada sede tiene secretos que vale la pena descubrir"
       image="/images/mundial.png"
+      articleImages={["/images/mexico-city.jpg", "/images/vancouver.jpg", "/images/miami.jpg"]}
     >
       <p>
         Con el Mundial 2026 cada vez más cerca, es el momento perfecto para

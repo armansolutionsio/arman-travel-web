@@ -11,6 +11,7 @@ export default function VeranoPraga() {
       title="El verano ideal en Praga"
       subtitle="Todo lo que tenés que saber sobre la ciudad de las 100 torres"
       image="/images/praga.jpg"
+      articleImages={["/images/praga-1.jpg", "/images/praga-2.jpg"]}
     >
       <p>
         Con su historia milenaria, su atmósfera vibrante y una arquitectura que

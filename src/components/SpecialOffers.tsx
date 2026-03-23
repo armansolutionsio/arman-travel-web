@@ -164,7 +164,7 @@ function OfferCard({ promo, index, onClick }: { promo: Promo; index: number; onC
     >
       <div className="relative overflow-hidden">
         <Image
-          src={optimizeCloudinaryUrl(promo.cardImage || '/images/miami.jpg', 700)}
+          src={promo.cardImage || '/images/miami.jpg'}
           alt={promo.title}
           width={700}
           height={420}

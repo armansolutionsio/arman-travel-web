@@ -15,6 +15,7 @@ export default function Hero() {
         loop
         playsInline
         preload="auto"
+        poster="https://res.cloudinary.com/dxzzdtikq/video/upload/w_1920,h_1080,c_fill,g_north,q_auto,so_0/final_portada_mobile_lhoa3d.jpg"
         className="absolute inset-0 w-full h-full object-cover scale-105 hidden md:block"
       >
         <source src="https://res.cloudinary.com/dxzzdtikq/video/upload/w_1920,h_1080,c_fill,g_north,q_auto:best/final_portada_mobile_lhoa3d.mp4" type="video/mp4" />
@@ -26,6 +27,7 @@ export default function Hero() {
         muted
         loop
         playsInline
+        poster="https://res.cloudinary.com/dxzzdtikq/video/upload/w_480,h_854,c_fill,q_auto,so_0/final_portada_mobile_lhoa3d.jpg"
         className="absolute inset-0 w-full h-full object-cover md:hidden"
       >
         <source src="https://res.cloudinary.com/dxzzdtikq/video/upload/w_480,h_854,c_fill,q_auto,f_auto/final_portada_mobile_lhoa3d.mp4" type="video/mp4" />

@@ -11,6 +11,7 @@ export default function HollokoHungria() {
       title="Un pueblo de cuento en el corazón de Hungría: Hollókő"
       subtitle="La vida simple y auténtica de la Europa de antaño, todavía viva"
       image="/images/hungria.jpg"
+      articleImages={["/images/holloko-1.jpg", "/images/holloko-2.jpg"]}
     >
       <p>
         La frase &quot;viajar en el tiempo&quot; se usa demasiado, pero Hollókő
