@@ -8,15 +8,26 @@ export default function Hero() {
       id="inicio"
       className="relative h-[100dvh] w-full overflow-hidden"
     >
-      {/* Video Background */}
+      {/* Video Desktop */}
       <video
         autoPlay
         muted
         loop
         playsInline
-        className="absolute inset-0 w-full h-full object-cover scale-105"
+        className="absolute inset-0 w-full h-full object-cover scale-105 hidden md:block"
       >
         <source src="/videos/portada.mp4" type="video/mp4" />
+      </video>
+
+      {/* Video Mobile */}
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover md:hidden"
+      >
+        <source src="https://res.cloudinary.com/dxzzdtikq/video/upload/w_480,h_854,c_fill,q_auto,f_auto/final_portada_mobile_lhoa3d.mp4" type="video/mp4" />
       </video>
 
       {/* Overlays */}
