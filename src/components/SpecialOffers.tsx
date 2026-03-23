@@ -29,6 +29,11 @@ interface Promo {
   packages: PromoPackage[]
 }
 
+function optimizeCloudinaryUrl(url: string, width: number = 600) {
+  if (!url || !url.includes('cloudinary.com')) return url
+  return url.replace('/upload/', `/upload/w_${width},c_fill,q_auto,f_auto/`)
+}
+
 function getLowestPackage(packages: PromoPackage[]) {
   const sorted = [...packages].sort((a, b) => {
     const numA = parseFloat(a.price.replace(/[^0-9.]/g, '').replace(/\.(?=\d{3})/g, ''))
@@ -138,6 +143,14 @@ function OfferCard({ promo, index, onClick }: { promo: Promo; index: number; onC
   const lowestNights = cheapest?.nights || ''
   const firstLocation = promo.packages[0]?.location || ''
 
+  const preloadBg = () => {
+    const bgUrl = promo.backgroundImage || '/images/destinos.png'
+    if (bgUrl) {
+      const img = new window.Image()
+      img.src = bgUrl
+    }
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -145,15 +158,20 @@ function OfferCard({ promo, index, onClick }: { promo: Promo; index: number; onC
       viewport={{ once: true, margin: '-50px' }}
       transition={{ duration: 0.6, delay: (index % 3) * 0.1 }}
       onClick={onClick}
+      onMouseEnter={preloadBg}
+      onTouchStart={preloadBg}
       className="group/card cursor-pointer bg-[#151520] rounded-lg border-2 border-purple-500/20 shadow-lg shadow-black/30 hover:shadow-xl hover:shadow-purple-950/30 hover:border-purple-500/40 transition-all duration-500 overflow-hidden offer-card"
     >
       <div className="relative overflow-hidden">
         <Image
-          src={promo.cardImage || '/images/miami.jpg'}
+          src={optimizeCloudinaryUrl(promo.cardImage || '/images/miami.jpg', 700)}
           alt={promo.title}
           width={700}
           height={420}
           className="w-full h-48 sm:h-56 md:h-64 object-cover group-hover/card:scale-105 transition-transform duration-700"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          quality={75}
+          loading="lazy"
         />
         <span className="promo-badge absolute top-3 left-3 bg-purple-600/80 text-white text-[10px] font-medium px-2.5 py-1 rounded tracking-wide">
           {lowestNights}

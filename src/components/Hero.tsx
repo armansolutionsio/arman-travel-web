@@ -17,7 +17,7 @@ export default function Hero() {
         preload="auto"
         className="absolute inset-0 w-full h-full object-cover scale-105 hidden md:block"
       >
-        <source src="https://res.cloudinary.com/dxzzdtikq/video/upload/w_1920,h_900,c_fill,g_north/final_portada_mobile_lhoa3d.mp4" type="video/mp4" />
+        <source src="https://res.cloudinary.com/dxzzdtikq/video/upload/w_1920,h_1080,c_fill,g_north,q_auto:best/final_portada_mobile_lhoa3d.mp4" type="video/mp4" />
       </video>
 
       {/* Video Mobile */}
