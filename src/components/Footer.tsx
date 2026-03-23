@@ -12,13 +12,15 @@ export default function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_0.8fr_auto] gap-10 lg:gap-12 items-center">
           {/* Column 1 - Logo + Slogan + Social */}
           <div className="flex flex-col items-center lg:items-center">
-            <Image
-              src="/images/logo-arman.png"
-              alt="Arman Travel"
-              width={200}
-              height={70}
-              className="h-auto w-44 object-contain mb-4"
-            />
+            <a href="/#inicio">
+              <Image
+                src="/images/logo-arman.png"
+                alt="Arman Travel"
+                width={200}
+                height={70}
+                className="h-auto w-44 object-contain mb-4 hover:opacity-80 transition-opacity"
+              />
+            </a>
             <p className="text-white/35 text-[11px] font-light tracking-wide mb-5 text-center">
               Experiencias de viaje exclusivas.
             </p>
@@ -67,20 +69,18 @@ export default function Footer() {
               Enlaces
             </h3>
             <div className="space-y-1.5">
-              {[
-                { name: 'Inicio', href: '#inicio' },
-                { name: 'Paquetes', href: '#destinos' },
-                { name: 'Sobre Nosotros', href: '#nosotros' },
-                { name: 'Contacto', href: '#contacto' },
-              ].map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  className="block text-white/35 text-[12px] font-light hover:text-purple-300 transition-colors duration-300"
-                >
-                  {link.name}
-                </a>
-              ))}
+              <a href="/#inicio" className="block text-white/35 text-[12px] font-light hover:text-purple-300 transition-colors duration-300">
+                Inicio
+              </a>
+              <a href="/destinos" className="block text-white/35 text-[12px] font-light hover:text-purple-300 transition-colors duration-300">
+                Paquetes
+              </a>
+              <a href="/#nosotros" className="block text-white/35 text-[12px] font-light hover:text-purple-300 transition-colors duration-300">
+                Sobre Nosotros
+              </a>
+              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="block text-white/35 text-[12px] font-light hover:text-purple-300 transition-colors duration-300">
+                Contacto
+              </a>
             </div>
           </div>
 
@@ -89,16 +89,16 @@ export default function Footer() {
             <h3 className="text-purple-400 text-[11px] tracking-[0.15em] uppercase font-medium mb-4">
               Escaneá el QR
             </h3>
-            <div className="relative group/qr">
+            <a href="https://www.agenciasdeviajes.ar/agencias/tgh6fi-p" target="_blank" rel="noopener noreferrer" className="relative group/qr block">
               <div className="absolute -inset-[1px] rounded border border-purple-500/20 group-hover/qr:border-purple-500/50 group-hover/qr:-inset-2 transition-all duration-500" />
               <Image
                 src="/images/qr-agencia.png"
-                alt="QR Arman Travel"
+                alt="QR Arman Travel - Registro Nacional de Agencias de Viajes"
                 width={110}
                 height={110}
-                className="w-24 h-24 rounded"
+                className="w-24 h-24 rounded cursor-pointer"
               />
-            </div>
+            </a>
           </div>
         </div>
       </div>

@@ -8,7 +8,10 @@ async function main() {
     return
   }
 
-  const client = new Client({ connectionString: url })
+  const client = new Client({
+    connectionString: url,
+    ssl: url.includes('render.com') ? { rejectUnauthorized: false } : false,
+  })
 
   try {
     await client.connect()

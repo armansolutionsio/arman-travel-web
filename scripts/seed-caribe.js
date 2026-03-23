@@ -6,7 +6,10 @@ const DATABASE_URL =
   'postgresql://arman_user:arman_password_2024@localhost:5432/arman_travel'
 
 async function main() {
-  const client = new Client({ connectionString: DATABASE_URL })
+  const client = new Client({
+    connectionString: DATABASE_URL,
+    ssl: DATABASE_URL.includes('render.com') ? { rejectUnauthorized: false } : false,
+  })
 
   try {
     await client.connect()
