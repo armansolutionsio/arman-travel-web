@@ -5,17 +5,19 @@ import Image from 'next/image'
 
 export default function DestinosHero() {
   return (
-    <section id="destinos-hero" className="relative h-[100dvh] w-full overflow-hidden">
+    <section id="destinos-hero" className="relative h-[100dvh] w-full overflow-hidden bg-black">
       {/* Video Desktop */}
       <video
         autoPlay
         muted
         loop
         playsInline
+        preload="auto"
+        poster="https://res.cloudinary.com/dxzzdtikq/video/upload/du_28,w_1920,h_1080,c_fill,q_auto,so_0/collection_destinos.jpg"
         className="absolute inset-0 w-full h-full object-cover hidden md:block"
       >
         <source
-          src="https://d2l1qimklmksys.cloudfront.net/collection_landscape.mp4"
+          src="https://res.cloudinary.com/dxzzdtikq/video/upload/du_28,w_1920,h_1080,c_fill,q_auto/collection_destinos.mp4"
           type="video/mp4"
         />
       </video>
@@ -26,10 +28,12 @@ export default function DestinosHero() {
         muted
         loop
         playsInline
+        preload="auto"
+        poster="https://res.cloudinary.com/dxzzdtikq/video/upload/du_28,w_480,h_854,c_fill,g_center,q_auto,so_0/collection_destinos.jpg"
         className="absolute inset-0 w-full h-full object-cover md:hidden"
       >
         <source
-          src="https://d2l1qimklmksys.cloudfront.net/collection_portrait.mp4"
+          src="https://res.cloudinary.com/dxzzdtikq/video/upload/du_28,w_480,h_854,c_fill,g_center,q_auto/collection_destinos.mp4"
           type="video/mp4"
         />
       </video>
