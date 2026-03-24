@@ -45,17 +45,17 @@ export default function Hero() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.5, ease: 'easeOut' }}
-          className="flex items-center gap-4 md:gap-5"
+          className="flex items-center gap-2 sm:gap-4 md:gap-5"
         >
-          <span className="text-white/90 text-[2.1rem] sm:text-[2.4rem] md:text-[3rem] tracking-[0.3em] font-display font-bold">
+          <span className="text-white/90 text-[1.3rem] sm:text-[2.4rem] md:text-[3rem] tracking-[0.15em] sm:tracking-[0.3em] font-display font-bold">
             Viajá
           </span>
-          <span className="text-purple-400/50 text-xl md:text-3xl">&#9670;</span>
-          <span className="text-white/90 text-[2.1rem] sm:text-[2.4rem] md:text-[3rem] tracking-[0.3em] font-display font-bold">
+          <span className="text-purple-400/50 text-sm sm:text-xl md:text-3xl">&#9670;</span>
+          <span className="text-white/90 text-[1.3rem] sm:text-[2.4rem] md:text-[3rem] tracking-[0.15em] sm:tracking-[0.3em] font-display font-bold">
             Descubrí
           </span>
-          <span className="text-purple-400/50 text-xl md:text-3xl">&#9670;</span>
-          <span className="text-white/90 text-[2.1rem] sm:text-[2.4rem] md:text-[3rem] tracking-[0.3em] font-display font-bold">
+          <span className="text-purple-400/50 text-sm sm:text-xl md:text-3xl">&#9670;</span>
+          <span className="text-white/90 text-[1.3rem] sm:text-[2.4rem] md:text-[3rem] tracking-[0.15em] sm:tracking-[0.3em] font-display font-bold">
             Viví
           </span>
         </motion.div>

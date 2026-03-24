@@ -30,7 +30,12 @@
       "Bash(curl -sL \"https://d11vyokdyewbcr.cloudfront.net/2860305_large_37de3ea1.jpg\" -o japon-1.jpg)",
       "Bash(curl -sL \"https://d20jhx4r9t6zw8.cloudfront.net/2860302_large_fb151539.jpg\" -o japon-2.jpg)",
       "Bash(curl -sL \"https://d20jhx4r9t6zw8.cloudfront.net/2921898_large_4ab094f0.jpg\" -o vietnam-1.jpg)",
-      "Bash(curl -sL \"https://d11vyokdyewbcr.cloudfront.net/2921901_large_29f83faa.jpg\" -o vietnam-2.jpg)"
+      "Bash(curl -sL \"https://d11vyokdyewbcr.cloudfront.net/2921901_large_29f83faa.jpg\" -o vietnam-2.jpg)",
+      "Bash(curl -s -I -L \"https://d2l1qimklmksys.cloudfront.net/collection_landscape.webm\")",
+      "Bash(curl -s -I -L \"https://d2l1qimklmksys.cloudfront.net/collection_portrait.mp4\")",
+      "Bash(curl -s -I -L \"https://d2l1qimklmksys.cloudfront.net/collection_portrait.webm\")",
+      "Bash(curl -s \"https://dv4xo43u9eo19.cloudfront.net/assets/application-7a0676eecf74ec722eeae0cab7d80e6bb2d963dd293d644772fa032d622f1abb.js\" -o /tmp/asw_app.js)",
+      "Read(//tmp/**)"
     ],
     "deny": [],
     "ask": [],
