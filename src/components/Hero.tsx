@@ -18,7 +18,7 @@ export default function Hero() {
         poster="https://res.cloudinary.com/dxzzdtikq/video/upload/w_1920,h_1080,c_fill,g_north,q_auto,so_0/final_portada_mobile_lhoa3d.jpg"
         className="absolute inset-0 w-full h-full object-cover scale-105 hidden md:block"
       >
-        <source src="https://res.cloudinary.com/dxzzdtikq/video/upload/w_1920,h_1080,c_fill,g_north,q_auto:best/final_portada_mobile_lhoa3d.mp4" type="video/mp4" />
+        <source src="https://res.cloudinary.com/dxzzdtikq/video/upload/w_1920,h_900,c_fill,g_north/final_portada_mobile_lhoa3d.mp4" type="video/mp4" />
       </video>
 
       {/* Video Mobile */}
@@ -34,42 +34,31 @@ export default function Hero() {
       </video>
 
       {/* Overlays */}
-      <div className="absolute inset-0 bg-black/45" />
-      <div className="absolute inset-0 bg-purple-950/20" />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80" />
+      <div className="absolute inset-0 bg-black/25" />
+      <div className="absolute inset-0 bg-purple-950/10" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
 
       {/* Content */}
-      <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6">
+      <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6 pt-16">
         {/* Tagline with diamond separators */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.5, ease: 'easeOut' }}
-          className="flex items-center gap-4 md:gap-5 mb-6 md:mb-8"
+          className="flex items-center gap-4 md:gap-5"
         >
-          <span className="text-white/90 text-sm sm:text-base md:text-xl tracking-[0.3em] uppercase font-light">
+          <span className="text-white/90 text-[2.1rem] sm:text-[2.4rem] md:text-[3rem] tracking-[0.3em] font-display font-bold">
             Viajá
           </span>
-          <span className="text-purple-400/50 text-xs">&#9670;</span>
-          <span className="text-white/90 text-sm sm:text-base md:text-xl tracking-[0.3em] uppercase font-light">
+          <span className="text-purple-400/50 text-xl md:text-3xl">&#9670;</span>
+          <span className="text-white/90 text-[2.1rem] sm:text-[2.4rem] md:text-[3rem] tracking-[0.3em] font-display font-bold">
             Descubrí
           </span>
-          <span className="text-purple-400/50 text-xs">&#9670;</span>
-          <span className="text-white/90 text-sm sm:text-base md:text-xl tracking-[0.3em] uppercase font-light">
+          <span className="text-purple-400/50 text-xl md:text-3xl">&#9670;</span>
+          <span className="text-white/90 text-[2.1rem] sm:text-[2.4rem] md:text-[3rem] tracking-[0.3em] font-display font-bold">
             Viví
           </span>
         </motion.div>
-
-        {/* Subtitle */}
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.8, ease: 'easeOut' }}
-          className="text-white/60 text-base sm:text-lg md:text-xl font-light max-w-md md:max-w-2xl leading-relaxed font-serif italic"
-        >
-          Experiencias de viaje exclusivas diseñadas para quienes buscan lo
-          extraordinario
-        </motion.p>
 
         {/* CTA Button */}
         <motion.a
@@ -77,7 +66,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 1.1, ease: 'easeOut' }}
-          className="mt-8 md:mt-10 border border-purple-400/25 text-white text-[11px] sm:text-xs tracking-[0.3em] uppercase px-9 sm:px-12 py-4 sm:py-4.5 hover:bg-purple-600 hover:border-purple-600 transition-all duration-700 group"
+          className="mt-6 md:mt-8 border border-purple-400/25 text-white text-[11px] sm:text-xs tracking-[0.3em] uppercase px-9 sm:px-12 py-4 sm:py-4.5 hover:bg-purple-600 hover:border-purple-600 transition-all duration-700 group"
         >
           <span className="group-hover:tracking-[0.4em] transition-all duration-700">
             Explorá Nuestros Destinos

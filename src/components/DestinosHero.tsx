@@ -35,9 +35,9 @@ export default function DestinosHero() {
       </video>
 
       {/* Overlays */}
-      <div className="absolute inset-0 bg-black/45" />
-      <div className="absolute inset-0 bg-purple-950/20" />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80" />
+      <div className="absolute inset-0 bg-black/25" />
+      <div className="absolute inset-0 bg-purple-950/10" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
 
       {/* Content */}
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6">
