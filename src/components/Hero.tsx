@@ -15,10 +15,10 @@ export default function Hero() {
         loop
         playsInline
         preload="auto"
-        poster="https://res.cloudinary.com/dxzzdtikq/video/upload/w_1920,h_900,c_fill,g_north,q_auto,so_0/final_portada_mobile_lhoa3d.jpg"
+        poster="https://res.cloudinary.com/dxzzdtikq/video/upload/du_21,w_1920,h_1080,c_fill,q_auto,so_0/hero_landscape.jpg"
         className="absolute inset-0 w-full h-full object-cover scale-105 hidden md:block"
       >
-        <source src="https://res.cloudinary.com/dxzzdtikq/video/upload/w_1920,h_900,c_fill,g_north/final_portada_mobile_lhoa3d.mp4" type="video/mp4" />
+        <source src="https://res.cloudinary.com/dxzzdtikq/video/upload/du_21,w_1920,h_1080,c_fill,q_auto/hero_landscape.mp4" type="video/mp4" />
       </video>
 
       {/* Video Mobile */}
@@ -27,10 +27,11 @@ export default function Hero() {
         muted
         loop
         playsInline
-        poster="https://res.cloudinary.com/dxzzdtikq/video/upload/w_480,h_854,c_fill,q_auto,so_0/final_portada_mobile_lhoa3d.jpg"
+        preload="auto"
+        poster="https://res.cloudinary.com/dxzzdtikq/video/upload/du_19,w_480,h_854,c_fill,q_auto,so_0/hero_portrait.jpg"
         className="absolute inset-0 w-full h-full object-cover md:hidden"
       >
-        <source src="https://res.cloudinary.com/dxzzdtikq/video/upload/w_480,h_854,c_fill,q_auto,f_auto/final_portada_mobile_lhoa3d.mp4" type="video/mp4" />
+        <source src="https://res.cloudinary.com/dxzzdtikq/video/upload/du_19,w_480,h_854,c_fill,q_auto/hero_portrait.mp4" type="video/mp4" />
       </video>
 
       {/* Overlays */}
@@ -65,7 +66,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 1.1, ease: 'easeOut' }}
-          className="mt-6 md:mt-8 border border-purple-400/25 text-white text-[11px] sm:text-xs tracking-[0.3em] uppercase px-9 sm:px-12 py-4 sm:py-4.5 hover:bg-purple-600 hover:border-purple-600 transition-all duration-700 group"
+          className="mt-6 md:mt-8 border border-purple-400/50 bg-white/10 backdrop-blur-sm text-white text-[11px] sm:text-xs tracking-[0.3em] uppercase px-9 sm:px-12 py-4 sm:py-4.5 hover:bg-purple-600 hover:border-purple-600 transition-all duration-700 group"
         >
           <span className="group-hover:tracking-[0.4em] transition-all duration-700">
             Explorá Nuestros Destinos
