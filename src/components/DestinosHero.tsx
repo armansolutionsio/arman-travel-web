@@ -13,11 +13,11 @@ export default function DestinosHero() {
         loop
         playsInline
         preload="auto"
-        poster="https://res.cloudinary.com/dxzzdtikq/video/upload/du_28,w_1920,h_1080,c_fill,q_auto,so_0/collection_destinos.jpg"
+        poster="https://res.cloudinary.com/dxzzdtikq/video/upload/so_15,eo_35,w_1920,h_1080,c_fill,q_auto/destinos_landscape.jpg"
         className="absolute inset-0 w-full h-full object-cover hidden md:block"
       >
         <source
-          src="https://res.cloudinary.com/dxzzdtikq/video/upload/du_28,w_1920,h_1080,c_fill,q_auto/collection_destinos.mp4"
+          src="https://res.cloudinary.com/dxzzdtikq/video/upload/so_15,eo_35,w_1920,h_1080,c_fill,q_auto/destinos_landscape.mp4"
           type="video/mp4"
         />
       </video>
@@ -29,11 +29,11 @@ export default function DestinosHero() {
         loop
         playsInline
         preload="auto"
-        poster="https://res.cloudinary.com/dxzzdtikq/video/upload/du_28,w_480,h_854,c_fill,g_center,q_auto,so_0/collection_destinos.jpg"
+        poster="https://res.cloudinary.com/dxzzdtikq/video/upload/so_14,eo_37,q_auto/destinos_portrait.jpg"
         className="absolute inset-0 w-full h-full object-cover md:hidden"
       >
         <source
-          src="https://res.cloudinary.com/dxzzdtikq/video/upload/du_28,w_480,h_854,c_fill,g_center,q_auto/collection_destinos.mp4"
+          src="https://res.cloudinary.com/dxzzdtikq/video/upload/so_14,eo_37,q_auto/destinos_portrait.mp4"
           type="video/mp4"
         />
       </video>
