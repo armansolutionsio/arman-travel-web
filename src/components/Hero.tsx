@@ -15,7 +15,7 @@ export default function Hero() {
         loop
         playsInline
         preload="auto"
-        poster="https://res.cloudinary.com/dxzzdtikq/video/upload/w_1920,h_1080,c_fill,g_north,q_auto,so_0/final_portada_mobile_lhoa3d.jpg"
+        poster="https://res.cloudinary.com/dxzzdtikq/video/upload/w_1920,h_900,c_fill,g_north,q_auto,so_0/final_portada_mobile_lhoa3d.jpg"
         className="absolute inset-0 w-full h-full object-cover scale-105 hidden md:block"
       >
         <source src="https://res.cloudinary.com/dxzzdtikq/video/upload/w_1920,h_900,c_fill,g_north/final_portada_mobile_lhoa3d.mp4" type="video/mp4" />
@@ -34,9 +34,8 @@ export default function Hero() {
       </video>
 
       {/* Overlays */}
-      <div className="absolute inset-0 bg-black/25" />
-      <div className="absolute inset-0 bg-purple-950/10" />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
+      <div className="absolute inset-0 bg-black/5" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/25" />
 
       {/* Content */}
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6 pt-16">

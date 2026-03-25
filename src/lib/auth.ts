@@ -1,9 +1,9 @@
 import { SignJWT, jwtVerify } from 'jose'
 import { cookies } from 'next/headers'
 
-const secret = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'arman-secret-key-super-secure-2024'
-)
+const jwtSecret = process.env.JWT_SECRET
+if (!jwtSecret) console.warn('⚠ JWT_SECRET no configurado — la autenticación no funcionará')
+const secret = new TextEncoder().encode(jwtSecret || 'fallback-do-not-use')
 
 export async function createToken(username: string) {
   return new SignJWT({ username })
@@ -29,7 +29,8 @@ export async function getSession() {
 }
 
 export function validateCredentials(user: string, password: string) {
-  const validUser = process.env.ADMIN_USER || 'admin'
-  const validPass = process.env.ADMIN_PASSWORD || 'arman123'
+  const validUser = process.env.ADMIN_USER
+  const validPass = process.env.ADMIN_PASSWORD
+  if (!validUser || !validPass) return false
   return user === validUser && password === validPass
 }

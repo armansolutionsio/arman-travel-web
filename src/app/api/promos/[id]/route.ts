@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
+import { rateLimit } from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
 
@@ -9,9 +10,18 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+  const { limited } = rateLimit(`promo-get:${ip}`, 60, 60_000)
+  if (limited) {
+    return NextResponse.json({ error: 'Demasiadas solicitudes' }, { status: 429 })
+  }
+
   const { id } = await params
+  const numId = parseInt(id)
+  if (isNaN(numId)) return NextResponse.json({ error: 'ID inválido' }, { status: 400 })
+
   const promo = await prisma.promo.findUnique({
-    where: { id: parseInt(id) },
+    where: { id: numId },
     include: { packages: { orderBy: { order: 'asc' } } },
   })
   if (!promo) return NextResponse.json({ error: 'No encontrado' }, { status: 404 })
@@ -27,6 +37,9 @@ export async function PUT(
   if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
   const { id } = await params
+  const numId = parseInt(id)
+  if (isNaN(numId)) return NextResponse.json({ error: 'ID inválido' }, { status: 400 })
+
   const data = await request.json()
   const { packages, createdAt, updatedAt, id: _dataId, ...rest } = data
 
@@ -40,10 +53,10 @@ export async function PUT(
     order: typeof pkg.order === 'number' ? pkg.order : i,
   }))
 
-  await prisma.promoPackage.deleteMany({ where: { promoId: parseInt(id) } })
+  await prisma.promoPackage.deleteMany({ where: { promoId: numId } })
 
   const promo = await prisma.promo.update({
-    where: { id: parseInt(id) },
+    where: { id: numId },
     data: {
       title: String(rest.title || ''),
       origin: String(rest.origin || ''),
@@ -69,7 +82,10 @@ export async function DELETE(
   if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
   const { id } = await params
-  const promo = await prisma.promo.findUnique({ where: { id: parseInt(id) } })
+  const numId = parseInt(id)
+  if (isNaN(numId)) return NextResponse.json({ error: 'ID inválido' }, { status: 400 })
+
+  const promo = await prisma.promo.findUnique({ where: { id: numId } })
 
   // Delete cloudinary images
   if (promo) {
@@ -88,6 +104,6 @@ export async function DELETE(
     }
   }
 
-  await prisma.promo.delete({ where: { id: parseInt(id) } })
+  await prisma.promo.delete({ where: { id: numId } })
   return NextResponse.json({ success: true })
 }
