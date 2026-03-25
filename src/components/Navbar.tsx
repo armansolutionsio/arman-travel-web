@@ -71,7 +71,7 @@ export default function Navbar() {
               <a
                 key={link.name}
                 href={link.href}
-                className="text-white/70 hover:text-purple-300 text-[11px] tracking-[0.2em] uppercase font-light transition-colors duration-300 relative group"
+                className="text-white hover:text-purple-300 text-[11px] tracking-[0.2em] uppercase font-medium transition-colors duration-300 relative group drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]"
               >
                 {link.name}
                 <span className="absolute -bottom-1 left-0 w-0 h-px bg-purple-500 group-hover:w-full transition-all duration-500" />

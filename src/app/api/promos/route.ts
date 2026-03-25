@@ -1,11 +1,19 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
+import { rateLimit } from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
 
 // GET: public - fetch all active promos with packages
-export async function GET() {
+export async function GET(request: Request) {
+  // Rate limit: max 60 requests per minute per IP
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+  const { limited } = rateLimit(`promos-get:${ip}`, 60, 60_000)
+  if (limited) {
+    return NextResponse.json({ error: 'Demasiadas solicitudes' }, { status: 429 })
+  }
+
   const promos = await prisma.promo.findMany({
     where: { active: true },
     include: { packages: { orderBy: { order: 'asc' } } },
