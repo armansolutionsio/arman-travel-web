@@ -33,3 +33,20 @@ model PromoPackage {
   order    Int    @default(0)
   promo    Promo  @relation(fields: [promoId], references: [id], onDelete: Cascade)
 }
+
+model WhatsappMessage {
+  id        Int      @id @default(autoincrement())
+  wamid     String?  @unique
+  telefono  String
+  nombre    String?
+  mensaje   String
+  tipo      String   @default("in")
+  fecha     DateTime
+  estado    String   @default("nuevo")
+  raw       Json
+  createdAt DateTime @default(now())
+
+  @@index([telefono, fecha])
+  @@index([estado])
+  @@map("whatsapp_messages")
+}

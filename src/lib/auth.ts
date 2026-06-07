@@ -2,7 +2,6 @@ import { SignJWT, jwtVerify } from 'jose'
 import { cookies } from 'next/headers'
 
 const jwtSecret = process.env.JWT_SECRET
-if (!jwtSecret) console.warn('⚠ JWT_SECRET no configurado — la autenticación no funcionará')
 const secret = new TextEncoder().encode(jwtSecret || 'fallback-do-not-use')
 
 export async function createToken(username: string) {
