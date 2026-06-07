@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import LeadsWpp from './LeadsWpp'
 
 interface PromoPackage {
   id?: number
@@ -84,7 +85,7 @@ export default function AdminDashboard() {
   const [promos, setPromos] = useState<Promo[]>([])
   const [editing, setEditing] = useState<Promo | null>(null)
   const [isNew, setIsNew] = useState(false)
-  const [activeTab, setActiveTab] = useState<'promos' | 'docs'>('promos')
+  const [activeTab, setActiveTab] = useState<'promos' | 'leads' | 'docs'>('promos')
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState<string | null>(null)
   const [jsonInput, setJsonInput] = useState('')
@@ -311,6 +312,12 @@ export default function AdminDashboard() {
           >
             Promos / Destinos
           </button>
+          <button
+            onClick={() => setActiveTab('leads')}
+            className={`w-full text-left px-4 py-3 rounded text-sm transition-colors ${activeTab === 'leads' ? 'bg-purple-600/20 text-purple-300' : 'text-white/40 hover:text-white/70 hover:bg-white/5'}`}
+          >
+            Leads WPP
+          </button>
           <a
             href="https://armanbusinessdocs.onrender.com/"
             target="_blank"
@@ -388,6 +395,8 @@ export default function AdminDashboard() {
             )}
           </>
         )}
+
+        {activeTab === 'leads' && <LeadsWpp />}
 
         {/* Create/Edit Modal */}
         {editing && (
