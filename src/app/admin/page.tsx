@@ -319,7 +319,7 @@ export default function AdminDashboard() {
             Leads WPP
           </button>
           <a
-            href="https://armanbusinessdocs.onrender.com/"
+            href={process.env.NEXT_PUBLIC_URL_BUISENESS_DOCS || 'http://g78dpf684iilhhlm15cqku0u.136.248.88.12.sslip.io/'}
             target="_blank"
             rel="noopener noreferrer"
             className="w-full text-left px-4 py-3 rounded text-sm text-white/40 hover:text-white/70 hover:bg-white/5 flex items-center justify-between"

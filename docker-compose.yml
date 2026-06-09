@@ -25,6 +25,7 @@ services:
         - NEXT_PUBLIC_URL_INSTAGRAM=${NEXT_PUBLIC_URL_INSTAGRAM:-https://www.instagram.com/armantravel.arg}
         - NEXT_PUBLIC_URL_WHATSAPP=${NEXT_PUBLIC_URL_WHATSAPP:-https://wa.me/5491156989263?text=Hola!%20Quiero%20mas%20info..}
         - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-}
+        - NEXT_PUBLIC_URL_BUISENESS_DOCS=${NEXT_PUBLIC_URL_BUISENESS_DOCS:-http://g78dpf684iilhhlm15cqku0u.136.248.88.12.sslip.io/}
         - DATABASE_URL=postgresql://${POSTGRES_USER:-arman_user}:${POSTGRES_PASSWORD:-arman_password_2024}@db:5432/${POSTGRES_DB:-arman_travel}
     container_name: arman-travel-web
     ports:
